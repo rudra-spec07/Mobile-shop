@@ -1,6 +1,7 @@
 const app = require('./app');
 const env = require('./config/env');
 const { prisma } = require('./config/database');
+const { seedInitialSuperAdmin } = require('./services/auth.service');
 
 const PORT = env.PORT || 5000;
 
@@ -8,6 +9,9 @@ let server;
 
 const startServer = async () => {
   try {
+    // Seed initial Super Admin if not present
+    await seedInitialSuperAdmin();
+
     server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Mobile-Adda Backend running on port ${PORT}`);
       console.log(`🌐 Environment: ${env.NODE_ENV}`);

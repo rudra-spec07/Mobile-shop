@@ -12,6 +12,14 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(16, { message: 'JWT_SECRET must be at least 16 characters long' }),
   JWT_EXPIRES_IN: z.string().default('1d'),
   CLIENT_URL: z.string().default('http://localhost:5173'),
+  SUPER_ADMIN_EMAIL: z
+    .string()
+    .email({ message: 'SUPER_ADMIN_EMAIL must be a valid email address' })
+    .default('admin@mobileadda.shop'),
+  SUPER_ADMIN_PASSWORD: z
+    .string()
+    .min(8, { message: 'SUPER_ADMIN_PASSWORD must be at least 8 characters long' })
+    .default('SuperAdmin123!'),
   EMAIL_HOST: z.string().optional(),
   EMAIL_PORT: z.string().optional(),
   EMAIL_USER: z.string().optional(),

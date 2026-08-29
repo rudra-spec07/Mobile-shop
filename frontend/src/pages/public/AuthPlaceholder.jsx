@@ -4,9 +4,11 @@ import CustomerLayout from '../../components/layout/CustomerLayout';
 import Card, { CardBody, CardHeader } from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
+import Toast from '../../components/common/Toast';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../utils/constants';
 import { LogIn, UserPlus } from 'lucide-react';
+import apiClient from '../../services/api';
 
 const AuthPlaceholder = () => {
   const location = useLocation();
@@ -17,44 +19,80 @@ const AuthPlaceholder = () => {
   const [emailOrMobile, setEmailOrMobile] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [selectedRole, setSelectedRole] = useState(ROLES.CUSTOMER);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [toastMsg, setToastMsg] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulate authentication login for foundation testing
-    const userRole = selectedRole === ROLES.SUPER_ADMIN ? ROLES.SUPER_ADMIN : ROLES.CUSTOMER;
-    const mockUser = {
-      id: 'mock-user-123',
-      name: name || (userRole === ROLES.SUPER_ADMIN ? 'Shop Super Admin' : 'Customer User'),
-      email: emailOrMobile.includes('@') ? emailOrMobile : 'user@example.com',
-      mobileNumber: !emailOrMobile.includes('@') ? emailOrMobile : '9876543210',
-      role: userRole,
-    };
-    const mockToken = 'mock_jwt_bearer_token_mobile_adda_foundation';
+    setErrorMsg('');
+    setLoading(true);
 
-    login(mockUser, mockToken);
+    try {
+      if (isLogin) {
+        // Issue HTTP POST to Backend /auth/login
+        const res = await apiClient.post('/auth/login', {
+          emailOrMobile: emailOrMobile.trim(),
+          password,
+        });
 
-    if (userRole === ROLES.SUPER_ADMIN) {
-      navigate('/admin');
-    } else {
-      navigate('/customer');
+        const { user, token } = res.data;
+        login(user, token);
+
+        if (user.role === ROLES.SUPER_ADMIN) {
+          navigate('/admin');
+        } else {
+          navigate('/customer');
+        }
+      } else {
+        // Issue HTTP POST to Backend /auth/register (Forces CUSTOMER role)
+        const isEmail = emailOrMobile.includes('@');
+        const payload = {
+          name: name.trim(),
+          email: isEmail ? emailOrMobile.trim() : undefined,
+          mobileNumber: !isEmail ? emailOrMobile.trim() : undefined,
+          password,
+        };
+
+        const res = await apiClient.post('/auth/register', payload);
+
+        const { user, token } = res.data;
+        login(user, token);
+        navigate('/customer');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Authentication failed. Please check your details.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <CustomerLayout>
+      {toastMsg && <Toast type={toastMsg.type} message={toastMsg.text} onClose={() => setToastMsg(null)} />}
+      
       <div className="max-w-md mx-auto py-8">
         <Card>
           <CardHeader className="text-center bg-slate-50/50 py-6">
             <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
               {isLogin ? <LogIn className="w-6 h-6" /> : <UserPlus className="w-6 h-6" />}
             </div>
-            <h1 className="text-xl font-bold text-slate-900">{isLogin ? 'Login to Mobile-Adda' : 'Create Customer Account'}</h1>
+            <h1 className="text-xl font-bold text-slate-900">
+              {isLogin ? 'Login to Mobile-Adda' : 'Create Customer Account'}
+            </h1>
             <p className="text-xs text-slate-500 mt-1">
-              {isLogin ? 'Access your enquiries, service requests, and profile' : 'Register to submit requests and interact with shop admin'}
+              {isLogin
+                ? 'Access your enquiries, service requests, and profile'
+                : 'Register to submit requests and interact with shop admin'}
             </p>
           </CardHeader>
           <CardBody>
+            {errorMsg && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+                {errorMsg}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <Input
@@ -78,40 +116,13 @@ const AuthPlaceholder = () => {
                 label="Password"
                 type="password"
                 required
-                placeholder="Enter password"
+                placeholder="Enter password (min 6 characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
 
-              {/* Account Role Selector for Shell Testing */}
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-1">
-                <label className="block text-xs font-semibold text-slate-700">Select Role for Demo Session:</label>
-                <div className="flex items-center gap-4 pt-1">
-                  <label className="inline-flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="role"
-                      value={ROLES.CUSTOMER}
-                      checked={selectedRole === ROLES.CUSTOMER}
-                      onChange={() => setSelectedRole(ROLES.CUSTOMER)}
-                    />
-                    Customer
-                  </label>
-                  <label className="inline-flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="role"
-                      value={ROLES.SUPER_ADMIN}
-                      checked={selectedRole === ROLES.SUPER_ADMIN}
-                      onChange={() => setSelectedRole(ROLES.SUPER_ADMIN)}
-                    />
-                    Super Admin
-                  </label>
-                </div>
-              </div>
-
-              <Button type="submit" variant="primary" className="w-full">
-                {isLogin ? 'Login' : 'Register Account'}
+              <Button type="submit" variant="primary" isLoading={loading} className="w-full">
+                {isLogin ? 'Login' : 'Register Customer Account'}
               </Button>
             </form>
 

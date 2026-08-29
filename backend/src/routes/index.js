@@ -1,5 +1,6 @@
 const express = require('express');
 const { getHealthStatus } = require('../controllers/health.controller');
+const authRoutes = require('./auth.routes');
 
 const router = express.Router();
 
@@ -14,11 +15,10 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: Backend is running smoothly
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/HealthResponse'
  */
 router.get('/health', getHealthStatus);
+
+// Mount Authentication Domain Routes
+router.use('/auth', authRoutes);
 
 module.exports = router;
