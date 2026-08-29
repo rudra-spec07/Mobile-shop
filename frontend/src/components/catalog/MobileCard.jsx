@@ -4,6 +4,7 @@ import { Smartphone, ArrowRight, Star } from 'lucide-react';
 import Card, { CardBody } from '../common/Card';
 import Button from '../common/Button';
 import MobileStatusBadge from './MobileStatusBadge';
+import { getImageUrl } from '../../utils/image';
 
 const formatCurrency = (val) => {
   if (val === null || val === undefined || isNaN(Number(val))) return '';
@@ -15,7 +16,8 @@ const formatCurrency = (val) => {
 };
 
 const MobileCard = ({ mobile }) => {
-  const primaryImage = mobile.images?.find((img) => img.isPrimary)?.imageUrl || mobile.images?.[0]?.imageUrl;
+  const rawPrimaryImage = mobile.images?.find((img) => img.isPrimary)?.imageUrl || mobile.images?.[0]?.imageUrl;
+  const primaryImage = getImageUrl(rawPrimaryImage);
   const regularPrice = Number(mobile.price);
   const sellingPrice = mobile.sellingPrice !== null && mobile.sellingPrice !== undefined ? Number(mobile.sellingPrice) : null;
   const hasDiscount = sellingPrice !== null && sellingPrice < regularPrice;
@@ -33,7 +35,7 @@ const MobileCard = ({ mobile }) => {
                 className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = ''; // Fallback on broken URL
+                  e.target.src = '';
                 }}
               />
             ) : (

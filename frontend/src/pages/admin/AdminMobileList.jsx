@@ -13,6 +13,7 @@ import BrandManagerModal from '../../components/catalog/BrandManagerModal';
 import MobileImageManagerModal from '../../components/catalog/MobileImageManagerModal';
 import StatusChangeModal from '../../components/catalog/StatusChangeModal';
 import catalogService from '../../services/catalog.service';
+import { getImageUrl } from '../../utils/image';
 import {
   Smartphone,
   Plus,
@@ -211,7 +212,8 @@ const AdminMobileList = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
                   {mobiles.map((m) => {
-                    const primaryImg = m.images?.find((i) => i.isPrimary)?.imageUrl || m.images?.[0]?.imageUrl;
+                    const rawPrimaryImg = m.images?.find((i) => i.isPrimary)?.imageUrl || m.images?.[0]?.imageUrl;
+                    const primaryImg = getImageUrl(rawPrimaryImg);
                     return (
                       <tr key={m.id} className="hover:bg-slate-50/60 transition-colors">
                         {/* Thumbnail & Title */}

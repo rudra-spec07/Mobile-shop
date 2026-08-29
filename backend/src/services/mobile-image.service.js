@@ -1,14 +1,40 @@
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const { prisma } = require('../config/database');
 const AppError = require('../middleware/error.middleware').AppError;
 const { HTTP_STATUS, ERROR_CODES } = require('../utils/constants');
 
 /**
  * Add a new image to a mobile listing (Super Admin only).
+ * Supports standard image URLs as well as Base64 data URLs (which are saved locally to disk under /uploads/mobiles/).
  */
 const addImage = async (mobileId, { imageUrl, isPrimary = false, sortOrder = 0 }) => {
   const mobile = await prisma.mobile.findUnique({ where: { id: mobileId } });
   if (!mobile) {
     throw new AppError('Mobile model not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.MOBILE_NOT_FOUND);
+  }
+
+  let finalImageUrl = imageUrl;
+  if (typeof imageUrl === 'string' && imageUrl.startsWith('data:image/')) {
+    const matches = imageUrl.match(/^data:image\/([a-zA-Z0-9-+.]+);base64,(.+)$/);
+    if (matches && matches.length === 3) {
+      let ext = matches[1].toLowerCase();
+      if (ext === 'jpeg') ext = 'jpg';
+      const buffer = Buffer.from(matches[2], 'base64');
+
+      const uploadsDir = path.join(process.cwd(), 'uploads', 'mobiles');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      const randomStr = crypto.randomBytes(4).toString('hex');
+      const filename = `mobile-${mobileId}-${Date.now()}-${randomStr}.${ext}`;
+      const filePath = path.join(uploadsDir, filename);
+
+      fs.writeFileSync(filePath, buffer);
+      finalImageUrl = `/uploads/mobiles/${filename}`;
+    }
   }
 
   const existingImagesCount = await prisma.mobileImage.count({ where: { mobileId } });
@@ -27,7 +53,7 @@ const addImage = async (mobileId, { imageUrl, isPrimary = false, sortOrder = 0 }
       return tx.mobileImage.create({
         data: {
           mobileId,
-          imageUrl,
+          imageUrl: finalImageUrl,
           isPrimary: true,
           sortOrder: Number(sortOrder) || 0,
         },
@@ -37,7 +63,7 @@ const addImage = async (mobileId, { imageUrl, isPrimary = false, sortOrder = 0 }
     newImage = await prisma.mobileImage.create({
       data: {
         mobileId,
-        imageUrl,
+        imageUrl: finalImageUrl,
         isPrimary: false,
         sortOrder: Number(sortOrder) || 0,
       },
@@ -108,6 +134,18 @@ const deleteImage = async (mobileId, imageId) => {
       }
     }
   });
+
+  // If local file exists, attempt to remove it from disk
+  if (image.imageUrl && image.imageUrl.startsWith('/uploads/mobiles/')) {
+    try {
+      const localPath = path.join(process.cwd(), image.imageUrl);
+      if (fs.existsSync(localPath)) {
+        fs.unlinkSync(localPath);
+      }
+    } catch (e) {
+      // Ignore file cleanup errors
+    }
+  }
 
   return { message: 'Image deleted successfully' };
 };

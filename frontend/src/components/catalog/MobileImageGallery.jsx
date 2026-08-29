@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone } from 'lucide-react';
+import { getImageUrl } from '../../utils/image';
 
 const MobileImageGallery = ({ images = [], mobileName = 'Mobile' }) => {
   const primaryImg = images.find((img) => img.isPrimary) || images[0];
-  const [selectedImage, setSelectedImage] = useState(primaryImg?.imageUrl || '');
+  const [selectedImage, setSelectedImage] = useState(getImageUrl(primaryImg?.imageUrl));
 
   useEffect(() => {
     const active = images.find((img) => img.isPrimary) || images[0];
-    setSelectedImage(active?.imageUrl || '');
+    setSelectedImage(getImageUrl(active?.imageUrl));
   }, [images]);
 
   if (!images || images.length === 0) {
@@ -37,28 +38,31 @@ const MobileImageGallery = ({ images = [], mobileName = 'Mobile' }) => {
       {/* Thumbnail Carousel Selector */}
       {images.length > 1 && (
         <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-thin">
-          {images.map((img, idx) => (
-            <button
-              key={img.id || idx}
-              onClick={() => setSelectedImage(img.imageUrl)}
-              className={`relative flex-shrink-0 w-16 h-16 rounded-xl border-2 overflow-hidden transition-all bg-slate-50 p-1 ${
-                selectedImage === img.imageUrl
-                  ? 'border-blue-600 ring-2 ring-blue-500/20 scale-105'
-                  : 'border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100'
-              }`}
-            >
-              <img
-                src={img.imageUrl}
-                alt={`${mobileName} thumbnail ${idx + 1}`}
-                className="w-full h-full object-contain"
-              />
-              {img.isPrimary && (
-                <span className="absolute bottom-0 inset-x-0 bg-blue-600 text-[8px] font-bold text-white text-center py-0.5">
-                  Primary
-                </span>
-              )}
-            </button>
-          ))}
+          {images.map((img, idx) => {
+            const formattedUrl = getImageUrl(img.imageUrl);
+            return (
+              <button
+                key={img.id || idx}
+                onClick={() => setSelectedImage(formattedUrl)}
+                className={`relative flex-shrink-0 w-16 h-16 rounded-xl border-2 overflow-hidden transition-all bg-slate-50 p-1 ${
+                  selectedImage === formattedUrl
+                    ? 'border-blue-600 ring-2 ring-blue-500/20 scale-105'
+                    : 'border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100'
+                }`}
+              >
+                <img
+                  src={formattedUrl}
+                  alt={`${mobileName} thumbnail ${idx + 1}`}
+                  className="w-full h-full object-contain"
+                />
+                {img.isPrimary && (
+                  <span className="absolute bottom-0 inset-x-0 bg-blue-600 text-[8px] font-bold text-white text-center py-0.5">
+                    Primary
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
