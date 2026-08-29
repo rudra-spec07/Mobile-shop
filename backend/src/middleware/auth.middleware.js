@@ -3,7 +3,7 @@ const { HTTP_STATUS, ERROR_CODES } = require('../utils/constants');
 const { sendError } = require('../utils/response');
 
 /**
- * JWT Authentication Middleware
+ * Required JWT Authentication Middleware
  */
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -31,6 +31,27 @@ const authenticateToken = (req, res, next) => {
   }
 };
 
+/**
+ * Optional JWT Authentication Middleware
+ * Decodes JWT if present, but does not block unauthenticated public requests.
+ */
+const optionalAuthenticate = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return next();
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = verifyToken(token);
+    req.user = decoded;
+  } catch (err) {
+    // Ignore token errors for optional authentication
+  }
+  return next();
+};
+
 module.exports = {
   authenticateToken,
+  optionalAuthenticate,
 };

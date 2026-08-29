@@ -1,5 +1,6 @@
 // Prisma Schema for Mobile-Adda Backend
 // Module 1 & Module 2: User & Auth Schema
+// Module 3: Mobile Catalog Management Schema
 
 generator client {
   provider = "prisma-client-js"
@@ -13,6 +14,17 @@ datasource db {
 enum Role {
   SUPER_ADMIN
   CUSTOMER
+}
+
+enum BrandStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum MobileStatus {
+  ACTIVE
+  INACTIVE
+  OUT_OF_STOCK
 }
 
 model User {
@@ -37,4 +49,64 @@ model SystemHealthLog {
   timestamp DateTime @default(now())
 
   @@map("system_health_logs")
+}
+
+model Brand {
+  id        String      @id @default(uuid())
+  name      String      @unique
+  slug      String      @unique
+  logoUrl   String?
+  status    BrandStatus @default(ACTIVE)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  mobiles   Mobile[]
+
+  @@map("brands")
+}
+
+model Mobile {
+  id              String       @id @default(uuid())
+  brandId         String
+  brand           Brand        @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  name            String
+  modelNumber     String?
+  slug            String       @unique
+  description     String?
+  price           Decimal      @db.Decimal(10, 2)
+  sellingPrice    Decimal?     @db.Decimal(10, 2)
+  ram             String?
+  storage         String?
+  processor       String?
+  display         String?
+  frontCamera     String?
+  rearCamera      String?
+  battery         String?
+  operatingSystem String?
+  network         String?
+  simType         String?
+  color           String?
+  status          MobileStatus @default(ACTIVE)
+  featured        Boolean      @default(false)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  images          MobileImage[]
+
+  @@index([brandId])
+  @@index([name])
+  @@index([status])
+  @@index([featured])
+  @@map("mobiles")
+}
+
+model MobileImage {
+  id        String   @id @default(uuid())
+  mobileId  String
+  mobile    Mobile   @relation(fields: [mobileId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  isPrimary Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([mobileId])
+  @@map("mobile_images")
 }

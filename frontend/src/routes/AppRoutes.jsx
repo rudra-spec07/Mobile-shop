@@ -6,6 +6,8 @@ import { ROLES } from '../utils/constants';
 
 // Public Pages
 import Home from '../pages/public/Home';
+import CustomerMobileCatalog from '../pages/public/CustomerMobileCatalog';
+import CustomerMobileDetails from '../pages/public/CustomerMobileDetails';
 import CatalogPlaceholder from '../pages/public/CatalogPlaceholder';
 import AuthPlaceholder from '../pages/public/AuthPlaceholder';
 import ForgotPassword from '../pages/public/ForgotPassword';
@@ -19,6 +21,8 @@ import ChangePassword from '../pages/customer/ChangePassword';
 
 // Admin Pages
 import AdminDashboard from '../pages/admin/AdminDashboard';
+import AdminMobileList from '../pages/admin/AdminMobileList';
+import AdminMobileDetails from '../pages/admin/AdminMobileDetails';
 import AdminSettings from '../pages/admin/AdminSettings';
 import AdminPlaceholder from '../pages/admin/AdminPlaceholder';
 
@@ -31,8 +35,8 @@ const AppRoutes = () => {
     <Routes>
       {/* Public Routes */}
       <Route path="/" element={<Home />} />
-      <Route path="/mobiles" element={<CatalogPlaceholder />} />
-      <Route path="/mobiles/:id" element={<CatalogPlaceholder />} />
+      <Route path="/mobiles" element={<CustomerMobileCatalog />} />
+      <Route path="/mobiles/:id" element={<CustomerMobileDetails />} />
       <Route path="/parts" element={<CatalogPlaceholder />} />
       <Route path="/parts/:id" element={<CatalogPlaceholder />} />
       <Route path="/login" element={<AuthPlaceholder />} />
@@ -89,6 +93,26 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <AdminDashboard />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/mobiles"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminMobileList />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/mobiles/:id"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminMobileDetails />
             </RoleRoute>
           </ProtectedRoute>
         }

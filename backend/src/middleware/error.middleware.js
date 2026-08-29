@@ -23,6 +23,13 @@ const errorHandler = (err, req, res, next) => {
   let message = err.message || 'Internal Server Error';
   let errorCode = err.errorCode || ERROR_CODES.INTERNAL_SERVER_ERROR;
 
+  // Handle Zod Validation Errors
+  if (err.name === 'ZodError') {
+    statusCode = HTTP_STATUS.BAD_REQUEST;
+    errorCode = ERROR_CODES.VALIDATION_ERROR;
+    message = err.errors ? err.errors.map((e) => e.message).join(', ') : err.message;
+  }
+
   // Log error internally
   if (env.NODE_ENV === 'development') {
     console.error('💥 [Error Handler]:', err);

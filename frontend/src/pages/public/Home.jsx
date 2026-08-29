@@ -1,32 +1,61 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Smartphone, Wrench, ShieldCheck, ArrowRight, Star, Search } from 'lucide-react';
+import { Smartphone, ShieldCheck, ArrowRight, Star } from 'lucide-react';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import Button from '../../components/common/Button';
 import Card, { CardBody } from '../../components/common/Card';
+import MobileCard from '../../components/catalog/MobileCard';
+import catalogService from '../../services/catalog.service';
 
 const Home = () => {
-  const featuredMobiles = [
+  const [featuredMobiles, setFeaturedMobiles] = useState([]);
+  const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      setIsLoadingFeatured(true);
+      try {
+        const res = await catalogService.getFeaturedMobiles({ limit: 6 });
+        setFeaturedMobiles(res.data || []);
+      } catch (err) {
+        console.error('Failed to fetch featured mobiles:', err);
+      } finally {
+        setIsLoadingFeatured(false);
+      }
+    };
+    fetchFeatured();
+  }, []);
+
+  const fallbackFeaturedMobiles = [
     {
       id: 'm1',
-      brand: 'Samsung',
-      model: 'Galaxy A54 5G',
-      specs: '8GB RAM | 128GB Storage | 5000mAh',
-      status: 'Available',
+      brand: { name: 'Samsung' },
+      name: 'Galaxy A54 5G',
+      ram: '8GB',
+      storage: '128GB',
+      price: 38999,
+      sellingPrice: 34999,
+      status: 'ACTIVE',
     },
     {
       id: 'm2',
-      brand: 'Apple',
-      model: 'iPhone 13',
-      specs: '128GB Storage | A15 Bionic | Super Retina XDR',
-      status: 'Available',
+      brand: { name: 'Apple' },
+      name: 'iPhone 13',
+      ram: '4GB',
+      storage: '128GB',
+      price: 59900,
+      sellingPrice: 52999,
+      status: 'ACTIVE',
     },
     {
       id: 'm3',
-      brand: 'OnePlus',
-      model: 'Nord CE 3 5G',
-      specs: '8GB RAM | 128GB Storage | 50W SuperVOOC',
-      status: 'Available',
+      brand: { name: 'OnePlus' },
+      name: 'Nord CE 3 5G',
+      ram: '8GB',
+      storage: '128GB',
+      price: 26999,
+      sellingPrice: 24999,
+      status: 'ACTIVE',
     },
   ];
 
@@ -35,6 +64,8 @@ const Home = () => {
     { id: 'p2', name: 'iPhone 13 High Capacity Battery', category: 'Battery', price: '₹2,299', status: 'Available' },
     { id: 'p3', name: 'Type-C Fast Charging Board', category: 'Charging Board', price: '₹499', status: 'Low Stock' },
   ];
+
+  const displayMobiles = featuredMobiles.length > 0 ? featuredMobiles : fallbackFeaturedMobiles;
 
   return (
     <CustomerLayout>
@@ -80,31 +111,8 @@ const Home = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredMobiles.map((mobile) => (
-            <Card key={mobile.id} hoverable>
-              <CardBody className="space-y-3">
-                <div className="w-full h-40 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
-                  <Smartphone className="w-12 h-12" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
-                    {mobile.brand}
-                  </span>
-                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                    {mobile.status}
-                  </span>
-                </div>
-                <h3 className="text-base font-semibold text-slate-900">{mobile.model}</h3>
-                <p className="text-xs text-slate-500">{mobile.specs}</p>
-                <div className="pt-2 flex items-center justify-between border-t border-slate-100">
-                  <Link to={`/mobiles/${mobile.id}`} className="w-full">
-                    <Button variant="outline" size="sm" className="w-full">
-                      Ask About Mobile
-                    </Button>
-                  </Link>
-                </div>
-              </CardBody>
-            </Card>
+          {displayMobiles.map((mobile) => (
+            <MobileCard key={mobile.id} mobile={mobile} />
           ))}
         </div>
       </section>
