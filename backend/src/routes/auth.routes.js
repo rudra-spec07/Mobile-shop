@@ -1,8 +1,10 @@
 const express = require('express');
 const authController = require('../controllers/auth.controller');
+const userController = require('../controllers/user.controller');
 const { validate } = require('../middleware/validation.middleware');
 const { authenticateToken } = require('../middleware/auth.middleware');
 const { registerSchema, loginSchema } = require('../validators/auth.validator');
+const { forgotPasswordSchema, resetPasswordSchema } = require('../validators/user.validator');
 
 const router = express.Router();
 
@@ -14,31 +16,6 @@ const router = express.Router();
  *     description: Creates a new customer account in Neon PostgreSQL. Enforces CUSTOMER role.
  *     tags:
  *       - Authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - password
- *             properties:
- *               name:
- *                 type: string
- *               email:
- *                 type: string
- *               mobileNumber:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       201:
- *         description: Customer registered successfully
- *       400:
- *         description: Validation error
- *       409:
- *         description: Email or mobile number already exists
  */
 router.post('/register', validate(registerSchema), authController.register);
 
@@ -50,43 +27,49 @@ router.post('/register', validate(registerSchema), authController.register);
  *     description: Authenticates Customer or Super Admin users and returns JWT token.
  *     tags:
  *       - Authentication
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - emailOrMobile
- *               - password
- *             properties:
- *               emailOrMobile:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login successful
- *       401:
- *         description: Invalid credentials
  */
 router.post('/login', validate(loginSchema), authController.login);
 
 /**
  * @openapi
- * /auth/me:
- *   get:
- *     summary: Get Authenticated User Profile
- *     description: Returns profile details for current JWT bearer token.
+ * /auth/logout:
+ *   post:
+ *     summary: User Logout
+ *     description: Stateless logout endpoint for client-side JWT removal.
  *     tags:
  *       - Authentication
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Profile fetched successfully
- *       401:
- *         description: Unauthorized
+ */
+router.post('/logout', userController.logout);
+
+/**
+ * @openapi
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Request Password Reset
+ *     description: Sends a password reset token request. Returns generic success response.
+ *     tags:
+ *       - Authentication
+ */
+router.post('/forgot-password', validate(forgotPasswordSchema), userController.forgotPassword);
+
+/**
+ * @openapi
+ * /auth/reset-password:
+ *   post:
+ *     summary: Reset Password with Token
+ *     description: Resets user password using a valid reset token.
+ *     tags:
+ *       - Authentication
+ */
+router.post('/reset-password', validate(resetPasswordSchema), userController.resetPassword);
+
+/**
+ * @openapi
+ * /auth/me:
+ *   get:
+ *     summary: Get Authenticated User Profile (Legacy/Alias)
+ *     tags:
+ *       - Authentication
  */
 router.get('/me', authenticateToken, authController.getProfile);
 

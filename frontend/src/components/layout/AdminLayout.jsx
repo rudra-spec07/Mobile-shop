@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
-import { Menu, Bell, User, Smartphone } from 'lucide-react';
+import LogoutModal from '../common/LogoutModal';
+import { Menu, Bell, User, Smartphone, ChevronDown, KeyRound, Settings as SettingsIcon, LogOut } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const AdminLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-slate-100 flex">
+      {/* Reusable Logout Confirmation Modal */}
+      <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
+
       {/* Admin Sidebar */}
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
@@ -43,14 +49,71 @@ const AdminLayout = ({ children }) => {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full" />
             </Link>
 
-            <div className="flex items-center gap-2 border-l border-slate-200 pl-4">
-              <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-xs shadow-xs">
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-xs font-semibold text-slate-900 leading-tight">{user?.name || 'Super Admin'}</p>
-                <p className="text-[10px] text-slate-500">Shop Owner</p>
-              </div>
+            {/* Top-Right Interactive Super Admin Account Menu */}
+            <div className="relative border-l border-slate-200 pl-4">
+              <button
+                onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
+                className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 transition-colors"
+              >
+                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-xs shadow-xs">
+                  {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                </div>
+                <div className="hidden sm:block text-left">
+                  <p className="text-xs font-semibold text-slate-900 leading-tight flex items-center gap-1">
+                    {user?.name || 'Super Admin'} <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  </p>
+                  <p className="text-[10px] text-slate-500">Shop Owner</p>
+                </div>
+              </button>
+
+              {isUserDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50 animate-fade-in">
+                  <div className="px-4 py-2 border-b border-slate-100">
+                    <p className="text-xs font-semibold text-slate-900">{user?.name}</p>
+                    <p className="text-[10px] text-slate-500 truncate">{user?.email || user?.mobileNumber}</p>
+                  </div>
+
+                  <Link
+                    to="/admin/profile"
+                    onClick={() => setIsUserDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                  >
+                    <User className="w-4 h-4 text-slate-500" />
+                    My Profile
+                  </Link>
+
+                  <Link
+                    to="/admin/change-password"
+                    onClick={() => setIsUserDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                  >
+                    <KeyRound className="w-4 h-4 text-slate-500" />
+                    Change Password
+                  </Link>
+
+                  <Link
+                    to="/admin/settings"
+                    onClick={() => setIsUserDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                  >
+                    <SettingsIcon className="w-4 h-4 text-slate-500" />
+                    Account Settings
+                  </Link>
+
+                  <div className="border-t border-slate-100 mt-1">
+                    <button
+                      onClick={() => {
+                        setIsUserDropdownOpen(false);
+                        setIsLogoutModalOpen(true);
+                      }}
+                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-red-600 hover:bg-red-50"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>

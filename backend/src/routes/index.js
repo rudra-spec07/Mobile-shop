@@ -1,6 +1,8 @@
 const express = require('express');
 const { getHealthStatus } = require('../controllers/health.controller');
 const authRoutes = require('./auth.routes');
+const userRoutes = require('./user.routes');
+const adminUserRoutes = require('./admin.user.routes');
 
 const router = express.Router();
 
@@ -12,13 +14,16 @@ const router = express.Router();
  *     description: Returns current operational status of Mobile-Adda backend.
  *     tags:
  *       - System
- *     responses:
- *       200:
- *         description: Backend is running smoothly
  */
 router.get('/health', getHealthStatus);
 
 // Mount Authentication Domain Routes
 router.use('/auth', authRoutes);
+
+// Mount Customer Profile Routes
+router.use('/users', userRoutes);
+
+// Mount Super Admin User Management Routes
+router.use('/admin/users', adminUserRoutes);
 
 module.exports = router;

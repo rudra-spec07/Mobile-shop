@@ -20,6 +20,7 @@ const envSchema = z.object({
     .string()
     .min(8, { message: 'SUPER_ADMIN_PASSWORD must be at least 8 characters long' })
     .default('SuperAdmin123!'),
+  RESET_TOKEN_EXPIRY: z.string().default('1h'),
   EMAIL_HOST: z.string().optional(),
   EMAIL_PORT: z.string().optional(),
   EMAIL_USER: z.string().optional(),

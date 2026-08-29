@@ -1,5 +1,5 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
   Smartphone,
@@ -14,11 +14,10 @@ import {
   X,
   Shield,
 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import LogoutModal from '../common/LogoutModal';
 
 const Sidebar = ({ isOpen, onClose }) => {
-  const { logout } = useAuth();
-  const navigate = useNavigate();
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   const menuItems = [
     { label: 'Dashboard', path: '/admin', icon: LayoutDashboard },
@@ -32,13 +31,11 @@ const Sidebar = ({ isOpen, onClose }) => {
     { label: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   return (
     <>
+      {/* Reusable Logout Confirmation Modal */}
+      <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
+
       {/* Mobile Backdrop */}
       {isOpen && (
         <div
@@ -97,7 +94,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         {/* Footer Logout Button */}
         <div className="p-4 border-t border-slate-800">
           <button
-            onClick={handleLogout}
+            onClick={() => setIsLogoutModalOpen(true)}
             className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-medium text-red-400 hover:bg-red-950/40 hover:text-red-300 rounded-lg transition-colors"
           >
             <LogOut className="w-4 h-4" />

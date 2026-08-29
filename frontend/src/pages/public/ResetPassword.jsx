@@ -1,0 +1,147 @@
+import React, { useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import CustomerLayout from '../../components/layout/CustomerLayout';
+import Card, { CardBody, CardHeader } from '../../components/common/Card';
+import Input from '../../components/common/Input';
+import Button from '../../components/common/Button';
+import { ShieldCheck, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
+import apiClient from '../../services/api';
+
+const ResetPassword = () => {
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get('token') || '';
+
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg('');
+
+    if (!token) {
+      setErrorMsg('Invalid or missing password reset token in URL');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setErrorMsg('Password must be at least 6 characters long');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMsg('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await apiClient.post('/auth/reset-password', {
+        token,
+        newPassword,
+      });
+      setSuccess(true);
+    } catch (err) {
+      setErrorMsg(err.message || 'Invalid or expired password reset token.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <CustomerLayout>
+      <div className="max-w-md mx-auto py-8">
+        <Card>
+          <CardHeader className="text-center bg-slate-50/50 py-6">
+            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <h1 className="text-xl font-bold text-slate-900">Reset Password</h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Create a new secure password for your Mobile-Adda account.
+            </p>
+          </CardHeader>
+          <CardBody>
+            {!token && !success ? (
+              <div className="text-center py-4 space-y-4">
+                <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+                  <AlertCircle className="w-6 h-6" />
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900">Missing Reset Token</h3>
+                <p className="text-xs text-slate-500">
+                  This reset link is missing a valid security token. Please request a new password reset link.
+                </p>
+                <Link to="/forgot-password">
+                  <Button variant="primary" className="w-full">
+                    Request New Reset Link
+                  </Button>
+                </Link>
+              </div>
+            ) : success ? (
+              <div className="text-center py-4 space-y-4">
+                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <h3 className="text-sm font-semibold text-slate-900">Password Reset Complete</h3>
+                <p className="text-xs text-slate-500">
+                  Your password has been reset successfully. You can now log in with your new password.
+                </p>
+                <Link to="/login">
+                  <Button variant="primary" className="w-full">
+                    Go to Login
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {errorMsg && (
+                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+                    {errorMsg}
+                  </div>
+                )}
+
+                <div className="relative">
+                  <Input
+                    label="New Password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="Enter new password (min 6 chars)"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-8 text-slate-400 hover:text-slate-600"
+                    tabIndex={-1}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <Input
+                  label="Confirm New Password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Re-enter new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+
+                <Button type="submit" variant="primary" isLoading={loading} className="w-full">
+                  Set New Password
+                </Button>
+              </form>
+            )}
+          </CardBody>
+        </Card>
+      </div>
+    </CustomerLayout>
+  );
+};
+
+export default ResetPassword;

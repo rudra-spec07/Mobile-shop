@@ -1,5 +1,5 @@
 // Prisma Schema for Mobile-Adda Backend
-// User & Auth Schema
+// Module 1 & Module 2: User & Auth Schema
 
 generator client {
   provider = "prisma-client-js"
@@ -16,15 +16,17 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String?  @unique
-  mobileNumber String?  @unique
-  password     String
-  role         Role     @default(CUSTOMER)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                  String    @id @default(uuid())
+  name                String
+  email               String?   @unique
+  mobileNumber        String?   @unique
+  password            String
+  role                Role      @default(CUSTOMER)
+  isActive            Boolean   @default(true)
+  resetTokenHash      String?
+  resetTokenExpiresAt DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@map("users")
 }

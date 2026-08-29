@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { STORAGE_KEYS } from '../utils/constants';
 
 const AuthContext = createContext(null);
@@ -20,6 +20,12 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem(STORAGE_KEYS.TOKEN, authToken);
   };
 
+  const updateUser = (updatedUserData) => {
+    const newUserData = { ...user, ...updatedUserData };
+    setUser(newUserData);
+    localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(newUserData));
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -38,6 +44,7 @@ export const AuthProvider = ({ children }) => {
         role,
         isAuthenticated,
         login,
+        updateUser,
         logout,
       }}
     >

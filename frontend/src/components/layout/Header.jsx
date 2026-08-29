@@ -1,24 +1,23 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Smartphone, Bell, User, LogOut, Menu, X, Shield } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Smartphone, Bell, User, LogOut, Menu, X, Shield, KeyRound } from 'lucide-react';
 import Navbar from '../navigation/Navbar';
 import Button from '../common/Button';
+import LogoutModal from '../common/LogoutModal';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../utils/constants';
 
 const Header = () => {
-  const { user, isAuthenticated, logout, role } = useAuth();
-  const navigate = useNavigate();
+  const { user, isAuthenticated, role } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200">
+      {/* Reusable Logout Confirmation Modal */}
+      <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl tracking-tight">
@@ -60,11 +59,12 @@ const Header = () => {
                 </button>
 
                 {isUserDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50 animate-fade-in">
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50 animate-fade-in">
                     <div className="px-4 py-2 border-b border-slate-100">
                       <p className="text-xs font-semibold text-slate-900">{user?.name}</p>
                       <p className="text-[10px] text-slate-500 truncate">{user?.email || user?.mobileNumber}</p>
                     </div>
+
                     {role === ROLES.SUPER_ADMIN ? (
                       <Link
                         to="/admin"
@@ -84,13 +84,28 @@ const Header = () => {
                         Customer Dashboard
                       </Link>
                     )}
-                    <button
-                      onClick={handleLogout}
-                      className="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-red-600 hover:bg-red-50"
+
+                    <Link
+                      to={role === ROLES.SUPER_ADMIN ? '/admin/change-password' : '/customer/change-password'}
+                      onClick={() => setIsUserDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
                     >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
+                      <KeyRound className="w-4 h-4 text-slate-500" />
+                      Change Password
+                    </Link>
+
+                    <div className="border-t border-slate-100 mt-1">
+                      <button
+                        onClick={() => {
+                          setIsUserDropdownOpen(false);
+                          setIsLogoutModalOpen(true);
+                        }}
+                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-xs text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

@@ -7,7 +7,7 @@ import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../utils/constants';
-import { LogIn, UserPlus } from 'lucide-react';
+import { LogIn, UserPlus, Eye, EyeOff } from 'lucide-react';
 import apiClient from '../../services/api';
 
 const AuthPlaceholder = () => {
@@ -18,7 +18,9 @@ const AuthPlaceholder = () => {
 
   const [emailOrMobile, setEmailOrMobile] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [toastMsg, setToastMsg] = useState(null);
@@ -26,6 +28,12 @@ const AuthPlaceholder = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+
+    if (!isLogin && password !== confirmPassword) {
+      setErrorMsg('Passwords do not match');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -45,7 +53,7 @@ const AuthPlaceholder = () => {
           navigate('/customer');
         }
       } else {
-        // Issue HTTP POST to Backend /auth/register (Forces CUSTOMER role)
+        // Issue HTTP POST to Backend /auth/register (Enforces CUSTOMER role)
         const isEmail = emailOrMobile.includes('@');
         const payload = {
           name: name.trim(),
@@ -112,14 +120,46 @@ const AuthPlaceholder = () => {
                 onChange={(e) => setEmailOrMobile(e.target.value)}
               />
 
-              <Input
-                label="Password"
-                type="password"
-                required
-                placeholder="Enter password (min 6 characters)"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+              <div className="relative">
+                <Input
+                  label="Password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Enter password (min 6 characters)"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-8 text-slate-400 hover:text-slate-600"
+                  tabIndex={-1}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {!isLogin && (
+                <Input
+                  label="Confirm Password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  placeholder="Re-enter password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              )}
+
+              {isLogin && (
+                <div className="flex justify-end">
+                  <Link
+                    to="/forgot-password"
+                    className="text-xs font-semibold text-blue-600 hover:underline"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
+              )}
 
               <Button type="submit" variant="primary" isLoading={loading} className="w-full">
                 {isLogin ? 'Login' : 'Register Customer Account'}
