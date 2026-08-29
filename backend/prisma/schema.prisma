@@ -1,0 +1,25 @@
+// Prisma Schema for Mobile-Adda Backend Foundation
+// Module 1: Database Foundation Setup
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  CUSTOMER
+}
+
+// User Role Reference Enum & Foundation Schema Placeholder
+model SystemHealthLog {
+  id        String   @id @default(uuid())
+  status    String
+  timestamp DateTime @default(now())
+
+  @@map("system_health_logs")
+}
