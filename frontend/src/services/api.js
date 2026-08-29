@@ -1,7 +1,13 @@
 import axios from 'axios';
 import { STORAGE_KEYS } from '../utils/constants';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+let rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+rawApiUrl = rawApiUrl.trim().replace(/\/$/, '');
+if (!rawApiUrl.endsWith('/api/v1')) {
+  rawApiUrl = `${rawApiUrl}/api/v1`;
+}
+
+const API_BASE_URL = rawApiUrl;
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -28,13 +34,13 @@ apiClient.interceptors.response.use(
   (error) => {
     const errorMessage =
       error.response?.data?.message || error.message || 'An unexpected network error occurred';
-    
+
     if (error.response?.status === 401) {
       // Clear token on 401 unauthorized
       localStorage.removeItem(STORAGE_KEYS.TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);
     }
-    
+
     return Promise.reject({
       status: error.response?.status || 500,
       message: errorMessage,

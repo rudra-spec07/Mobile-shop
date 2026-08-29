@@ -14,11 +14,33 @@ const { sendError } = require('./utils/response');
 const app = express();
 
 // Security HTTP Headers
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 
-// CORS Configuration
+// CORS Configuration — Dynamic and Production Safe
+const rawOrigins = env.CLIENT_URL || 'http://localhost:5173';
+const allowedOrigins = rawOrigins.split(',').map((url) => url.trim().replace(/\/$/, ''));
+
 const corsOptions = {
-  origin: env.CLIENT_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    // Allow server-to-server or non-browser tools (e.g. Postman, Mobile apps)
+    if (!origin) return callback(null, true);
+
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const isAllowed =
+      allowedOrigins.includes(normalizedOrigin) ||
+      allowedOrigins.includes('*') ||
+      normalizedOrigin.endsWith('.onrender.com') ||
+      normalizedOrigin.includes('localhost') ||
+      normalizedOrigin.includes('127.0.0.1');
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy blocked access for origin: ${origin}`));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
