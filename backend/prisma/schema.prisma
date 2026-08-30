@@ -95,6 +95,8 @@ model Mobile {
   @@index([name])
   @@index([status])
   @@index([featured])
+  @@index([price])
+  @@index([createdAt])
   @@map("mobiles")
 }
 
@@ -158,6 +160,8 @@ model Part {
   @@index([name])
   @@index([partNumber])
   @@index([status])
+  @@index([price])
+  @@index([createdAt])
   @@map("parts")
 }
 

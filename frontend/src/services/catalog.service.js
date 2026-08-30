@@ -24,7 +24,9 @@ export const catalogService = {
   getMobileImages: (mobileId) => apiClient.get(`/mobiles/${mobileId}/images`),
   addMobileImage: (mobileId, data) => apiClient.post(`/mobiles/${mobileId}/images`, data),
   setPrimaryImage: (mobileId, imageId) => apiClient.patch(`/mobiles/${mobileId}/images/${imageId}/primary`),
-  deleteMobileImage: (mobileId, imageId) => apiClient.delete(`/mobiles/${mobileId}/images/${imageId}`),
+  // Global Search & Metadata Services
+  globalSearch: (q, limit = 5) => apiClient.get('/search', { params: { q, limit } }),
+  getCatalogFilters: () => apiClient.get('/catalog/filters'),
 };
 
 export default catalogService;

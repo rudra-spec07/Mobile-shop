@@ -8,6 +8,7 @@ const mobileRoutes = require('./mobile.routes');
 const partCategoryRoutes = require('./partCategory.routes');
 const partRoutes = require('./part.routes');
 const inventoryRoutes = require('./inventory.routes');
+const catalogRoutes = require('./catalog.routes');
 
 const router = express.Router();
 
@@ -39,5 +40,8 @@ router.use('/mobiles', mobileRoutes);
 router.use('/part-categories', partCategoryRoutes);
 router.use('/parts', partRoutes);
 router.use('/inventory', inventoryRoutes);
+
+// Mount Module 5 Unified Search & Catalog Discovery Routes
+router.use('/', catalogRoutes);
 
 module.exports = router;

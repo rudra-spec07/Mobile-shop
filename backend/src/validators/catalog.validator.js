@@ -90,6 +90,48 @@ const addImageSchema = z.object({
   sortOrder: z.coerce.number().int().optional(),
 });
 
+// Query Validation Schemas for Search, Filtering & Sorting
+const getMobilesQuerySchema = z.object({
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(100).optional().default(10),
+  search: z.string().trim().optional(),
+  brandId: z.string().uuid().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'OUT_OF_STOCK']).optional(),
+  brandStatus: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+  featured: z.preprocess((val) => (val === 'true' ? true : val === 'false' ? false : val), z.boolean().optional()),
+  minPrice: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+  ram: z.string().trim().optional(),
+  storage: z.string().trim().optional(),
+  operatingSystem: z.string().trim().optional(),
+  network: z.string().trim().optional(),
+  simType: z.string().trim().optional(),
+  color: z.string().trim().optional(),
+  sort: z.string().trim().optional(),
+  sortBy: z.string().trim().optional(),
+  sortOrder: z.enum(['asc', 'desc', 'ASC', 'DESC']).optional(),
+});
+
+const getPartsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(100).optional().default(10),
+  search: z.string().trim().optional(),
+  categoryId: z.string().uuid().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+  stockStatus: z.enum(['IN_STOCK', 'LOW_STOCK', 'OUT_OF_STOCK']).optional(),
+  minPrice: z.coerce.number().min(0).optional(),
+  maxPrice: z.coerce.number().min(0).optional(),
+  sort: z.string().trim().optional(),
+  sortBy: z.string().trim().optional(),
+  sortOrder: z.enum(['asc', 'desc', 'ASC', 'DESC']).optional(),
+});
+
+const globalSearchQuerySchema = z.object({
+  q: z.string().trim().optional(),
+  search: z.string().trim().optional(),
+  limit: z.coerce.number().int().positive().max(50).optional().default(5),
+});
+
 module.exports = {
   createBrandSchema,
   updateBrandSchema,
@@ -99,4 +141,7 @@ module.exports = {
   updateMobileStatusSchema,
   updateFeaturedSchema,
   addImageSchema,
+  getMobilesQuerySchema,
+  getPartsQuerySchema,
+  globalSearchQuerySchema,
 };

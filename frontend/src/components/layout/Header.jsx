@@ -4,6 +4,7 @@ import { Smartphone, Bell, User, LogOut, Menu, X, Shield, KeyRound } from 'lucid
 import Navbar from '../navigation/Navbar';
 import Button from '../common/Button';
 import LogoutModal from '../common/LogoutModal';
+import GlobalSearchBar from '../search/GlobalSearchBar';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../utils/constants';
 
@@ -18,14 +19,17 @@ const Header = () => {
       {/* Reusable Logout Confirmation Modal */}
       <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl tracking-tight">
+        <Link to="/" className="flex items-center gap-2 text-blue-600 font-bold text-xl tracking-tight shrink-0">
           <div className="p-2 bg-blue-600 text-white rounded-lg shadow-sm">
             <Smartphone className="w-5 h-5" />
           </div>
           <span>Mobile-Adda</span>
         </Link>
+
+        {/* Global Search Bar (Desktop/Tablet) */}
+        <GlobalSearchBar className="hidden sm:block w-64 lg:w-80" />
 
         {/* Desktop Navbar */}
         <Navbar className="hidden md:flex" />

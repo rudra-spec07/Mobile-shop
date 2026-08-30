@@ -116,19 +116,103 @@ const getMobiles = async (query = {}, userRole = ROLES.CUSTOMER) => {
     }
   }
 
-  // Filters
+  // Brand Filter
   if (query.brandId) {
     where.brandId = query.brandId;
   }
+
+  // Featured Filter
   if (query.featured !== undefined) {
     where.featured = query.featured === 'true' || query.featured === true;
   }
+
+  // Specification Filters
+  if (query.ram) {
+    where.ram = { contains: query.ram.trim(), mode: 'insensitive' };
+  }
+  if (query.storage) {
+    where.storage = { contains: query.storage.trim(), mode: 'insensitive' };
+  }
+  if (query.operatingSystem) {
+    where.operatingSystem = { contains: query.operatingSystem.trim(), mode: 'insensitive' };
+  }
+  if (query.network) {
+    where.network = { contains: query.network.trim(), mode: 'insensitive' };
+  }
+  if (query.simType) {
+    where.simType = { contains: query.simType.trim(), mode: 'insensitive' };
+  }
+  if (query.color) {
+    where.color = { contains: query.color.trim(), mode: 'insensitive' };
+  }
+
+  // Price Range Filter
+  const minP = query.minPrice !== undefined ? Number(query.minPrice) : undefined;
+  const maxP = query.maxPrice !== undefined ? Number(query.maxPrice) : undefined;
+
+  if (!isNaN(minP) || !isNaN(maxP)) {
+    const priceFilter = {};
+    if (!isNaN(minP) && minP >= 0) priceFilter.gte = minP;
+    if (!isNaN(maxP) && maxP >= 0) priceFilter.lte = maxP;
+    where.price = priceFilter;
+  }
+
+  // Multi-field Search
   if (search) {
     where.OR = [
       { name: { contains: search, mode: 'insensitive' } },
       { modelNumber: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+      { processor: { contains: search, mode: 'insensitive' } },
+      { ram: { contains: search, mode: 'insensitive' } },
+      { storage: { contains: search, mode: 'insensitive' } },
+      { operatingSystem: { contains: search, mode: 'insensitive' } },
       { brand: { name: { contains: search, mode: 'insensitive' } } },
     ];
+  }
+
+  // Parse Sorting
+  let orderBy = { createdAt: 'desc' };
+  const sortParam = query.sort?.toLowerCase();
+  const sortByParam = query.sortBy?.toLowerCase();
+  const sortOrderParam = query.sortOrder?.toLowerCase() === 'asc' ? 'asc' : 'desc';
+
+  if (sortParam) {
+    switch (sortParam) {
+      case 'price_asc':
+        orderBy = { price: 'asc' };
+        break;
+      case 'price_desc':
+        orderBy = { price: 'desc' };
+        break;
+      case 'name_asc':
+        orderBy = { name: 'asc' };
+        break;
+      case 'name_desc':
+        orderBy = { name: 'desc' };
+        break;
+      case 'newest':
+      case 'createdat_desc':
+        orderBy = { createdAt: 'desc' };
+        break;
+      case 'oldest':
+      case 'createdat_asc':
+        orderBy = { createdAt: 'asc' };
+        break;
+      case 'featured':
+        orderBy = [{ featured: 'desc' }, { createdAt: 'desc' }];
+        break;
+      default:
+        orderBy = { createdAt: 'desc' };
+    }
+  } else if (sortByParam) {
+    if (sortByParam === 'price') {
+      orderBy = { price: sortOrderParam };
+    } else if (sortByParam === 'name') {
+      orderBy = { name: sortOrderParam };
+    } else if (sortByParam === 'createdat') {
+      orderBy = { createdAt: sortOrderParam };
+    }
   }
 
   const [total, mobiles] = await prisma.$transaction([
@@ -137,7 +221,7 @@ const getMobiles = async (query = {}, userRole = ROLES.CUSTOMER) => {
       where,
       skip,
       take: limit,
-      orderBy: { createdAt: 'desc' },
+      orderBy,
       include: {
         brand: {
           select: { id: true, name: true, slug: true, logoUrl: true, status: true },
@@ -155,6 +239,7 @@ const getMobiles = async (query = {}, userRole = ROLES.CUSTOMER) => {
       page,
       limit,
       total,
+      totalPages: Math.ceil(total / limit) || 1,
     },
   };
 };

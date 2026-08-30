@@ -102,7 +102,7 @@ const createPart = async (data, userId) => {
 };
 
 const getParts = async (query = {}, userRole = ROLES.CUSTOMER) => {
-  const { page, limit, skip } = parsePagination(query);
+  const { page, limit, skip } = parsePagination(query.page, query.limit);
 
   const where = {};
 
@@ -116,19 +116,82 @@ const getParts = async (query = {}, userRole = ROLES.CUSTOMER) => {
     where.categoryId = query.categoryId;
   }
 
+  // Price Range Filter
+  const minP = query.minPrice !== undefined ? Number(query.minPrice) : undefined;
+  const maxP = query.maxPrice !== undefined ? Number(query.maxPrice) : undefined;
+
+  if (!isNaN(minP) || !isNaN(maxP)) {
+    const priceFilter = {};
+    if (!isNaN(minP) && minP >= 0) priceFilter.gte = minP;
+    if (!isNaN(maxP) && maxP >= 0) priceFilter.lte = maxP;
+    where.price = priceFilter;
+  }
+
+  // Multi-field Search (including category name)
   if (query.search) {
+    const search = query.search.trim();
     where.OR = [
-      { name: { contains: query.search, mode: 'insensitive' } },
-      { partNumber: { contains: query.search, mode: 'insensitive' } },
-      { description: { contains: query.search, mode: 'insensitive' } },
+      { name: { contains: search, mode: 'insensitive' } },
+      { partNumber: { contains: search, mode: 'insensitive' } },
+      { description: { contains: search, mode: 'insensitive' } },
+      { category: { name: { contains: search, mode: 'insensitive' } } },
     ];
+  }
+
+  // Parse Sorting
+  let orderBy = { createdAt: 'desc' };
+  const sortParam = query.sort?.toLowerCase();
+  const sortByParam = query.sortBy?.toLowerCase();
+  const sortOrderParam = query.sortOrder?.toLowerCase() === 'asc' ? 'asc' : 'desc';
+
+  if (sortParam) {
+    switch (sortParam) {
+      case 'price_asc':
+        orderBy = { price: 'asc' };
+        break;
+      case 'price_desc':
+        orderBy = { price: 'desc' };
+        break;
+      case 'name_asc':
+        orderBy = { name: 'asc' };
+        break;
+      case 'name_desc':
+        orderBy = { name: 'desc' };
+        break;
+      case 'newest':
+      case 'createdat_desc':
+        orderBy = { createdAt: 'desc' };
+        break;
+      case 'oldest':
+      case 'createdat_asc':
+        orderBy = { createdAt: 'asc' };
+        break;
+      case 'quantity_asc':
+        orderBy = { quantity: 'asc' };
+        break;
+      case 'quantity_desc':
+        orderBy = { quantity: 'desc' };
+        break;
+      default:
+        orderBy = { createdAt: 'desc' };
+    }
+  } else if (sortByParam) {
+    if (sortByParam === 'price') {
+      orderBy = { price: sortOrderParam };
+    } else if (sortByParam === 'name') {
+      orderBy = { name: sortOrderParam };
+    } else if (sortByParam === 'quantity') {
+      orderBy = { quantity: sortOrderParam };
+    } else if (sortByParam === 'createdat') {
+      orderBy = { createdAt: sortOrderParam };
+    }
   }
 
   let rawParts = await prisma.part.findMany({
     where,
     skip: query.stockStatus ? undefined : skip,
     take: query.stockStatus ? undefined : limit,
-    orderBy: { createdAt: 'desc' },
+    orderBy,
     include: {
       category: true,
     },
@@ -136,7 +199,7 @@ const getParts = async (query = {}, userRole = ROLES.CUSTOMER) => {
 
   let formattedParts = rawParts.map((p) => (userRole === ROLES.SUPER_ADMIN ? formatPartForAdmin(p) : formatPartForCustomer(p)));
 
-  // If low-stock status filter is specified in query
+  // Filter by calculated stockStatus if specified
   if (query.stockStatus === 'LOW_STOCK') {
     formattedParts = formattedParts.filter((p) => p.stockStatus === 'LOW_STOCK');
   } else if (query.stockStatus === 'OUT_OF_STOCK') {
@@ -155,7 +218,12 @@ const getParts = async (query = {}, userRole = ROLES.CUSTOMER) => {
 
   return {
     parts: formattedParts,
-    pagination: { page, limit, total },
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit) || 1,
+    },
   };
 };
 
