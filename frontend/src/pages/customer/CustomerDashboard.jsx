@@ -74,7 +74,7 @@ const CustomerDashboard = () => {
             <Clock className="w-4 h-4 text-slate-500" />
             <h2 className="text-sm font-semibold text-slate-900">Recent Activity & Requests</h2>
           </div>
-          <Link to="/customer/requests" className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center">
+          <Link to="/customer/enquiries" className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center">
             View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
           </Link>
         </CardHeader>
@@ -94,7 +94,7 @@ const CustomerDashboard = () => {
                   <span>{act.date}</span>
                 </div>
               </div>
-              <Link to="/customer/requests" className="text-slate-400 hover:text-slate-600 p-1">
+              <Link to="/customer/enquiries" className="text-slate-400 hover:text-slate-600 p-1">
                 <ChevronRight className="w-5 h-5" />
               </Link>
             </div>

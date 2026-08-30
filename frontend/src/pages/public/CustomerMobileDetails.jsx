@@ -6,8 +6,8 @@ import MobileStatusBadge from '../../components/catalog/MobileStatusBadge';
 import Loader from '../../components/common/Loader';
 import ErrorState from '../../components/common/ErrorState';
 import Button from '../../components/common/Button';
-import Modal from '../../components/common/Modal';
 import catalogService from '../../services/catalog.service';
+import CreateEnquiryModal from '../../components/enquiry/CreateEnquiryModal';
 import {
   ArrowLeft,
   Smartphone,
@@ -242,40 +242,11 @@ const CustomerMobileDetails = () => {
       </div>
 
       {/* Inquiry Entry Point Modal */}
-      <Modal
+      <CreateEnquiryModal
         isOpen={isEnquiryModalOpen}
         onClose={() => setIsEnquiryModalOpen(false)}
-        title={`Inquire About ${mobile.name}`}
-        size="md"
-      >
-        <div className="space-y-4 text-center py-2">
-          <div className="p-3 bg-blue-50 rounded-full text-blue-600 w-12 h-12 mx-auto flex items-center justify-center">
-            <MessageSquare className="w-6 h-6" />
-          </div>
-          <div>
-            <h4 className="text-base font-bold text-slate-900">{mobile.name}</h4>
-            <p className="text-xs text-slate-500 mt-1">
-              Interested in purchasing or checking stock availability for this device?
-            </p>
-          </div>
-
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 text-left space-y-2 text-xs">
-            <p className="font-semibold text-slate-800">Shop Contact & Visit:</p>
-            <p className="text-slate-600">📍 Mobile-Adda Store, Main Market</p>
-            <p className="text-slate-600">📞 Phone: +91 98765 43210</p>
-            <p className="text-slate-600">✉️ Email: support@mobileadda.shop</p>
-          </div>
-
-          <Button
-            variant="primary"
-            size="md"
-            className="w-full justify-center"
-            onClick={() => setIsEnquiryModalOpen(false)}
-          >
-            Got It
-          </Button>
-        </div>
-      </Modal>
+        mobile={mobile}
+      />
     </CustomerLayout>
   );
 };

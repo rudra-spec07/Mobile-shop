@@ -20,6 +20,7 @@ import CustomerDashboard from '../pages/customer/CustomerDashboard';
 import CustomerPlaceholder from '../pages/customer/CustomerPlaceholder';
 import Profile from '../pages/customer/Profile';
 import ChangePassword from '../pages/customer/ChangePassword';
+import CustomerMyEnquiries from '../pages/customer/CustomerMyEnquiries';
 
 // Admin Pages
 import AdminDashboard from '../pages/admin/AdminDashboard';
@@ -27,6 +28,7 @@ import AdminMobileList from '../pages/admin/AdminMobileList';
 import AdminMobileDetails from '../pages/admin/AdminMobileDetails';
 import AdminPartsList from '../pages/admin/AdminPartsList';
 import AdminPartDetails from '../pages/admin/AdminPartDetails';
+import AdminEnquiryList from '../pages/admin/AdminEnquiryList';
 import InventoryDashboard from '../pages/admin/InventoryDashboard';
 import LowStockReport from '../pages/admin/LowStockReport';
 import AdminSettings from '../pages/admin/AdminSettings';
@@ -57,6 +59,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <RoleRoute allowedRoles={[ROLES.CUSTOMER, ROLES.SUPER_ADMIN]}>
               <CustomerDashboard />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer/enquiries"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.CUSTOMER, ROLES.SUPER_ADMIN]}>
+              <CustomerMyEnquiries />
             </RoleRoute>
           </ProtectedRoute>
         }
@@ -99,6 +111,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <AdminDashboard />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/enquiries"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminEnquiryList />
             </RoleRoute>
           </ProtectedRoute>
         }

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import PartStatusBadge from '../../components/parts/PartStatusBadge';
-import PartEnquiryModal from '../../components/parts/PartEnquiryModal';
+import CreateEnquiryModal from '../../components/enquiry/CreateEnquiryModal';
 import Loader from '../../components/common/Loader';
 import ErrorState from '../../components/common/ErrorState';
 import Button from '../../components/common/Button';
@@ -68,7 +68,7 @@ const CustomerPartDetails = () => {
         ) : (
           <>
             {/* Modal */}
-            <PartEnquiryModal
+            <CreateEnquiryModal
               isOpen={isEnquiryModalOpen}
               onClose={() => setIsEnquiryModalOpen(false)}
               part={part}

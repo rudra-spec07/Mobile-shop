@@ -9,6 +9,8 @@ const partCategoryRoutes = require('./partCategory.routes');
 const partRoutes = require('./part.routes');
 const inventoryRoutes = require('./inventory.routes');
 const catalogRoutes = require('./catalog.routes');
+const enquiryRoutes = require('./enquiry.routes');
+const adminEnquiryRoutes = require('./admin.enquiry.routes');
 
 const router = express.Router();
 
@@ -43,5 +45,9 @@ router.use('/inventory', inventoryRoutes);
 
 // Mount Module 5 Unified Search & Catalog Discovery Routes
 router.use('/', catalogRoutes);
+
+// Mount Module 6 Customer Interaction & Enquiry Management Routes
+router.use('/enquiries', enquiryRoutes);
+router.use('/admin/enquiries', adminEnquiryRoutes);
 
 module.exports = router;

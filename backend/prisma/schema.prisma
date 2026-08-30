@@ -39,6 +39,7 @@ model User {
   resetTokenExpiresAt DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
+  enquiries           Enquiry[]
 
   @@map("users")
 }
@@ -90,6 +91,7 @@ model Mobile {
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
   images          MobileImage[]
+  enquiries       Enquiry[]
 
   @@index([brandId])
   @@index([name])
@@ -155,6 +157,7 @@ model Part {
   createdAt    DateTime               @default(now())
   updatedAt    DateTime               @updatedAt
   transactions InventoryTransaction[]
+  enquiries    Enquiry[]
 
   @@index([categoryId])
   @@index([name])
@@ -180,4 +183,41 @@ model InventoryTransaction {
   @@index([partId])
   @@index([createdAt])
   @@map("inventory_transactions")
+}
+
+// ==========================================
+// Module 6: Customer Interaction & Enquiry Management
+// ==========================================
+
+enum EnquiryStatus {
+  NEW
+  IN_PROGRESS
+  RESPONDED
+  RESOLVED
+  CANCELLED
+}
+
+model Enquiry {
+  id            String        @id @default(uuid())
+  customerId    String
+  customer      User          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  mobileId      String?
+  mobile        Mobile?       @relation(fields: [mobileId], references: [id], onDelete: SetNull)
+  partId        String?
+  part          Part?         @relation(fields: [partId], references: [id], onDelete: SetNull)
+  subject       String
+  message       String
+  status        EnquiryStatus @default(NEW)
+  adminResponse String?
+  respondedAt   DateTime?
+  respondedBy   String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([customerId])
+  @@index([mobileId])
+  @@index([partId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("enquiries")
 }

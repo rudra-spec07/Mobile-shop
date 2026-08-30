@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Smartphone, Bell, User, LogOut, Menu, X, Shield, KeyRound } from 'lucide-react';
+import { Smartphone, Bell, User, LogOut, Menu, X, Shield, KeyRound, MessageSquare } from 'lucide-react';
 import Navbar from '../navigation/Navbar';
 import Button from '../common/Button';
 import LogoutModal from '../common/LogoutModal';
@@ -70,23 +70,43 @@ const Header = () => {
                     </div>
 
                     {role === ROLES.SUPER_ADMIN ? (
-                      <Link
-                        to="/admin"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
-                      >
-                        <Shield className="w-4 h-4 text-blue-600" />
-                        Admin Dashboard
-                      </Link>
+                      <>
+                        <Link
+                          to="/admin"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                        >
+                          <Shield className="w-4 h-4 text-blue-600" />
+                          Admin Dashboard
+                        </Link>
+                        <Link
+                          to="/admin/enquiries"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                        >
+                          <MessageSquare className="w-4 h-4 text-purple-600" />
+                          Enquiries Desk
+                        </Link>
+                      </>
                     ) : (
-                      <Link
-                        to="/customer"
-                        onClick={() => setIsUserDropdownOpen(false)}
-                        className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
-                      >
-                        <User className="w-4 h-4 text-blue-600" />
-                        Customer Dashboard
-                      </Link>
+                      <>
+                        <Link
+                          to="/customer"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                        >
+                          <User className="w-4 h-4 text-blue-600" />
+                          Customer Dashboard
+                        </Link>
+                        <Link
+                          to="/customer/enquiries"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                        >
+                          <MessageSquare className="w-4 h-4 text-blue-600" />
+                          My Inquiries
+                        </Link>
+                      </>
                     )}
 
                     <Link
