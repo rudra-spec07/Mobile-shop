@@ -9,6 +9,7 @@ const Select = ({
   className = '',
   required = false,
   placeholder = 'Select an option',
+  children,
   ...props
 }) => {
   const selectId = id || (label ? label.toLowerCase().replace(/\s+/g, '-') : undefined);
@@ -31,6 +32,7 @@ const Select = ({
         {...props}
       >
         {placeholder && <option value="">{placeholder}</option>}
+        {children}
         {options.map((option) => {
           const value = typeof option === 'object' ? option.value : option;
           const optLabel = typeof option === 'object' ? option.label : option;

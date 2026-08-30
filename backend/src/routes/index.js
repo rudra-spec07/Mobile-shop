@@ -5,6 +5,9 @@ const userRoutes = require('./user.routes');
 const adminUserRoutes = require('./admin.user.routes');
 const brandRoutes = require('./brand.routes');
 const mobileRoutes = require('./mobile.routes');
+const partCategoryRoutes = require('./partCategory.routes');
+const partRoutes = require('./part.routes');
+const inventoryRoutes = require('./inventory.routes');
 
 const router = express.Router();
 
@@ -31,5 +34,10 @@ router.use('/admin/users', adminUserRoutes);
 // Mount Module 3 Catalog Management Routes
 router.use('/brands', brandRoutes);
 router.use('/mobiles', mobileRoutes);
+
+// Mount Module 4 Parts & Inventory Management Routes
+router.use('/part-categories', partCategoryRoutes);
+router.use('/parts', partRoutes);
+router.use('/inventory', inventoryRoutes);
 
 module.exports = router;

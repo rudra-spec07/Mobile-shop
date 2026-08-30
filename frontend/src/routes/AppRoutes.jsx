@@ -8,6 +8,8 @@ import { ROLES } from '../utils/constants';
 import Home from '../pages/public/Home';
 import CustomerMobileCatalog from '../pages/public/CustomerMobileCatalog';
 import CustomerMobileDetails from '../pages/public/CustomerMobileDetails';
+import CustomerPartsCatalog from '../pages/public/CustomerPartsCatalog';
+import CustomerPartDetails from '../pages/public/CustomerPartDetails';
 import CatalogPlaceholder from '../pages/public/CatalogPlaceholder';
 import AuthPlaceholder from '../pages/public/AuthPlaceholder';
 import ForgotPassword from '../pages/public/ForgotPassword';
@@ -23,6 +25,10 @@ import ChangePassword from '../pages/customer/ChangePassword';
 import AdminDashboard from '../pages/admin/AdminDashboard';
 import AdminMobileList from '../pages/admin/AdminMobileList';
 import AdminMobileDetails from '../pages/admin/AdminMobileDetails';
+import AdminPartsList from '../pages/admin/AdminPartsList';
+import AdminPartDetails from '../pages/admin/AdminPartDetails';
+import InventoryDashboard from '../pages/admin/InventoryDashboard';
+import LowStockReport from '../pages/admin/LowStockReport';
 import AdminSettings from '../pages/admin/AdminSettings';
 import AdminPlaceholder from '../pages/admin/AdminPlaceholder';
 
@@ -37,8 +43,8 @@ const AppRoutes = () => {
       <Route path="/" element={<Home />} />
       <Route path="/mobiles" element={<CustomerMobileCatalog />} />
       <Route path="/mobiles/:id" element={<CustomerMobileDetails />} />
-      <Route path="/parts" element={<CatalogPlaceholder />} />
-      <Route path="/parts/:id" element={<CatalogPlaceholder />} />
+      <Route path="/parts" element={<CustomerPartsCatalog />} />
+      <Route path="/parts/:id" element={<CustomerPartDetails />} />
       <Route path="/login" element={<AuthPlaceholder />} />
       <Route path="/register" element={<AuthPlaceholder />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -113,6 +119,46 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <AdminMobileDetails />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/parts"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminPartsList />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/parts/:id"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminPartDetails />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/inventory"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <InventoryDashboard />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/inventory/low-stock"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <LowStockReport />
             </RoleRoute>
           </ProtectedRoute>
         }

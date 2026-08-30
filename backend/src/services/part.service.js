@@ -1,0 +1,255 @@
+const { prisma } = require('../config/database');
+const { AppError } = require('../middleware/error.middleware');
+const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
+const { parsePagination } = require('../utils/pagination');
+
+const calculateStockStatus = (quantity, minimumStock) => {
+  if (quantity === 0) return 'OUT_OF_STOCK';
+  if (quantity <= minimumStock) return 'LOW_STOCK';
+  return 'IN_STOCK';
+};
+
+const formatPartForCustomer = (part) => {
+  const stockStatus = calculateStockStatus(part.quantity, part.minimumStock);
+  return {
+    id: part.id,
+    name: part.name,
+    partNumber: part.partNumber,
+    description: part.description,
+    price: part.price,
+    inStock: part.quantity > 0,
+    stockStatus,
+    imageUrl: part.imageUrl,
+    category: part.category
+      ? {
+          id: part.category.id,
+          name: part.category.name,
+        }
+      : null,
+    createdAt: part.createdAt,
+  };
+};
+
+const formatPartForAdmin = (part) => {
+  const stockStatus = calculateStockStatus(part.quantity, part.minimumStock);
+  return {
+    ...part,
+    stockStatus,
+  };
+};
+
+const createPart = async (data, userId) => {
+  // Check category
+  const category = await prisma.partCategory.findUnique({
+    where: { id: data.categoryId },
+  });
+
+  if (!category) {
+    throw new AppError('Part category not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.PART_CATEGORY_NOT_FOUND);
+  }
+
+  if (category.status !== 'ACTIVE') {
+    throw new AppError('Cannot create part under an inactive category', HTTP_STATUS.BAD_REQUEST, ERROR_CODES.PART_CATEGORY_INACTIVE);
+  }
+
+  // Check part number
+  const existingPart = await prisma.part.findUnique({
+    where: { partNumber: data.partNumber },
+  });
+
+  if (existingPart) {
+    throw new AppError('Part with this part number already exists', HTTP_STATUS.CONFLICT, ERROR_CODES.PART_NUMBER_ALREADY_EXISTS);
+  }
+
+  const initialQuantity = data.quantity || 0;
+
+  // Execute in transaction if initial stock > 0
+  const result = await prisma.$transaction(async (tx) => {
+    const newPart = await tx.part.create({
+      data: {
+        categoryId: data.categoryId,
+        name: data.name,
+        partNumber: data.partNumber,
+        description: data.description || null,
+        price: data.price,
+        quantity: initialQuantity,
+        minimumStock: data.minimumStock || 0,
+        imageUrl: data.imageUrl || null,
+      },
+      include: {
+        category: true,
+      },
+    });
+
+    if (initialQuantity > 0) {
+      await tx.inventoryTransaction.create({
+        data: {
+          partId: newPart.id,
+          type: 'STOCK_IN',
+          quantity: initialQuantity,
+          previousQuantity: 0,
+          newQuantity: initialQuantity,
+          reason: 'Initial stock on part creation',
+          performedBy: userId || 'SYSTEM',
+        },
+      });
+    }
+
+    return newPart;
+  });
+
+  return formatPartForAdmin(result);
+};
+
+const getParts = async (query = {}, userRole = ROLES.CUSTOMER) => {
+  const { page, limit, skip } = parsePagination(query);
+
+  const where = {};
+
+  if (userRole !== ROLES.SUPER_ADMIN) {
+    where.status = 'ACTIVE';
+  } else if (query.status) {
+    where.status = query.status;
+  }
+
+  if (query.categoryId) {
+    where.categoryId = query.categoryId;
+  }
+
+  if (query.search) {
+    where.OR = [
+      { name: { contains: query.search, mode: 'insensitive' } },
+      { partNumber: { contains: query.search, mode: 'insensitive' } },
+      { description: { contains: query.search, mode: 'insensitive' } },
+    ];
+  }
+
+  let rawParts = await prisma.part.findMany({
+    where,
+    skip: query.stockStatus ? undefined : skip,
+    take: query.stockStatus ? undefined : limit,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      category: true,
+    },
+  });
+
+  let formattedParts = rawParts.map((p) => (userRole === ROLES.SUPER_ADMIN ? formatPartForAdmin(p) : formatPartForCustomer(p)));
+
+  // If low-stock status filter is specified in query
+  if (query.stockStatus === 'LOW_STOCK') {
+    formattedParts = formattedParts.filter((p) => p.stockStatus === 'LOW_STOCK');
+  } else if (query.stockStatus === 'OUT_OF_STOCK') {
+    formattedParts = formattedParts.filter((p) => p.stockStatus === 'OUT_OF_STOCK');
+  } else if (query.stockStatus === 'IN_STOCK') {
+    formattedParts = formattedParts.filter((p) => p.stockStatus === 'IN_STOCK');
+  }
+
+  let total;
+  if (query.stockStatus) {
+    total = formattedParts.length;
+    formattedParts = formattedParts.slice(skip, skip + limit);
+  } else {
+    total = await prisma.part.count({ where });
+  }
+
+  return {
+    parts: formattedParts,
+    pagination: { page, limit, total },
+  };
+};
+
+const getPartById = async (id, userRole = ROLES.CUSTOMER) => {
+  const part = await prisma.part.findUnique({
+    where: { id },
+    include: {
+      category: true,
+    },
+  });
+
+  if (!part) {
+    throw new AppError('Part not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.PART_NOT_FOUND);
+  }
+
+  if (userRole !== ROLES.SUPER_ADMIN && part.status !== 'ACTIVE') {
+    throw new AppError('Part not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.PART_NOT_FOUND);
+  }
+
+  return userRole === ROLES.SUPER_ADMIN ? formatPartForAdmin(part) : formatPartForCustomer(part);
+};
+
+const updatePart = async (id, data) => {
+  const part = await prisma.part.findUnique({ where: { id } });
+  if (!part) {
+    throw new AppError('Part not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.PART_NOT_FOUND);
+  }
+
+  if (data.categoryId && data.categoryId !== part.categoryId) {
+    const category = await prisma.partCategory.findUnique({
+      where: { id: data.categoryId },
+    });
+    if (!category) {
+      throw new AppError('Part category not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.PART_CATEGORY_NOT_FOUND);
+    }
+    if (category.status !== 'ACTIVE') {
+      throw new AppError('Cannot assign part to an inactive category', HTTP_STATUS.BAD_REQUEST, ERROR_CODES.PART_CATEGORY_INACTIVE);
+    }
+  }
+
+  if (data.partNumber && data.partNumber !== part.partNumber) {
+    const existingPart = await prisma.part.findUnique({
+      where: { partNumber: data.partNumber },
+    });
+    if (existingPart) {
+      throw new AppError('Part with this part number already exists', HTTP_STATUS.CONFLICT, ERROR_CODES.PART_NUMBER_ALREADY_EXISTS);
+    }
+  }
+
+  // Explicitly construct update data WITHOUT quantity field!
+  const updateData = {};
+  if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.partNumber !== undefined) updateData.partNumber = data.partNumber;
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.price !== undefined) updateData.price = data.price;
+  if (data.minimumStock !== undefined) updateData.minimumStock = data.minimumStock;
+  if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
+
+  const updatedPart = await prisma.part.update({
+    where: { id },
+    data: updateData,
+    include: {
+      category: true,
+    },
+  });
+
+  return formatPartForAdmin(updatedPart);
+};
+
+const updatePartStatus = async (id, status) => {
+  const part = await prisma.part.findUnique({ where: { id } });
+  if (!part) {
+    throw new AppError('Part not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.PART_NOT_FOUND);
+  }
+
+  const updatedPart = await prisma.part.update({
+    where: { id },
+    data: { status },
+    include: {
+      category: true,
+    },
+  });
+
+  return formatPartForAdmin(updatedPart);
+};
+
+module.exports = {
+  calculateStockStatus,
+  formatPartForCustomer,
+  formatPartForAdmin,
+  createPart,
+  getParts,
+  getPartById,
+  updatePart,
+  updatePartStatus,
+};

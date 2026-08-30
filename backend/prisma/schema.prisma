@@ -110,3 +110,70 @@ model MobileImage {
   @@index([mobileId])
   @@map("mobile_images")
 }
+
+// ==========================================
+// Module 4: Parts & Inventory Management
+// ==========================================
+
+enum PartCategoryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum InventoryTransactionType {
+  STOCK_IN
+  STOCK_OUT
+  ADJUSTMENT
+}
+
+model PartCategory {
+  id          String             @id @default(uuid())
+  name        String             @unique
+  description String?
+  status      PartCategoryStatus @default(ACTIVE)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  parts       Part[]
+
+  @@map("part_categories")
+}
+
+model Part {
+  id           String                 @id @default(uuid())
+  categoryId   String
+  category     PartCategory           @relation(fields: [categoryId], references: [id])
+  name         String
+  partNumber   String                 @unique
+  description  String?
+  price        Decimal                @db.Decimal(10, 2)
+  quantity     Int                    @default(0)
+  minimumStock Int                    @default(0)
+  imageUrl     String?
+  status       PartCategoryStatus     @default(ACTIVE)
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  transactions InventoryTransaction[]
+
+  @@index([categoryId])
+  @@index([name])
+  @@index([partNumber])
+  @@index([status])
+  @@map("parts")
+}
+
+model InventoryTransaction {
+  id               String                   @id @default(uuid())
+  partId           String
+  part             Part                     @relation(fields: [partId], references: [id], onDelete: Cascade)
+  type             InventoryTransactionType
+  quantity         Int
+  previousQuantity Int
+  newQuantity      Int
+  reason           String?
+  performedBy      String
+  createdAt        DateTime                 @default(now())
+
+  @@index([partId])
+  @@index([createdAt])
+  @@map("inventory_transactions")
+}
