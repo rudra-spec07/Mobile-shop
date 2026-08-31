@@ -10,8 +10,12 @@ const apiRoutes = require('./routes');
 const { errorHandler } = require('./middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES } = require('./utils/constants');
 const { sendError } = require('./utils/response');
+const { requestIdMiddleware } = require('./middleware/request-id.middleware');
 
 const app = express();
+
+// Request ID Correlation Middleware
+app.use(requestIdMiddleware);
 
 // Security HTTP Headers
 app.use(helmet({

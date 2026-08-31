@@ -420,6 +420,15 @@ const confirmRequest = async (requestId) => {
     emailData: { itemName, newStatus: 'CONFIRMED' },
   }).catch(() => {});
 
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    action: 'REQUEST_STATUS_CHANGE',
+    entityType: 'ServiceRequest',
+    entityId: updated.id,
+    oldValue: { status: 'PENDING' },
+    newValue: { status: 'CONFIRMED' },
+  });
+
   return formatRequest(updated, true);
 };
 
@@ -463,6 +472,15 @@ const processRequest = async (requestId) => {
     referenceType: 'SERVICE_REQUEST',
     emailData: { itemName, newStatus: 'PROCESSING' },
   }).catch(() => {});
+
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    action: 'REQUEST_STATUS_CHANGE',
+    entityType: 'ServiceRequest',
+    entityId: updated.id,
+    oldValue: { status: 'CONFIRMED' },
+    newValue: { status: 'PROCESSING' },
+  });
 
   return formatRequest(updated, true);
 };
@@ -513,6 +531,16 @@ const completeRequest = async (requestId, adminId) => {
     referenceType: 'SERVICE_REQUEST',
     emailData: { itemName, newStatus: 'COMPLETED' },
   }).catch(() => {});
+
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    userId: adminId,
+    action: 'REQUEST_STATUS_CHANGE',
+    entityType: 'ServiceRequest',
+    entityId: updated.id,
+    oldValue: { status: 'PROCESSING' },
+    newValue: { status: 'COMPLETED', processedBy: adminId },
+  });
 
   return formatRequest(updated, true);
 };
@@ -565,6 +593,15 @@ const adminCancelRequest = async (requestId, reason = null) => {
     referenceType: 'SERVICE_REQUEST',
     emailData: { itemName, newStatus: 'CANCELLED', adminNotes: reason },
   }).catch(() => {});
+
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    action: 'REQUEST_STATUS_CHANGE',
+    entityType: 'ServiceRequest',
+    entityId: updated.id,
+    oldValue: { status: request.status },
+    newValue: { status: 'CANCELLED', adminNotes: reason },
+  });
 
   return formatRequest(updated, true);
 };

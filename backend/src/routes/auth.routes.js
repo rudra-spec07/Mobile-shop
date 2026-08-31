@@ -6,7 +6,15 @@ const { authenticateToken } = require('../middleware/auth.middleware');
 const { registerSchema, loginSchema } = require('../validators/auth.validator');
 const { forgotPasswordSchema, resetPasswordSchema } = require('../validators/user.validator');
 
+const { createRateLimiter } = require('../middleware/rate-limit.middleware');
+
 const router = express.Router();
+
+const authRateLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Too many authentication attempts. Please try again after 15 minutes.',
+});
 
 /**
  * @openapi
@@ -28,7 +36,7 @@ router.post('/register', validate(registerSchema), authController.register);
  *     tags:
  *       - Authentication
  */
-router.post('/login', validate(loginSchema), authController.login);
+router.post('/login', authRateLimiter, validate(loginSchema), authController.login);
 
 /**
  * @openapi
@@ -50,7 +58,7 @@ router.post('/logout', userController.logout);
  *     tags:
  *       - Authentication
  */
-router.post('/forgot-password', validate(forgotPasswordSchema), userController.forgotPassword);
+router.post('/forgot-password', authRateLimiter, validate(forgotPasswordSchema), userController.forgotPassword);
 
 /**
  * @openapi
@@ -61,7 +69,7 @@ router.post('/forgot-password', validate(forgotPasswordSchema), userController.f
  *     tags:
  *       - Authentication
  */
-router.post('/reset-password', validate(resetPasswordSchema), userController.resetPassword);
+router.post('/reset-password', authRateLimiter, validate(resetPasswordSchema), userController.resetPassword);
 
 /**
  * @openapi

@@ -28,6 +28,7 @@ const Sidebar = ({ isOpen, onClose }) => {
     { label: 'Enquiries', path: '/admin/enquiries', icon: MessageSquare },
     { label: 'Orders & Requests', path: '/admin/requests', icon: FileText },
     { label: 'Notifications', path: '/admin/notifications', icon: Bell },
+    { label: 'Audit Logs', path: '/admin/audit-logs', icon: Shield },
     { label: 'Settings', path: '/admin/settings', icon: Settings },
   ];
 

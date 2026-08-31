@@ -1,5 +1,5 @@
 const express = require('express');
-const { getHealthStatus } = require('../controllers/health.controller');
+const { getHealthStatus, getDatabaseHealth } = require('../controllers/health.controller');
 const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const adminUserRoutes = require('./admin.user.routes');
@@ -28,6 +28,18 @@ const router = express.Router();
  *       - System
  */
 router.get('/health', getHealthStatus);
+
+/**
+ * @openapi
+ * /health/database:
+ *   get:
+ *     summary: Database Health Check
+ *     description: Verifies active connectivity with Neon PostgreSQL database.
+ *     tags:
+ *       - System
+ */
+router.get('/health/database', getDatabaseHealth);
+
 
 // Mount Authentication Domain Routes
 router.use('/auth', authRoutes);
@@ -60,6 +72,12 @@ router.use('/admin/requests', adminRequestRoutes);
 
 // Mount Module 8 Superadmin Dashboard & Management Routes
 router.use('/admin/dashboard', adminDashboardRoutes);
+
+const adminDashboardController = require('../controllers/admin-dashboard.controller');
+const { authenticateToken } = require('../middleware/auth.middleware');
+const { authorizeRoles } = require('../middleware/role.middleware');
+const { ROLES } = require('../utils/constants');
+router.get('/admin/audit-logs', authenticateToken, authorizeRoles(ROLES.SUPER_ADMIN), adminDashboardController.getAuditLogs);
 
 // Mount Module 9 Notifications & Communication Routes
 router.use('/notifications', notificationRoutes);

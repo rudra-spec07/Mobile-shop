@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { STORAGE_KEYS } from '../utils/constants';
 
 const AuthContext = createContext(null);
@@ -13,9 +13,12 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem(STORAGE_KEYS.TOKEN) || null;
   });
 
+  const [sessionExpiredMessage, setSessionExpiredMessage] = useState(null);
+
   const login = (userData, authToken) => {
     setUser(userData);
     setToken(authToken);
+    setSessionExpiredMessage(null);
     localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
     localStorage.setItem(STORAGE_KEYS.TOKEN, authToken);
   };
@@ -33,6 +36,18 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem(STORAGE_KEYS.TOKEN);
   };
 
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      logout();
+      setSessionExpiredMessage('Your session has expired. Please log in again.');
+    };
+
+    window.addEventListener('mobileadda:session-expired', handleSessionExpired);
+    return () => {
+      window.removeEventListener('mobileadda:session-expired', handleSessionExpired);
+    };
+  }, []);
+
   const isAuthenticated = Boolean(token && user);
   const role = user?.role || null;
 
@@ -43,6 +58,8 @@ export const AuthProvider = ({ children }) => {
         token,
         role,
         isAuthenticated,
+        sessionExpiredMessage,
+        setSessionExpiredMessage,
         login,
         updateUser,
         logout,

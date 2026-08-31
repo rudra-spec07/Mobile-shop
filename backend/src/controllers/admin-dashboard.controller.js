@@ -1,4 +1,5 @@
 const adminDashboardService = require('../services/admin-dashboard.service');
+const { getAuditLogs: fetchAuditLogs } = require('../services/audit.service');
 const { sendSuccess } = require('../utils/response');
 const { HTTP_STATUS } = require('../utils/constants');
 
@@ -56,9 +57,23 @@ const getAttentionItems = async (req, res, next) => {
   }
 };
 
+/**
+ * Controller for Audit Logs View
+ * Endpoint: GET /api/v1/admin/audit-logs
+ */
+const getAuditLogs = async (req, res, next) => {
+  try {
+    const result = await fetchAuditLogs(req.query);
+    return sendSuccess(res, 'Audit logs retrieved successfully', result, HTTP_STATUS.OK);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   getDashboard,
   getRecentEnquiries,
   getRecentRequests,
   getAttentionItems,
+  getAuditLogs,
 };

@@ -16,10 +16,15 @@ const AccessDenied = () => {
         <p className="text-sm text-slate-500 mb-6">
           You don't have permission to access this page. Please contact the administrator if you believe this is an error.
         </p>
-        <Button variant="secondary" onClick={() => navigate(-1)} className="w-full">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Go Back
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="secondary" onClick={() => navigate(-1)} className="flex-1">
+            <ArrowLeft className="w-4 h-4 mr-1.5" />
+            Go Back
+          </Button>
+          <Button variant="primary" onClick={() => navigate('/')} className="flex-1">
+            Go to Dashboard
+          </Button>
+        </div>
       </div>
     </div>
   );

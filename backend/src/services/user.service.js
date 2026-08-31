@@ -368,6 +368,15 @@ const adminUpdateUserStatus = async (id, data) => {
     },
   });
 
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    action: 'USER_STATUS_CHANGE',
+    entityType: 'User',
+    entityId: id,
+    oldValue: { isActive: targetUser.isActive },
+    newValue: { isActive: newStatus },
+  });
+
   return updatedUser;
 };
 

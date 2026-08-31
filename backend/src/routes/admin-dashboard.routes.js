@@ -57,4 +57,16 @@ router.get('/recent-requests', adminDashboardController.getRecentRequests);
  */
 router.get('/attention', adminDashboardController.getAttentionItems);
 
+/**
+ * @openapi
+ * /admin/dashboard/audit-logs:
+ *   get:
+ *     summary: Get system audit logs
+ *     tags:
+ *       - Admin Dashboard
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get('/audit-logs', adminDashboardController.getAuditLogs);
+
 module.exports = router;

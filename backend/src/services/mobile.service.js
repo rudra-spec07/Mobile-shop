@@ -393,6 +393,15 @@ const updateMobile = async (id, data) => {
     },
   });
 
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    action: 'MOBILE_UPDATE',
+    entityType: 'Mobile',
+    entityId: id,
+    oldValue: { name: mobile.name, price: Number(mobile.price), status: mobile.status },
+    newValue: { name: updatedMobile.name, price: Number(updatedMobile.price), status: updatedMobile.status },
+  });
+
   return updatedMobile;
 };
 
@@ -417,6 +426,15 @@ const updateMobileStatus = async (id, status) => {
         orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
       },
     },
+  });
+
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    action: 'MOBILE_STATUS_CHANGE',
+    entityType: 'Mobile',
+    entityId: id,
+    oldValue: { status: mobile.status },
+    newValue: { status: updatedMobile.status },
   });
 
   return updatedMobile;

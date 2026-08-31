@@ -14,6 +14,7 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 15000,
 });
 
 // Request Interceptor: Inject JWT Bearer token if present
@@ -28,23 +29,44 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Extract standard API payload & handle 401 unauthorized
+// Response Interceptor: Extract standard API payload & handle status normalization
 apiClient.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    const errorMessage =
-      error.response?.data?.message || error.message || 'An unexpected network error occurred';
+    const status = error.response?.status || 500;
+    const responseData = error.response?.data;
+    const isNetworkError = !error.response || error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED';
 
-    if (error.response?.status === 401) {
-      // Clear token on 401 unauthorized
+    let safeMessage = responseData?.message || error.message || 'An unexpected error occurred';
+
+    if (isNetworkError) {
+      safeMessage = 'Unable to connect to Mobile-Adda server. Please check your network connection.';
+    } else if (status === 401) {
+      // Clear token & user state on 401 unauthorized
       localStorage.removeItem(STORAGE_KEYS.TOKEN);
       localStorage.removeItem(STORAGE_KEYS.USER);
+
+      // Trigger session expired event if not an explicit login endpoint request
+      const isLoginRequest = error.config?.url?.includes('/auth/login');
+      if (!isLoginRequest && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('mobileadda:session-expired'));
+      }
+    } else if (status === 429) {
+      safeMessage = responseData?.message || 'Too many requests. Please try again after a few minutes.';
+    } else if (status === 503) {
+      safeMessage = 'Mobile-Adda service is temporarily unavailable for maintenance. Please try again shortly.';
     }
 
     return Promise.reject({
-      status: error.response?.status || 500,
-      message: errorMessage,
-      data: error.response?.data,
+      status: isNetworkError ? 503 : status,
+      message: safeMessage,
+      data: responseData,
+      errorCode: responseData?.errorCode || (isNetworkError ? 'NETWORK_ERROR' : 'API_ERROR'),
+      isNetworkError,
+      isRateLimit: status === 429,
+      isSessionExpired: status === 401,
+      isAccessDenied: status === 403,
+      isNotFound: status === 404,
     });
   }
 );

@@ -38,11 +38,13 @@ import LowStockReport from '../pages/admin/LowStockReport';
 import AdminSettings from '../pages/admin/AdminSettings';
 import AdminCustomerList from '../pages/admin/AdminCustomerList';
 import AdminNotifications from '../pages/admin/AdminNotifications';
+import AdminAuditLogs from '../pages/admin/AdminAuditLogs';
 import AdminPlaceholder from '../pages/admin/AdminPlaceholder';
 
 // Error Pages
 import NotFound from '../pages/error/NotFound';
 import AccessDenied from '../pages/error/AccessDenied';
+import ServiceUnavailable from '../pages/error/ServiceUnavailable';
 
 const AppRoutes = () => {
   return (
@@ -302,6 +304,16 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/admin/audit-logs"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminAuditLogs />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/:section"
         element={
           <ProtectedRoute>
@@ -314,6 +326,7 @@ const AppRoutes = () => {
 
       {/* Error & Fallback Routes */}
       <Route path="/access-denied" element={<AccessDenied />} />
+      <Route path="/service-unavailable" element={<ServiceUnavailable />} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

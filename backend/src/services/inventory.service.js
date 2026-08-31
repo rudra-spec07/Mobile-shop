@@ -43,6 +43,16 @@ const stockIn = async (partId, quantity, userId) => {
     return { part: updatedPart, transaction };
   });
 
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    userId,
+    action: 'STOCK_IN',
+    entityType: 'Part',
+    entityId: partId,
+    oldValue: { quantity: previousQuantity },
+    newValue: { quantity: newQuantity },
+  });
+
   return {
     part: formatPartForAdmin(result.part),
     transaction: result.transaction,
@@ -111,6 +121,16 @@ const stockOut = async (partId, quantity, userId) => {
     }).catch(() => {});
   }
 
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    userId,
+    action: 'STOCK_OUT',
+    entityType: 'Part',
+    entityId: partId,
+    oldValue: { quantity: previousQuantity },
+    newValue: { quantity: newQuantity },
+  });
+
   return {
     part: formatPartForAdmin(result.part),
     transaction: result.transaction,
@@ -174,6 +194,16 @@ const stockAdjustment = async (partId, newQuantity, reason, userId) => {
       }
     }).catch(() => {});
   }
+
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    userId,
+    action: 'STOCK_ADJUSTMENT',
+    entityType: 'Part',
+    entityId: partId,
+    oldValue: { quantity: previousQuantity },
+    newValue: { quantity: newQuantity, reason },
+  });
 
   return {
     part: formatPartForAdmin(result.part),
