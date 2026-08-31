@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import AdminLayout from '../../components/layout/AdminLayout';
 import Breadcrumb from '../../components/navigation/Breadcrumb';
 import Card, { CardBody, CardHeader } from '../../components/common/Card';
@@ -39,13 +40,25 @@ const formatCurrency = (val) => {
 };
 
 const AdminRequestList = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialStatus = searchParams.get('status') || '';
+
   const [requests, setRequests] = useState([]);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Synchronize statusFilter with URL searchParams if URL changes
+  useEffect(() => {
+    const urlStatus = searchParams.get('status') || '';
+    if (urlStatus !== statusFilter) {
+      setStatusFilter(urlStatus);
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
 
   // Selected request details modal state
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -78,7 +91,17 @@ const AdminRequestList = () => {
 
   useEffect(() => {
     fetchAdminRequests(currentPage, search, statusFilter);
-  }, [currentPage, statusFilter]);
+  }, [currentPage, search, statusFilter]);
+
+  const handleStatusFilterChange = (val) => {
+    setStatusFilter(val);
+    setCurrentPage(1);
+    if (val) {
+      setSearchParams({ status: val });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -254,10 +277,7 @@ const AdminRequestList = () => {
             {statusTabs.map((tab) => (
               <button
                 key={tab.value}
-                onClick={() => {
-                  setStatusFilter(tab.value);
-                  setCurrentPage(1);
-                }}
+                onClick={() => handleStatusFilterChange(tab.value)}
                 className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all whitespace-nowrap border ${
                   statusFilter === tab.value
                     ? 'bg-slate-900 text-white border-slate-900 shadow-sm'

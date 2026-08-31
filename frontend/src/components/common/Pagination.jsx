@@ -9,10 +9,10 @@ const Pagination = ({
   onPageChange,
   className = '',
 }) => {
-  if (totalResults === 0 || totalPages <= 1) return null;
+  if (totalPages <= 1) return null;
 
   const startRecord = (currentPage - 1) * limit + 1;
-  const endRecord = Math.min(currentPage * limit, totalResults);
+  const endRecord = totalResults > 0 ? Math.min(currentPage * limit, totalResults) : currentPage * limit;
 
   const getPageNumbers = () => {
     const pages = [];
@@ -34,11 +34,18 @@ const Pagination = ({
   return (
     <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-t border-slate-200 ${className}`}>
       {/* Range Counter */}
-      <p className="text-xs text-slate-600 font-medium">
-        Showing <span className="font-semibold text-slate-900">{startRecord}</span> to{' '}
-        <span className="font-semibold text-slate-900">{endRecord}</span> of{' '}
-        <span className="font-semibold text-slate-900">{totalResults}</span> results
-      </p>
+      {totalResults > 0 ? (
+        <p className="text-xs text-slate-600 font-medium">
+          Showing <span className="font-semibold text-slate-900">{startRecord}</span> to{' '}
+          <span className="font-semibold text-slate-900">{endRecord}</span> of{' '}
+          <span className="font-semibold text-slate-900">{totalResults}</span> results
+        </p>
+      ) : (
+        <p className="text-xs text-slate-600 font-medium">
+          Page <span className="font-semibold text-slate-900">{currentPage}</span> of{' '}
+          <span className="font-semibold text-slate-900">{totalPages}</span>
+        </p>
+      )}
 
       {/* Page Navigation Buttons */}
       <div className="flex items-center gap-1.5">

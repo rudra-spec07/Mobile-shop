@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import AdminLayout from '../../components/layout/AdminLayout';
 import Breadcrumb from '../../components/navigation/Breadcrumb';
 import Button from '../../components/common/Button';
@@ -14,14 +15,26 @@ import enquiryService from '../../services/enquiry.service';
 import { MessageSquare, Search, Filter, Smartphone, Wrench, Eye, Edit3, Sliders, RefreshCw, User, Mail, Phone } from 'lucide-react';
 
 const AdminEnquiryList = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialStatus = searchParams.get('status') || '';
+
   const [enquiries, setEnquiries] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Synchronize statusFilter with URL searchParams if URL changes
+  useEffect(() => {
+    const urlStatus = searchParams.get('status') || '';
+    if (urlStatus !== statusFilter) {
+      setStatusFilter(urlStatus);
+      setCurrentPage(1);
+    }
+  }, [searchParams]);
 
   // Modals state
   const [selectedEnquiry, setSelectedEnquiry] = useState(null);
@@ -51,6 +64,16 @@ const AdminEnquiryList = () => {
     fetchAdminEnquiries(currentPage, searchTerm, statusFilter);
   }, [currentPage, statusFilter]);
 
+  const handleStatusFilterChange = (st) => {
+    setStatusFilter(st);
+    setCurrentPage(1);
+    if (st) {
+      setSearchParams({ status: st });
+    } else {
+      setSearchParams({});
+    }
+  };
+
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setCurrentPage(1);
@@ -61,6 +84,7 @@ const AdminEnquiryList = () => {
     setSearchTerm('');
     setStatusFilter('');
     setCurrentPage(1);
+    setSearchParams({});
     fetchAdminEnquiries(1, '', '');
   };
 
@@ -128,7 +152,7 @@ const AdminEnquiryList = () => {
           <div className="flex items-center gap-2 overflow-x-auto">
             <span className="text-xs font-semibold text-slate-500 mr-1">Status:</span>
             <button
-              onClick={() => { setStatusFilter(''); setCurrentPage(1); }}
+              onClick={() => handleStatusFilterChange('')}
               className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
                 !statusFilter ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
@@ -138,7 +162,7 @@ const AdminEnquiryList = () => {
             {['NEW', 'IN_PROGRESS', 'RESPONDED', 'RESOLVED', 'CANCELLED'].map((st) => (
               <button
                 key={st}
-                onClick={() => { setStatusFilter(st); setCurrentPage(1); }}
+                onClick={() => handleStatusFilterChange(st)}
                 className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${
                   statusFilter === st ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                 }`}

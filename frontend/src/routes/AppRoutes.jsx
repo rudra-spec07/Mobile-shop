@@ -35,6 +35,7 @@ import AdminRequestList from '../pages/admin/AdminRequestList';
 import InventoryDashboard from '../pages/admin/InventoryDashboard';
 import LowStockReport from '../pages/admin/LowStockReport';
 import AdminSettings from '../pages/admin/AdminSettings';
+import AdminCustomerList from '../pages/admin/AdminCustomerList';
 import AdminPlaceholder from '../pages/admin/AdminPlaceholder';
 
 // Error Pages
@@ -224,6 +225,26 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <LowStockReport />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/customers"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminCustomerList />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminCustomerList />
             </RoleRoute>
           </ProtectedRoute>
         }

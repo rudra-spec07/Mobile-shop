@@ -13,6 +13,7 @@ const enquiryRoutes = require('./enquiry.routes');
 const adminEnquiryRoutes = require('./admin.enquiry.routes');
 const requestRoutes = require('./request.routes');
 const adminRequestRoutes = require('./admin.request.routes');
+const adminDashboardRoutes = require('./admin-dashboard.routes');
 
 const router = express.Router();
 
@@ -55,5 +56,8 @@ router.use('/admin/enquiries', adminEnquiryRoutes);
 // Mount Module 7 Orders / Service Requests Management Routes
 router.use('/requests', requestRoutes);
 router.use('/admin/requests', adminRequestRoutes);
+
+// Mount Module 8 Superadmin Dashboard & Management Routes
+router.use('/admin/dashboard', adminDashboardRoutes);
 
 module.exports = router;

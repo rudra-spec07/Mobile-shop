@@ -197,6 +197,7 @@ const updateUserProfile = async (userId, data) => {
 const getAdminUsers = async (query) => {
   const { page, limit, skip } = parsePagination(query);
   const search = query.search ? query.search.trim() : null;
+  const status = query.status ? query.status.trim().toUpperCase() : null;
 
   const whereClause = {};
 
@@ -206,6 +207,14 @@ const getAdminUsers = async (query) => {
       { email: { contains: search, mode: 'insensitive' } },
       { mobileNumber: { contains: search, mode: 'insensitive' } },
     ];
+  }
+
+  if (status) {
+    if (status === 'ACTIVE') {
+      whereClause.isActive = true;
+    } else if (status === 'INACTIVE') {
+      whereClause.isActive = false;
+    }
   }
 
   const [users, total] = await Promise.all([
@@ -220,6 +229,12 @@ const getAdminUsers = async (query) => {
         isActive: true,
         createdAt: true,
         updatedAt: true,
+        _count: {
+          select: {
+            enquiries: true,
+            requests: true,
+          },
+        },
       },
       skip,
       take: limit,
@@ -253,6 +268,12 @@ const getAdminUserById = async (id) => {
       isActive: true,
       createdAt: true,
       updatedAt: true,
+      _count: {
+        select: {
+          enquiries: true,
+          requests: true,
+        },
+      },
     },
   });
 
