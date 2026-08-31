@@ -40,6 +40,7 @@ model User {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   enquiries           Enquiry[]
+  requests            ServiceRequest[]
 
   @@map("users")
 }
@@ -92,6 +93,7 @@ model Mobile {
   updatedAt       DateTime     @updatedAt
   images          MobileImage[]
   enquiries       Enquiry[]
+  requests        ServiceRequest[]
 
   @@index([brandId])
   @@index([name])
@@ -158,6 +160,7 @@ model Part {
   updatedAt    DateTime               @updatedAt
   transactions InventoryTransaction[]
   enquiries    Enquiry[]
+  requests     ServiceRequest[]
 
   @@index([categoryId])
   @@index([name])
@@ -221,3 +224,46 @@ model Enquiry {
   @@index([createdAt])
   @@map("enquiries")
 }
+
+// ==========================================
+// Module 7: Orders / Service Requests Management
+// ==========================================
+
+enum RequestStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+model ServiceRequest {
+  id                    String        @id @default(uuid())
+  customerId            String
+  customer              User          @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  mobileId              String?
+  mobile                Mobile?       @relation(fields: [mobileId], references: [id], onDelete: SetNull)
+  partId                String?
+  part                  Part?         @relation(fields: [partId], references: [id], onDelete: SetNull)
+  quantity              Int           @default(1)
+  price                 Decimal?      @db.Decimal(10, 2)
+  subject               String?
+  notes                 String?
+  status                RequestStatus @default(PENDING)
+  cancellationRequested Boolean       @default(false)
+  cancellationReason    String?
+  adminNotes            String?
+  processedBy           String?
+  processedAt           DateTime?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([cancellationRequested])
+  @@index([mobileId])
+  @@index([partId])
+  @@index([createdAt])
+  @@map("service_requests")
+}
+

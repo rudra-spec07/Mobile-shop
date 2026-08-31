@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Smartphone, Bell, User, LogOut, Menu, X, Shield, KeyRound, MessageSquare } from 'lucide-react';
+import { Smartphone, Bell, User, LogOut, Menu, X, Shield, KeyRound, MessageSquare, ShoppingBag, FileText } from 'lucide-react';
 import Navbar from '../navigation/Navbar';
 import Button from '../common/Button';
 import LogoutModal from '../common/LogoutModal';
@@ -80,6 +80,14 @@ const Header = () => {
                           Admin Dashboard
                         </Link>
                         <Link
+                          to="/admin/requests"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                        >
+                          <FileText className="w-4 h-4 text-emerald-600" />
+                          Orders & Requests
+                        </Link>
+                        <Link
                           to="/admin/enquiries"
                           onClick={() => setIsUserDropdownOpen(false)}
                           className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
@@ -97,6 +105,14 @@ const Header = () => {
                         >
                           <User className="w-4 h-4 text-blue-600" />
                           Customer Dashboard
+                        </Link>
+                        <Link
+                          to="/customer/requests"
+                          onClick={() => setIsUserDropdownOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                        >
+                          <ShoppingBag className="w-4 h-4 text-emerald-600" />
+                          My Orders & Requests
                         </Link>
                         <Link
                           to="/customer/enquiries"

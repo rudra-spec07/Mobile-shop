@@ -21,6 +21,8 @@ import CustomerPlaceholder from '../pages/customer/CustomerPlaceholder';
 import Profile from '../pages/customer/Profile';
 import ChangePassword from '../pages/customer/ChangePassword';
 import CustomerMyEnquiries from '../pages/customer/CustomerMyEnquiries';
+import CustomerMyRequests from '../pages/customer/CustomerMyRequests';
+import CustomerRequestDetails from '../pages/customer/CustomerRequestDetails';
 
 // Admin Pages
 import AdminDashboard from '../pages/admin/AdminDashboard';
@@ -29,6 +31,7 @@ import AdminMobileDetails from '../pages/admin/AdminMobileDetails';
 import AdminPartsList from '../pages/admin/AdminPartsList';
 import AdminPartDetails from '../pages/admin/AdminPartDetails';
 import AdminEnquiryList from '../pages/admin/AdminEnquiryList';
+import AdminRequestList from '../pages/admin/AdminRequestList';
 import InventoryDashboard from '../pages/admin/InventoryDashboard';
 import LowStockReport from '../pages/admin/LowStockReport';
 import AdminSettings from '../pages/admin/AdminSettings';
@@ -69,6 +72,26 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <RoleRoute allowedRoles={[ROLES.CUSTOMER, ROLES.SUPER_ADMIN]}>
               <CustomerMyEnquiries />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer/requests"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.CUSTOMER, ROLES.SUPER_ADMIN]}>
+              <CustomerMyRequests />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customer/requests/:id"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.CUSTOMER, ROLES.SUPER_ADMIN]}>
+              <CustomerRequestDetails />
             </RoleRoute>
           </ProtectedRoute>
         }
@@ -121,6 +144,26 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <AdminEnquiryList />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/requests"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminRequestList />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/orders"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminRequestList />
             </RoleRoute>
           </ProtectedRoute>
         }

@@ -10,10 +10,10 @@ const CustomerDashboard = () => {
   const { user } = useAuth();
 
   const stats = [
-    { label: 'Mobiles Available', value: '45+', icon: Smartphone, color: 'text-blue-600 bg-blue-50' },
-    { label: 'Parts Available', value: '120+', icon: Wrench, color: 'text-purple-600 bg-purple-50' },
-    { label: 'My Enquiries', value: '2', icon: MessageSquare, color: 'text-amber-600 bg-amber-50' },
-    { label: 'Active Requests', value: '1', icon: FileText, color: 'text-emerald-600 bg-emerald-50' },
+    { label: 'Mobiles Available', value: '45+', icon: Smartphone, color: 'text-blue-600 bg-blue-50', link: '/mobiles' },
+    { label: 'Parts Available', value: '120+', icon: Wrench, color: 'text-purple-600 bg-purple-50', link: '/parts' },
+    { label: 'My Enquiries', value: 'Enquiries', icon: MessageSquare, color: 'text-amber-600 bg-amber-50', link: '/customer/enquiries' },
+    { label: 'Active Requests', value: 'Orders', icon: FileText, color: 'text-emerald-600 bg-emerald-50', link: '/customer/requests' },
   ];
 
   const recentActivities = [
@@ -52,17 +52,19 @@ const CustomerDashboard = () => {
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <Card key={idx}>
-              <CardBody className="p-4 sm:p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-medium text-slate-500">{stat.label}</p>
-                  <p className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
-                </div>
-                <div className={`p-2.5 rounded-xl ${stat.color}`}>
-                  <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                </div>
-              </CardBody>
-            </Card>
+            <Link key={idx} to={stat.link}>
+              <Card className="hover:shadow-md transition-shadow">
+                <CardBody className="p-4 sm:p-5 flex items-center justify-between">
+                  <div>
+                    <p className="text-xs font-medium text-slate-500">{stat.label}</p>
+                    <p className="text-lg sm:text-xl font-bold text-slate-900 mt-1">{stat.value}</p>
+                  </div>
+                  <div className={`p-2.5 rounded-xl ${stat.color}`}>
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </div>
+                </CardBody>
+              </Card>
+            </Link>
           );
         })}
       </div>

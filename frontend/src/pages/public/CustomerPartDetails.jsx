@@ -4,11 +4,12 @@ import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import PartStatusBadge from '../../components/parts/PartStatusBadge';
 import CreateEnquiryModal from '../../components/enquiry/CreateEnquiryModal';
+import CreateRequestModal from '../../components/request/CreateRequestModal';
 import Loader from '../../components/common/Loader';
 import ErrorState from '../../components/common/ErrorState';
 import Button from '../../components/common/Button';
 import partsService from '../../services/parts.service';
-import { ArrowLeft, Wrench, MessageSquare, ShieldCheck, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Wrench, MessageSquare, ShieldCheck, CheckCircle2, AlertCircle, ShoppingBag } from 'lucide-react';
 
 const CustomerPartDetails = () => {
   const { id } = useParams();
@@ -18,6 +19,7 @@ const CustomerPartDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
 
   useEffect(() => {
     fetchPartDetails();
@@ -162,12 +164,22 @@ const CustomerPartDetails = () => {
                   </div>
                 </div>
 
-                {/* Primary Action Button */}
-                <div className="pt-6 border-t border-slate-100">
+                {/* Action Buttons */}
+                <div className="pt-6 border-t border-slate-100 space-y-3">
                   <Button
                     variant="primary"
                     size="lg"
-                    className="w-full flex items-center justify-center gap-2"
+                    className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                    onClick={() => setIsRequestModalOpen(true)}
+                  >
+                    <ShoppingBag className="w-5 h-5" />
+                    <span>Request Spare Part</span>
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full flex items-center justify-center gap-2 border-slate-300 text-slate-700"
                     onClick={() => setIsEnquiryModalOpen(true)}
                   >
                     <MessageSquare className="w-5 h-5" />
@@ -176,6 +188,13 @@ const CustomerPartDetails = () => {
                 </div>
               </div>
             </div>
+
+            {/* Request Entry Point Modal */}
+            <CreateRequestModal
+              isOpen={isRequestModalOpen}
+              onClose={() => setIsRequestModalOpen(false)}
+              part={part}
+            />
           </>
         )}
       </main>

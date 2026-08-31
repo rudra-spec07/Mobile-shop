@@ -8,6 +8,7 @@ import ErrorState from '../../components/common/ErrorState';
 import Button from '../../components/common/Button';
 import catalogService from '../../services/catalog.service';
 import CreateEnquiryModal from '../../components/enquiry/CreateEnquiryModal';
+import CreateRequestModal from '../../components/request/CreateRequestModal';
 import {
   ArrowLeft,
   Smartphone,
@@ -20,6 +21,7 @@ import {
   Palette,
   MessageSquare,
   ShieldCheck,
+  ShoppingBag,
 } from 'lucide-react';
 
 const formatCurrency = (val) => {
@@ -37,6 +39,7 @@ const CustomerMobileDetails = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
 
   const fetchMobileDetails = async () => {
     setIsLoading(true);
@@ -196,7 +199,17 @@ const CustomerMobileDetails = () => {
               <Button
                 variant="primary"
                 size="lg"
-                className="w-full justify-center text-sm font-bold bg-blue-600 hover:bg-blue-700 shadow-md py-3"
+                className="w-full justify-center text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md py-3"
+                onClick={() => setIsRequestModalOpen(true)}
+              >
+                <ShoppingBag className="w-4 h-4 mr-2" />
+                Request Device Purchase
+              </Button>
+
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full justify-center text-sm font-bold border-slate-300 text-slate-700 hover:bg-slate-50 py-3"
                 onClick={() => setIsEnquiryModalOpen(true)}
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
@@ -240,6 +253,13 @@ const CustomerMobileDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Request Entry Point Modal */}
+      <CreateRequestModal
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+        mobile={mobile}
+      />
 
       {/* Inquiry Entry Point Modal */}
       <CreateEnquiryModal
