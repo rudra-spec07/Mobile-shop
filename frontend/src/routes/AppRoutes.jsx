@@ -23,6 +23,7 @@ import ChangePassword from '../pages/customer/ChangePassword';
 import CustomerMyEnquiries from '../pages/customer/CustomerMyEnquiries';
 import CustomerMyRequests from '../pages/customer/CustomerMyRequests';
 import CustomerRequestDetails from '../pages/customer/CustomerRequestDetails';
+import CustomerNotifications from '../pages/customer/CustomerNotifications';
 
 // Admin Pages
 import AdminDashboard from '../pages/admin/AdminDashboard';
@@ -36,6 +37,7 @@ import InventoryDashboard from '../pages/admin/InventoryDashboard';
 import LowStockReport from '../pages/admin/LowStockReport';
 import AdminSettings from '../pages/admin/AdminSettings';
 import AdminCustomerList from '../pages/admin/AdminCustomerList';
+import AdminNotifications from '../pages/admin/AdminNotifications';
 import AdminPlaceholder from '../pages/admin/AdminPlaceholder';
 
 // Error Pages
@@ -108,6 +110,16 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/customer/notifications"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.CUSTOMER, ROLES.SUPER_ADMIN]}>
+              <CustomerNotifications />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/customer/change-password"
         element={
           <ProtectedRoute>
@@ -135,6 +147,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
               <AdminDashboard />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/notifications"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
+              <AdminNotifications />
             </RoleRoute>
           </ProtectedRoute>
         }

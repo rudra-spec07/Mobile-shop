@@ -2,6 +2,7 @@ const { prisma } = require('../config/database');
 const { parsePagination } = require('../utils/pagination');
 const AppError = require('../middleware/error.middleware').AppError;
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
+const notificationService = require('./notification.service');
 
 /**
  * Helper to format ServiceRequest response payload.
@@ -111,6 +112,38 @@ const createRequest = async (data, customerId) => {
     },
   });
 
+  // Trigger Notifications (Failure Isolated)
+  const itemName = request.mobile?.name || request.part?.name || 'Service Item';
+  notificationService.createNotification({
+    userId: customerId,
+    type: 'REQUEST_CREATED',
+    channel: 'EMAIL',
+    title: `Service Request Submitted: "${itemName}"`,
+    message: `Your request for ${itemName} has been created and is pending confirmation.`,
+    referenceId: request.id,
+    referenceType: 'SERVICE_REQUEST',
+    emailData: {
+      subject: request.subject,
+      itemName,
+      quantity: request.quantity,
+      price: request.price,
+    },
+  }).catch(() => {});
+
+  notificationService.getSuperAdminUserId().then((admin) => {
+    if (admin) {
+      notificationService.createNotification({
+        userId: admin.id,
+        type: 'REQUEST_CREATED',
+        channel: 'SYSTEM',
+        title: 'New Service Request Received',
+        message: `New service request from ${request.customer?.name || 'Customer'} for ${itemName}`,
+        referenceId: request.id,
+        referenceType: 'SERVICE_REQUEST',
+      }).catch(() => {});
+    }
+  }).catch(() => {});
+
   return formatRequest(request, false);
 };
 
@@ -218,6 +251,22 @@ const cancelCustomerRequest = async (requestId, customerId, reason = null) => {
         part: { select: { id: true, name: true, partNumber: true, price: true, quantity: true, status: true } },
       },
     });
+
+    // Trigger System Notification to Super Admin (Failure Isolated)
+    const itemName = updated.mobile?.name || updated.part?.name || 'Service Request';
+    notificationService.getSuperAdminUserId().then((admin) => {
+      if (admin) {
+        notificationService.createNotification({
+          userId: admin.id,
+          type: 'CANCELLATION_REQUESTED',
+          channel: 'SYSTEM',
+          title: `Cancellation Requested: "${itemName}"`,
+          message: `Customer ${updated.customer?.name || 'Customer'} requested cancellation for ${itemName}.${reason ? ` Reason: "${reason.trim()}"` : ''}`,
+          referenceId: updated.id,
+          referenceType: 'SERVICE_REQUEST',
+        }).catch(() => {});
+      }
+    }).catch(() => {});
 
     return formatRequest(updated, false);
   }
@@ -359,6 +408,18 @@ const confirmRequest = async (requestId) => {
     },
   });
 
+  const itemName = updated.mobile?.name || updated.part?.name || 'Service Item';
+  notificationService.createNotification({
+    userId: updated.customerId,
+    type: 'REQUEST_CONFIRMED',
+    channel: 'EMAIL',
+    title: `Request Confirmed: "${itemName}"`,
+    message: `Your service request for ${itemName} has been confirmed.`,
+    referenceId: updated.id,
+    referenceType: 'SERVICE_REQUEST',
+    emailData: { itemName, newStatus: 'CONFIRMED' },
+  }).catch(() => {});
+
   return formatRequest(updated, true);
 };
 
@@ -390,6 +451,18 @@ const processRequest = async (requestId) => {
       part: { select: { id: true, name: true, partNumber: true, price: true, quantity: true, status: true } },
     },
   });
+
+  const itemName = updated.mobile?.name || updated.part?.name || 'Service Item';
+  notificationService.createNotification({
+    userId: updated.customerId,
+    type: 'REQUEST_PROCESSING',
+    channel: 'EMAIL',
+    title: `Request In Processing: "${itemName}"`,
+    message: `Your service request for ${itemName} is now in processing.`,
+    referenceId: updated.id,
+    referenceType: 'SERVICE_REQUEST',
+    emailData: { itemName, newStatus: 'PROCESSING' },
+  }).catch(() => {});
 
   return formatRequest(updated, true);
 };
@@ -429,6 +502,18 @@ const completeRequest = async (requestId, adminId) => {
     },
   });
 
+  const itemName = updated.mobile?.name || updated.part?.name || 'Service Item';
+  notificationService.createNotification({
+    userId: updated.customerId,
+    type: 'REQUEST_COMPLETED',
+    channel: 'EMAIL',
+    title: `Request Completed: "${itemName}"`,
+    message: `Your service request for ${itemName} has been marked COMPLETED.`,
+    referenceId: updated.id,
+    referenceType: 'SERVICE_REQUEST',
+    emailData: { itemName, newStatus: 'COMPLETED' },
+  }).catch(() => {});
+
   return formatRequest(updated, true);
 };
 
@@ -460,6 +545,7 @@ const adminCancelRequest = async (requestId, reason = null) => {
       status: 'CANCELLED',
       cancellationRequested: false,
       adminNotes: reason ? reason.trim() : request.adminNotes,
+      cancellationReason: reason ? reason.trim() : request.cancellationReason,
     },
     include: {
       customer: { select: { id: true, name: true, email: true, mobileNumber: true } },
@@ -467,6 +553,18 @@ const adminCancelRequest = async (requestId, reason = null) => {
       part: { select: { id: true, name: true, partNumber: true, price: true, quantity: true, status: true } },
     },
   });
+
+  const itemName = updated.mobile?.name || updated.part?.name || 'Service Item';
+  notificationService.createNotification({
+    userId: updated.customerId,
+    type: 'REQUEST_CANCELLED',
+    channel: 'EMAIL',
+    title: `Request Cancelled: "${itemName}"`,
+    message: `Your service request for ${itemName} has been CANCELLED.`,
+    referenceId: updated.id,
+    referenceType: 'SERVICE_REQUEST',
+    emailData: { itemName, newStatus: 'CANCELLED', adminNotes: reason },
+  }).catch(() => {});
 
   return formatRequest(updated, true);
 };
@@ -481,11 +579,20 @@ const rejectCancellationRequest = async (requestId, adminNotes = null) => {
     throw new AppError('Request not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.REQUEST_NOT_FOUND);
   }
 
+  const trimmedNotes = typeof adminNotes === 'string' ? adminNotes.trim() : '';
+  if (!trimmedNotes) {
+    throw new AppError('Please provide a reason for rejecting the cancellation request.', HTTP_STATUS.BAD_REQUEST, ERROR_CODES.VALIDATION_ERROR);
+  }
+
+  if (trimmedNotes.length > 500) {
+    throw new AppError('Rejection reason cannot exceed 500 characters', HTTP_STATUS.BAD_REQUEST, ERROR_CODES.VALIDATION_ERROR);
+  }
+
   const updated = await prisma.serviceRequest.update({
     where: { id: requestId },
     data: {
       cancellationRequested: false,
-      adminNotes: adminNotes ? adminNotes.trim() : request.adminNotes,
+      adminNotes: trimmedNotes,
     },
     include: {
       customer: { select: { id: true, name: true, email: true, mobileNumber: true } },
@@ -493,6 +600,23 @@ const rejectCancellationRequest = async (requestId, adminNotes = null) => {
       part: { select: { id: true, name: true, partNumber: true, price: true, quantity: true, status: true } },
     },
   });
+
+  // Trigger Notification for Customer (Failure Isolated)
+  const itemName = updated.mobile?.name || updated.part?.name || updated.subject || 'Service Request';
+  notificationService.createNotification({
+    userId: updated.customerId,
+    type: 'CANCELLATION_REJECTED',
+    channel: 'EMAIL',
+    title: 'Cancellation Request Rejected',
+    message: `Your cancellation request for "${itemName}" was rejected.\n\nMessage from Mobile-Adda Admin:\n"${trimmedNotes}"\n\nYour service request will continue processing.`,
+    referenceId: updated.id,
+    referenceType: 'SERVICE_REQUEST',
+    emailData: {
+      itemName,
+      newStatus: 'PROCESSING',
+      adminNotes: trimmedNotes,
+    },
+  }).catch(() => {});
 
   return formatRequest(updated, true);
 };

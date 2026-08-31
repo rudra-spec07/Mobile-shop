@@ -3,6 +3,7 @@ const { AppError } = require('../middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES } = require('../utils/constants');
 const { parsePagination } = require('../utils/pagination');
 const { formatPartForAdmin, calculateStockStatus } = require('./part.service');
+const notificationService = require('./notification.service');
 
 const stockIn = async (partId, quantity, userId) => {
   if (!quantity || quantity <= 0) {
@@ -94,6 +95,22 @@ const stockOut = async (partId, quantity, userId) => {
     return { part: updatedPart, transaction };
   });
 
+  if (newQuantity <= result.part.minimumStock && previousQuantity > result.part.minimumStock) {
+    notificationService.getSuperAdminUserId().then((admin) => {
+      if (admin) {
+        notificationService.createNotification({
+          userId: admin.id,
+          type: 'LOW_STOCK',
+          channel: 'SYSTEM',
+          title: 'Low Stock Alert',
+          message: `${result.part.name} has reached its minimum stock level (${newQuantity} remaining, minimum threshold: ${result.part.minimumStock}).`,
+          referenceId: result.part.id,
+          referenceType: 'PART',
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+  }
+
   return {
     part: formatPartForAdmin(result.part),
     transaction: result.transaction,
@@ -141,6 +158,22 @@ const stockAdjustment = async (partId, newQuantity, reason, userId) => {
 
     return { part: updatedPart, transaction };
   });
+
+  if (newQuantity <= result.part.minimumStock && previousQuantity > result.part.minimumStock) {
+    notificationService.getSuperAdminUserId().then((admin) => {
+      if (admin) {
+        notificationService.createNotification({
+          userId: admin.id,
+          type: 'LOW_STOCK',
+          channel: 'SYSTEM',
+          title: 'Low Stock Alert',
+          message: `${result.part.name} has reached its minimum stock level (${newQuantity} remaining, minimum threshold: ${result.part.minimumStock}).`,
+          referenceId: result.part.id,
+          referenceType: 'PART',
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+  }
 
   return {
     part: formatPartForAdmin(result.part),

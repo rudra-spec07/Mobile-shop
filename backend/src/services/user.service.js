@@ -4,6 +4,8 @@ const { hashPassword, comparePassword } = require('../utils/password');
 const { AppError } = require('../middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
 const { parsePagination } = require('../utils/pagination');
+const notificationService = require('./notification.service');
+const env = require('../config/env');
 
 /**
  * Handle forgot password request securely.
@@ -32,8 +34,16 @@ const forgotPassword = async (email) => {
       },
     });
 
-    // Note: In production, send resetToken via email service.
-    // We do NOT return resetToken in API response to maintain security contract.
+    // Create & dispatch Password Reset Notification asynchronously (Failure Isolated)
+    const resetUrl = `${env.CLIENT_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+    notificationService.createNotification({
+      userId: user.id,
+      type: 'PASSWORD_RESET',
+      channel: 'EMAIL',
+      title: 'Password Reset Request',
+      message: 'A password reset request was initiated for your Mobile-Adda account.',
+      emailData: { resetUrl },
+    }).catch(() => {});
   }
 
   return {

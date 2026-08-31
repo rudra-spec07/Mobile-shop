@@ -5,6 +5,8 @@ import { Menu, Bell, User, Smartphone, ChevronDown, KeyRound, Settings as Settin
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+import NotificationDropdown from '../navigation/NotificationDropdown';
+
 const AdminLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
@@ -40,14 +42,8 @@ const AdminLayout = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-4">
-            <Link
-              to="/admin/notifications"
-              className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg relative transition-colors"
-              title="Notifications"
-            >
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-600 rounded-full" />
-            </Link>
+            {/* Interactive Notification Bell Dropdown */}
+            <NotificationDropdown />
 
             {/* Top-Right Interactive Super Admin Account Menu */}
             <div className="relative border-l border-slate-200 pl-4">

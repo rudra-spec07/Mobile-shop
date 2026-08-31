@@ -2,6 +2,7 @@ const { prisma } = require('../config/database');
 const { parsePagination } = require('../utils/pagination');
 const AppError = require('../middleware/error.middleware').AppError;
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
+const notificationService = require('./notification.service');
 
 /**
  * Helper to format Enquiry response payload.
@@ -86,6 +87,32 @@ const createEnquiry = async (data, customerId) => {
       part: { select: { id: true, name: true, partNumber: true, price: true } },
     },
   });
+
+  // Trigger Notifications (Failure Isolated)
+  notificationService.createNotification({
+    userId: customerId,
+    type: 'ENQUIRY_CREATED',
+    channel: 'EMAIL',
+    title: `Enquiry Received: "${subject}"`,
+    message: `Your enquiry regarding "${subject}" has been received.`,
+    referenceId: enquiry.id,
+    referenceType: 'ENQUIRY',
+    emailData: { subject, message },
+  }).catch(() => {});
+
+  notificationService.getSuperAdminUserId().then((admin) => {
+    if (admin) {
+      notificationService.createNotification({
+        userId: admin.id,
+        type: 'ENQUIRY_CREATED',
+        channel: 'SYSTEM',
+        title: 'New Customer Enquiry Received',
+        message: `New enquiry from ${enquiry.customer?.name || 'Customer'}: "${subject}"`,
+        referenceId: enquiry.id,
+        referenceType: 'ENQUIRY',
+      }).catch(() => {});
+    }
+  }).catch(() => {});
 
   return formatEnquiry(enquiry);
 };
@@ -294,6 +321,18 @@ const respondToEnquiry = async (enquiryId, responseText, adminId) => {
       part: { select: { id: true, name: true, partNumber: true, price: true } },
     },
   });
+
+  // Trigger Notification for Customer (Failure Isolated)
+  notificationService.createNotification({
+    userId: updated.customerId,
+    type: 'ENQUIRY_RESPONDED',
+    channel: 'EMAIL',
+    title: `Response to Enquiry: "${updated.subject}"`,
+    message: responseText.trim(),
+    referenceId: updated.id,
+    referenceType: 'ENQUIRY',
+    emailData: { subject: updated.subject, adminResponse: responseText.trim() },
+  }).catch(() => {});
 
   return formatEnquiry(updated);
 };

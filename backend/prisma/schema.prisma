@@ -41,6 +41,7 @@ model User {
   updatedAt           DateTime  @updatedAt
   enquiries           Enquiry[]
   requests            ServiceRequest[]
+  notifications       Notification[]
 
   @@map("users")
 }
@@ -266,4 +267,60 @@ model ServiceRequest {
   @@index([createdAt])
   @@map("service_requests")
 }
+
+// ==========================================
+// Module 9: Notifications & Communication
+// ==========================================
+
+enum NotificationType {
+  PASSWORD_RESET
+  ACCOUNT_CREATED
+  ENQUIRY_CREATED
+  ENQUIRY_RESPONDED
+  REQUEST_CREATED
+  REQUEST_CONFIRMED
+  REQUEST_PROCESSING
+  REQUEST_COMPLETED
+  REQUEST_CANCELLED
+  CANCELLATION_REQUESTED
+  CANCELLATION_REJECTED
+  LOW_STOCK
+}
+
+enum NotificationChannel {
+  EMAIL
+  SYSTEM
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  FAILED
+  READ
+}
+
+model Notification {
+  id            String              @id @default(uuid())
+  userId        String
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          NotificationType
+  channel       NotificationChannel @default(EMAIL)
+  title         String
+  message       String
+  status        NotificationStatus  @default(PENDING)
+  referenceId   String?
+  referenceType String?
+  sentAt        DateTime?
+  readAt        DateTime?
+  failureReason String?
+  createdAt     DateTime            @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@index([referenceId])
+  @@map("notifications")
+}
+
 

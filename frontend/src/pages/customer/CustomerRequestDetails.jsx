@@ -228,6 +228,29 @@ const CustomerRequestDetails = () => {
             </CardBody>
           </Card>
 
+          {/* Request Cancelled Banner */}
+          {request.status === 'CANCELLED' && (
+            <div className="p-5 bg-red-50 border border-red-200 rounded-3xl text-xs space-y-2">
+              <div className="flex items-center gap-2 font-bold text-red-900 text-sm">
+                <XCircle className="w-4 h-4 text-red-600" />
+                <span>REQUEST CANCELLED</span>
+              </div>
+              <p className="text-red-800">
+                This request has been cancelled and is no longer being processed.
+              </p>
+              {(request.cancellationReason || request.adminNotes) && (
+                <div className="mt-2 pt-2 border-t border-red-200/80">
+                  <span className="text-[10px] font-bold text-red-800 uppercase tracking-wider block">
+                    Cancellation message from Mobile-Adda Admin:
+                  </span>
+                  <p className="text-red-950 font-medium italic mt-0.5">
+                    "{request.cancellationReason || request.adminNotes}"
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Cancellation Request Review Alert Banner */}
           {request.status === 'PROCESSING' && request.cancellationRequested && (
             <div className="p-5 bg-amber-50 border border-amber-200 rounded-3xl text-xs space-y-2">

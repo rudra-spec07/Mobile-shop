@@ -8,6 +8,8 @@ import GlobalSearchBar from '../search/GlobalSearchBar';
 import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../utils/constants';
 
+import NotificationDropdown from '../navigation/NotificationDropdown';
+
 const Header = () => {
   const { user, isAuthenticated, role } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -38,15 +40,8 @@ const Header = () => {
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
             <>
-              {/* Notification Icon */}
-              <Link
-                to={role === ROLES.SUPER_ADMIN ? '/admin/notifications' : '/customer/notifications'}
-                className="p-2 text-slate-600 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors relative"
-                title="Notifications"
-              >
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-              </Link>
+              {/* Interactive Notification Bell Dropdown */}
+              <NotificationDropdown />
 
               {/* User Dropdown */}
               <div className="relative">

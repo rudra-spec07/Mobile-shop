@@ -71,6 +71,10 @@ const AdminRequestList = () => {
   const [cancelReason, setCancelReason] = useState('');
   const [showCancelReasonInput, setShowCancelReasonInput] = useState(false);
 
+  // Reject Reason input state
+  const [rejectReason, setRejectReason] = useState('');
+  const [showRejectReasonInput, setShowRejectReasonInput] = useState(false);
+
   const fetchAdminRequests = async (page = 1, searchQuery = search, status = statusFilter) => {
     try {
       setIsLoading(true);
@@ -92,6 +96,27 @@ const AdminRequestList = () => {
   useEffect(() => {
     fetchAdminRequests(currentPage, search, statusFilter);
   }, [currentPage, search, statusFilter]);
+
+  // Handle Deep-Link query parameter (e.g. ?requestId=UUID)
+  useEffect(() => {
+    const targetRequestId = searchParams.get('requestId');
+    if (targetRequestId && (!selectedRequest || selectedRequest.id !== targetRequestId)) {
+      requestService
+        .getAdminRequestById(targetRequestId)
+        .then((res) => {
+          const reqItem = res.data?.request || res.data;
+          if (reqItem) {
+            handleOpenDetails(reqItem);
+          }
+        })
+        .catch(() => {
+          const localItem = requests.find((r) => r.id === targetRequestId);
+          if (localItem) {
+            handleOpenDetails(localItem);
+          }
+        });
+    }
+  }, [searchParams]);
 
   const handleStatusFilterChange = (val) => {
     setStatusFilter(val);
@@ -187,17 +212,31 @@ const AdminRequestList = () => {
   };
 
   const handleRejectCancellationRequest = async (requestId) => {
+    if (!showRejectReasonInput) {
+      setShowRejectReasonInput(true);
+      setShowCancelReasonInput(false);
+      setActionError('');
+      return;
+    }
+
+    if (!rejectReason || !rejectReason.trim()) {
+      setActionError('Please provide a reason for rejecting the cancellation request.');
+      return;
+    }
+
     try {
       setIsActionLoading(true);
       setActionError('');
       setActionSuccessMsg('');
 
-      const res = await requestService.rejectCancellationRequest(requestId);
+      const res = await requestService.rejectCancellationRequest(requestId, { reason: rejectReason.trim() });
       const updated = res.data?.request || res.data;
 
       setRequests((prev) => prev.map((r) => (r.id === requestId ? updated : r)));
       if (selectedRequest?.id === requestId) setSelectedRequest(updated);
-      setActionSuccessMsg('Customer cancellation request rejected. Processing continues.');
+      setActionSuccessMsg('Customer cancellation request rejected. Customer notified with your message.');
+      setShowRejectReasonInput(false);
+      setRejectReason('');
     } catch (err) {
       setActionError(err.message || 'Failed to reject cancellation request');
     } finally {
@@ -211,6 +250,8 @@ const AdminRequestList = () => {
     setActionSuccessMsg('');
     setShowCancelReasonInput(false);
     setCancelReason('');
+    setShowRejectReasonInput(false);
+    setRejectReason('');
     setIsDetailsModalOpen(true);
   };
 
@@ -532,7 +573,7 @@ const AdminRequestList = () => {
 
             {/* Customer Cancellation Request Review Banner */}
             {selectedRequest.status === 'PROCESSING' && selectedRequest.cancellationRequested && (
-              <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl space-y-2">
+              <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 font-extrabold text-amber-900 text-xs">
                     <ShieldAlert className="w-4 h-4 text-amber-600 animate-bounce" />
@@ -550,25 +591,77 @@ const AdminRequestList = () => {
                     Reason: "{selectedRequest.cancellationReason}"
                   </p>
                 )}
+
+                {/* Inline Rejection Reason Input */}
+                {showRejectReasonInput && (
+                  <div className="p-3 bg-white rounded-xl border border-amber-200 space-y-2">
+                    <label className="block text-xs font-bold text-slate-800">
+                      Reason / Message <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={rejectReason}
+                      onChange={(e) => {
+                        setRejectReason(e.target.value);
+                        if (actionError) setActionError('');
+                      }}
+                      placeholder="e.g. The replacement part has already been ordered and service process has started."
+                      className="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-900"
+                    />
+                    <p className="text-[11px] text-slate-500">
+                      This message will be delivered directly to the customer in their cancellation rejection notification.
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2 pt-1">
-                  <Button
-                    variant="danger"
-                    size="xs"
-                    className="bg-red-600 hover:bg-red-700 text-white font-bold"
-                    onClick={() => handleCancelAdminRequest(selectedRequest.id)}
-                    disabled={isActionLoading}
-                  >
-                    <XCircle className="w-3.5 h-3.5 mr-1" /> Approve Cancellation
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="xs"
-                    className="text-slate-700 bg-white border-slate-300 hover:bg-slate-50 font-bold"
-                    onClick={() => handleRejectCancellationRequest(selectedRequest.id)}
-                    disabled={isActionLoading}
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Reject Request & Continue
-                  </Button>
+                  {showRejectReasonInput ? (
+                    <>
+                      <Button
+                        variant="primary"
+                        size="xs"
+                        className="bg-amber-600 hover:bg-amber-700 text-white font-bold"
+                        onClick={() => handleRejectCancellationRequest(selectedRequest.id)}
+                        disabled={isActionLoading}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Reject & Notify Customer
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        className="text-slate-700 bg-white border-slate-300 hover:bg-slate-50 font-bold"
+                        onClick={() => {
+                          setShowRejectReasonInput(false);
+                          setRejectReason('');
+                          if (actionError) setActionError('');
+                        }}
+                        disabled={isActionLoading}
+                      >
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        variant="danger"
+                        size="xs"
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                        onClick={() => handleCancelAdminRequest(selectedRequest.id)}
+                        disabled={isActionLoading}
+                      >
+                        <XCircle className="w-3.5 h-3.5 mr-1" /> Approve Cancellation
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        className="text-slate-700 bg-white border-slate-300 hover:bg-slate-50 font-bold"
+                        onClick={() => handleRejectCancellationRequest(selectedRequest.id)}
+                        disabled={isActionLoading}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Reject Request & Continue
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             )}

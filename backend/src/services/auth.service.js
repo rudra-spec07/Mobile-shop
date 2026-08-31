@@ -3,6 +3,7 @@ const { hashPassword, comparePassword } = require('../utils/password');
 const { generateToken } = require('../utils/jwt');
 const { AppError } = require('../middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
+const notificationService = require('./notification.service');
 const env = require('../config/env');
 
 /**
@@ -54,6 +55,15 @@ const registerCustomer = async (data) => {
     userId: newUser.id,
     role: newUser.role,
   });
+
+  // Create Welcome Notification (Failure Isolated)
+  notificationService.createNotification({
+    userId: newUser.id,
+    type: 'ACCOUNT_CREATED',
+    channel: 'EMAIL',
+    title: 'Welcome to Mobile-Adda!',
+    message: 'Your customer account has been created successfully.',
+  }).catch(() => {});
 
   // Remove password hash from returned user object
   const { password: _, ...userWithoutPassword } = newUser;
