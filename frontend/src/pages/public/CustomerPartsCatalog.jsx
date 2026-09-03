@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
+import CustomerLayout from '../../components/layout/CustomerLayout';
 import PartCard from '../../components/parts/PartCard';
 import Loader from '../../components/common/Loader';
 import Pagination from '../../components/common/Pagination';
@@ -157,29 +156,26 @@ const CustomerPartsCatalog = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
-      <Header />
-
-      {/* Hero Banner */}
-      <section className="bg-slate-900 text-white py-10 px-4 sm:px-6 lg:px-8 relative overflow-hidden border-b border-slate-800">
-        <div className="absolute -right-10 -top-10 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full mb-2">
-              <Wrench className="w-3.5 h-3.5" /> Authentic Mobile Spare Parts
+    <CustomerLayout>
+      <div className="space-y-6">
+        {/* Hero Banner */}
+        <section className="bg-slate-900 text-white p-6 sm:p-8 rounded-2xl shadow-md relative overflow-hidden border-b border-slate-800">
+          <div className="absolute -right-10 -top-10 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full mb-2">
+                <Wrench className="w-3.5 h-3.5" /> Authentic Mobile Spare Parts
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Genuine Replacement Components & Spare Parts
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1.5 max-w-xl">
+                Search original screens, battery assemblies, flex cables, and housing units.
+              </p>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Genuine Replacement Components & Spare Parts
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1.5 max-w-xl">
-              Search original screens, battery assemblies, flex cables, and housing units.
-            </p>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Main Catalog Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Search & Control Bar */}
         <div className="bg-white rounded-2xl p-4 shadow-xs border border-slate-200 space-y-3">
           <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-center gap-3">
@@ -328,7 +324,7 @@ const CustomerPartsCatalog = () => {
             )}
           </main>
         </div>
-      </main>
+      </div>
 
       {/* Mobile Drawer */}
       {isMobileFilterOpen && (
@@ -427,9 +423,7 @@ const CustomerPartsCatalog = () => {
           </div>
         </div>
       )}
-
-      <Footer />
-    </div>
+    </CustomerLayout>
   );
 };
 

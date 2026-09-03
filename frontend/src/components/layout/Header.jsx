@@ -160,19 +160,19 @@ const Header = () => {
             </div>
           )}
 
-          {/* Mobile Menu Button */}
+          {/* Mobile/Tablet Menu Button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
+            className="hidden sm:block md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg"
           >
             {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile/Tablet Drawer Menu */}
       {isMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-2">
+        <div className="hidden sm:block md:hidden border-t border-slate-200 bg-white px-4 py-3 space-y-2">
           <Link
             to="/"
             onClick={() => setIsMenuOpen(false)}
