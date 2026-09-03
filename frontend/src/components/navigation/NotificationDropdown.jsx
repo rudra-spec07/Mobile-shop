@@ -80,7 +80,7 @@ const NotificationDropdown = () => {
 
       {/* Notification Dropdown Panel */}
       {isOpen && (
-        <div className="fixed left-3 right-3 top-16 mt-1 sm:absolute sm:top-auto sm:left-auto sm:right-0 sm:mt-2 sm:w-96 max-w-full bg-white rounded-2xl shadow-xl border border-slate-200 py-0 z-50 overflow-hidden animate-fade-in">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 max-sm:fixed max-sm:left-3 max-sm:right-3 max-sm:top-16 max-sm:mt-1 max-sm:w-auto max-sm:right-auto bg-white rounded-2xl shadow-xl border border-slate-200 py-0 z-50 overflow-hidden animate-fade-in">
           {/* Panel Header */}
           <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -102,7 +102,7 @@ const NotificationDropdown = () => {
           </div>
 
           {/* Panel Content Body */}
-          <div className="max-h-[calc(100vh-12rem)] sm:max-h-80 overflow-y-auto divide-y divide-slate-100">
+          <div className="max-h-80 max-sm:max-h-[calc(100vh-12rem)] overflow-y-auto divide-y divide-slate-100">
             {loading ? (
               <div className="p-6 flex flex-col items-center justify-center text-slate-500 gap-2">
                 <Spinner size="sm" />
