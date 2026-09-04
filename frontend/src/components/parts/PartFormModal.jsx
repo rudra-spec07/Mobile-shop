@@ -207,7 +207,8 @@ const PartFormModal = ({ isOpen, onClose, part = null, onSuccess, onCategoryCrea
                 <button
                   type="button"
                   onClick={() => setIsCategoryModalOpen(true)}
-                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+                  disabled={fetchingCategories || loading}
+                  className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Category</span>
@@ -361,7 +362,7 @@ const PartFormModal = ({ isOpen, onClose, part = null, onSuccess, onCategoryCrea
             <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" variant="primary" size="sm" loading={loading}>
+            <Button type="submit" variant="primary" size="sm" loading={loading} disabled={loading}>
               {isEdit ? 'Save Changes' : 'Create Part'}
             </Button>
           </div>
