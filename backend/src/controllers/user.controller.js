@@ -20,7 +20,8 @@ const logout = async (req, res, next) => {
  */
 const forgotPassword = async (req, res, next) => {
   try {
-    const result = await userService.forgotPassword(req.body.email);
+    const identifier = req.body.identifier || req.body.email;
+    const result = await userService.forgotPassword(identifier);
     return sendSuccess(res, result.message, {}, HTTP_STATUS.OK);
   } catch (error) {
     return next(error);

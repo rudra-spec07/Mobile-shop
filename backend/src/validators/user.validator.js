@@ -1,8 +1,25 @@
 const { z } = require('zod');
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email({ message: 'Valid email address is required' }),
-});
+const forgotPasswordSchema = z
+  .object({
+    identifier: z.string().optional(),
+    email: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      const val = (data.identifier || data.email || '').trim();
+      if (!val) return false;
+      if (val.includes('@')) {
+        return z.string().email().safeParse(val).success;
+      }
+      const cleanPhone = val.replace(/[\s-]/g, '');
+      return /^[0-9+]{7,15}$/.test(cleanPhone);
+    },
+    {
+      message: 'Please enter a valid email address or mobile number',
+      path: ['identifier'],
+    }
+  );
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, { message: 'Reset token is required' }),

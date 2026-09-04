@@ -8,7 +8,7 @@ import { KeyRound, ArrowLeft, CheckCircle } from 'lucide-react';
 import apiClient from '../../services/api';
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -17,18 +17,27 @@ const ForgotPassword = () => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!email || !email.includes('@')) {
-      setErrorMsg('Please enter a valid email address');
+    const val = identifier.trim();
+    if (!val) {
+      setErrorMsg('Please enter your email or mobile number');
+      return;
+    }
+
+    const isEmail = val.includes('@');
+    const cleanPhone = val.replace(/[\s-]/g, '');
+    const isPhone = /^[0-9+]{7,15}$/.test(cleanPhone);
+
+    if (!isEmail && !isPhone) {
+      setErrorMsg('Please enter a valid email address or mobile number');
       return;
     }
 
     setLoading(true);
 
     try {
-      await apiClient.post('/auth/forgot-password', { email: email.trim() });
+      await apiClient.post('/auth/forgot-password', { identifier: val });
       setSubmitted(true);
     } catch (err) {
-      // Even if API returns error, generic security response is shown or handled
       setErrorMsg(err.message || 'Failed to submit password reset request.');
     } finally {
       setLoading(false);
@@ -45,7 +54,7 @@ const ForgotPassword = () => {
             </div>
             <h1 className="text-xl font-bold text-slate-900">Forgot Password</h1>
             <p className="text-xs text-slate-500 mt-1">
-              Enter your registered email address and we will send you instructions to reset your password.
+              Enter your registered email address or mobile number and we will send you instructions to reset your password.
             </p>
           </CardHeader>
           <CardBody>
@@ -54,9 +63,9 @@ const ForgotPassword = () => {
                 <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
                   <CheckCircle className="w-6 h-6" />
                 </div>
-                <h3 className="text-sm font-semibold text-slate-900">Reset Link Sent</h3>
+                <h3 className="text-sm font-semibold text-slate-900">Reset Request Submitted</h3>
                 <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                  If the account exists, a password reset link has been sent to your email.
+                  If the account exists, password reset instructions have been sent.
                 </p>
                 <div className="pt-2">
                   <Link to="/login">
@@ -75,12 +84,13 @@ const ForgotPassword = () => {
                 )}
 
                 <Input
-                  label="Registered Email Address"
-                  type="email"
+                  label="Email or Mobile Number"
+                  type="text"
+                  inputMode="email"
                   required
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email or mobile number"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                 />
 
                 <Button type="submit" variant="primary" isLoading={loading} className="w-full">

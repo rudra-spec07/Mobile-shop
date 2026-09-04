@@ -25,6 +25,7 @@ const envSchema = z.object({
   EMAIL_PORT: z.string().optional(),
   EMAIL_USER: z.string().optional(),
   EMAIL_PASSWORD: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
 });
 
 const parseEnv = () => {

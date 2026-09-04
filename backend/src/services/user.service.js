@@ -9,13 +9,27 @@ const env = require('../config/env');
 
 /**
  * Handle forgot password request securely.
- * Always returns generic success response regardless of email existence.
+ * Accepts Email OR Mobile Number.
+ * Always returns generic success response regardless of account existence.
  */
-const forgotPassword = async (email) => {
-  const normalizedEmail = email.trim().toLowerCase();
+const forgotPassword = async (identifierInput) => {
+  if (!identifierInput || typeof identifierInput !== 'string') {
+    return {
+      message: 'If the account exists, password reset instructions have been sent',
+    };
+  }
 
-  const user = await prisma.user.findUnique({
-    where: { email: normalizedEmail },
+  const rawInput = identifierInput.trim();
+  const normalizedEmail = rawInput.toLowerCase();
+  const normalizedMobile = rawInput;
+
+  const user = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { email: normalizedEmail },
+        { mobileNumber: normalizedMobile },
+      ],
+    },
   });
 
   if (user) {
@@ -35,19 +49,31 @@ const forgotPassword = async (email) => {
     });
 
     // Create & dispatch Password Reset Notification asynchronously (Failure Isolated)
-    const resetUrl = `${env.CLIENT_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
-    notificationService.createNotification({
-      userId: user.id,
-      type: 'PASSWORD_RESET',
-      channel: 'EMAIL',
-      title: 'Password Reset Request',
-      message: 'A password reset request was initiated for your Mobile-Adda account.',
-      emailData: { resetUrl },
-    }).catch(() => {});
+    if (user.email) {
+      const resetUrl = `${env.CLIENT_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+      notificationService.createNotification({
+        userId: user.id,
+        type: 'PASSWORD_RESET',
+        channel: 'EMAIL',
+        title: 'Password Reset Request',
+        message: 'A password reset request was initiated for your Mobile-Adda account.',
+        emailData: { resetUrl },
+      }).catch(() => {});
+    } else {
+      // System notification for mobile-only accounts
+      // Note: Actual SMS delivery requires an external SMS gateway provider configuration
+      notificationService.createNotification({
+        userId: user.id,
+        type: 'PASSWORD_RESET',
+        channel: 'SYSTEM',
+        title: 'Password Reset Request',
+        message: 'A password reset request was initiated for your mobile account.',
+      }).catch(() => {});
+    }
   }
 
   return {
-    message: 'If the account exists, a password reset link has been sent to your email',
+    message: 'If the account exists, password reset instructions have been sent',
   };
 };
 
