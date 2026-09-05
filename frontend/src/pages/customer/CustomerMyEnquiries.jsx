@@ -89,13 +89,13 @@ const CustomerMyEnquiries = () => {
 
       {/* Header Banner */}
       <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl mb-6 relative overflow-hidden border border-slate-800 shadow-sm">
-        <div className="absolute -right-10 -top-10 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -right-10 -top-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold rounded-full mb-2.5">
               <MessageSquare className="w-3.5 h-3.5" /> Customer Inquiry Desk
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">My Inquiries & Requests</h1>
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">My Inquiries & Support</h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
               Track responses from Mobile-Adda support for your device and spare part inquiries.
             </p>
@@ -103,12 +103,14 @@ const CustomerMyEnquiries = () => {
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="bg-white rounded-2xl p-3 border border-slate-200 shadow-xs mb-6 flex items-center gap-2 overflow-x-auto">
+      {/* Filter Tabs (iOS Segmented Control) */}
+      <div className="bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60 mb-6 flex items-center gap-1 overflow-x-auto scrollbar-none">
         <button
           onClick={() => { setStatusFilter(''); setCurrentPage(1); }}
-          className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-            !statusFilter ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+          className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+            !statusFilter
+              ? 'bg-white text-blue-600 shadow-xs'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
           }`}
         >
           All Inquiries
@@ -117,8 +119,10 @@ const CustomerMyEnquiries = () => {
           <button
             key={st}
             onClick={() => { setStatusFilter(st); setCurrentPage(1); }}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-              statusFilter === st ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              statusFilter === st
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
             {st.replace('_', ' ')}
@@ -145,9 +149,9 @@ const CustomerMyEnquiries = () => {
       ) : (
         <div className="space-y-6">
           {/* Desktop Table View */}
-          <div className="hidden md:block bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
+          <div className="hidden md:block bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-semibold">
+              <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-500 uppercase tracking-wider font-semibold">
                 <tr>
                   <th className="px-5 py-3.5">Ref ID</th>
                   <th className="px-5 py-3.5">Subject</th>
@@ -159,7 +163,7 @@ const CustomerMyEnquiries = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                 {enquiries.map((enq) => (
-                  <tr key={enq.id} className="hover:bg-slate-50/60 transition-colors">
+                  <tr key={enq.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="px-5 py-4 font-mono font-bold text-slate-900">#{enq.id.slice(0, 8)}</td>
                     <td className="px-5 py-4">
                       <p className="font-bold text-slate-900 line-clamp-1">{enq.subject}</p>
@@ -167,11 +171,11 @@ const CustomerMyEnquiries = () => {
                     </td>
                     <td className="px-5 py-4">
                       {enq.mobile ? (
-                        <span className="inline-flex items-center gap-1.5 text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md font-semibold">
+                        <span className="inline-flex items-center gap-1.5 text-blue-600 bg-blue-50/80 px-2.5 py-1 rounded-lg font-semibold">
                           <Smartphone className="w-3.5 h-3.5" /> {enq.mobile.name}
                         </span>
                       ) : enq.part ? (
-                        <span className="inline-flex items-center gap-1.5 text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md font-semibold">
+                        <span className="inline-flex items-center gap-1.5 text-purple-600 bg-purple-50/80 px-2.5 py-1 rounded-lg font-semibold">
                           <Wrench className="w-3.5 h-3.5" /> {enq.part.name}
                         </span>
                       ) : (
@@ -187,7 +191,7 @@ const CustomerMyEnquiries = () => {
                         variant="outline"
                         size="xs"
                         onClick={() => handleOpenDetails(enq)}
-                        className="inline-flex items-center gap-1"
+                        className="inline-flex items-center gap-1 rounded-xl"
                       >
                         <Eye className="w-3.5 h-3.5" /> View Details
                       </Button>
@@ -201,7 +205,7 @@ const CustomerMyEnquiries = () => {
           {/* Mobile Responsive Cards */}
           <div className="md:hidden space-y-4">
             {enquiries.map((enq) => (
-              <div key={enq.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+              <div key={enq.id} className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3.5">
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-xs font-mono font-bold text-slate-900">#{enq.id.slice(0, 8)}</span>
                   <EnquiryStatusBadge status={enq.status} />
@@ -213,19 +217,19 @@ const CustomerMyEnquiries = () => {
                 </div>
 
                 {enq.mobile && (
-                  <div className="inline-flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md font-semibold">
+                  <div className="inline-flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50/80 px-2.5 py-1 rounded-lg font-semibold">
                     <Smartphone className="w-3.5 h-3.5" /> {enq.mobile.name}
                   </div>
                 )}
                 {enq.part && (
-                  <div className="inline-flex items-center gap-1.5 text-xs text-purple-600 bg-purple-50 px-2.5 py-1 rounded-md font-semibold">
+                  <div className="inline-flex items-center gap-1.5 text-xs text-purple-600 bg-purple-50/80 px-2.5 py-1 rounded-lg font-semibold">
                     <Wrench className="w-3.5 h-3.5" /> {enq.part.name}
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px] text-slate-400">
+                <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-[11px] text-slate-400">
                   <span>{formatDate(enq.createdAt)}</span>
-                  <Button variant="outline" size="xs" onClick={() => handleOpenDetails(enq)}>
+                  <Button variant="outline" size="xs" onClick={() => handleOpenDetails(enq)} className="rounded-xl">
                     View Details
                   </Button>
                 </div>
@@ -235,7 +239,7 @@ const CustomerMyEnquiries = () => {
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <div className="bg-white rounded-2xl p-3 border border-slate-200 shadow-xs">
+            <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-xs">
               <Pagination
                 currentPage={currentPage}
                 totalPages={pagination.totalPages}
@@ -258,20 +262,20 @@ const CustomerMyEnquiries = () => {
         >
           <div className="space-y-5">
             {actionError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
+              <div className="p-3.5 bg-rose-50 border border-rose-200/80 rounded-2xl flex items-center gap-2 text-xs text-rose-700">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{actionError}</span>
               </div>
             )}
 
             {/* Header Summary */}
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 flex flex-wrap items-center justify-between gap-3">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">Current Status</span>
                 <EnquiryStatusBadge status={selectedEnquiry.status} className="mt-1" />
               </div>
               <div className="text-right text-xs text-slate-500">
-                <span className="block">Submitted: {formatDate(selectedEnquiry.createdAt)}</span>
+                <span className="block font-medium">Submitted: {formatDate(selectedEnquiry.createdAt)}</span>
                 {selectedEnquiry.updatedAt && selectedEnquiry.updatedAt !== selectedEnquiry.createdAt && (
                   <span className="block text-[11px] text-slate-400">Updated: {formatDate(selectedEnquiry.updatedAt)}</span>
                 )}
@@ -280,55 +284,59 @@ const CustomerMyEnquiries = () => {
 
             {/* Attached Product Preview */}
             {selectedEnquiry.mobile && (
-              <div className="p-3.5 bg-blue-50/60 border border-blue-100 rounded-xl flex items-center gap-3">
-                <Smartphone className="w-5 h-5 text-blue-600 shrink-0" />
+              <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-2xl flex items-center gap-3">
+                <div className="p-2.5 bg-blue-600 text-white rounded-xl">
+                  <Smartphone className="w-5 h-5 shrink-0" />
+                </div>
                 <div className="text-xs">
-                  <span className="font-bold text-slate-900 block">{selectedEnquiry.mobile.name}</span>
+                  <span className="font-bold text-slate-900 block text-sm">{selectedEnquiry.mobile.name}</span>
                   <span className="text-slate-500">Model #: {selectedEnquiry.mobile.modelNumber || 'Standard'}</span>
                 </div>
               </div>
             )}
 
             {selectedEnquiry.part && (
-              <div className="p-3.5 bg-purple-50/60 border border-purple-100 rounded-xl flex items-center gap-3">
-                <Wrench className="w-5 h-5 text-purple-600 shrink-0" />
+              <div className="p-4 bg-purple-50/60 border border-purple-100 rounded-2xl flex items-center gap-3">
+                <div className="p-2.5 bg-purple-600 text-white rounded-xl">
+                  <Wrench className="w-5 h-5 shrink-0" />
+                </div>
                 <div className="text-xs">
-                  <span className="font-bold text-slate-900 block">{selectedEnquiry.part.name}</span>
+                  <span className="font-bold text-slate-900 block text-sm">{selectedEnquiry.part.name}</span>
                   <span className="text-slate-500">Part #: {selectedEnquiry.part.partNumber}</span>
                 </div>
               </div>
             )}
 
             {/* Question Box */}
-            <div className="space-y-1">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Subject</h4>
+            <div className="space-y-1.5">
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Subject</h4>
               <p className="text-sm font-bold text-slate-900">{selectedEnquiry.subject}</p>
-              <div className="mt-2 p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed whitespace-pre-line">
+              <div className="mt-2 p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 text-xs text-slate-700 leading-relaxed whitespace-pre-line">
                 {selectedEnquiry.message}
               </div>
             </div>
 
             {/* Admin Official Response Box */}
-            <div className="space-y-2 pt-2 border-t border-slate-100">
+            <div className="space-y-2 pt-3 border-t border-slate-100">
               <h4 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                 <MessageSquare className="w-4 h-4 text-blue-600" />
                 Official Store Response
               </h4>
 
               {selectedEnquiry.adminResponse ? (
-                <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-2xl space-y-2">
+                <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-2xl space-y-2">
                   <p className="text-xs sm:text-sm font-medium text-slate-800 leading-relaxed whitespace-pre-line">
                     {selectedEnquiry.adminResponse}
                   </p>
                   {selectedEnquiry.respondedAt && (
-                    <div className="text-[11px] text-emerald-700 font-semibold pt-1 border-t border-emerald-200/60 flex items-center justify-between">
+                    <div className="text-[11px] text-emerald-700 font-semibold pt-2 border-t border-emerald-200/60 flex items-center justify-between">
                       <span>Answered by Mobile-Adda Support</span>
                       <span>{formatDate(selectedEnquiry.respondedAt)}</span>
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-center text-xs text-slate-400">
+                <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-center text-xs text-slate-400">
                   <Clock className="w-5 h-5 mx-auto mb-1 text-slate-400" />
                   <span>Awaiting official store response. Our representatives usually respond within 24 business hours.</span>
                 </div>
@@ -341,7 +349,7 @@ const CustomerMyEnquiries = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-rose-600 border-rose-200 hover:bg-rose-50"
+                  className="text-rose-600 border-rose-200 hover:bg-rose-50 rounded-xl"
                   onClick={() => handleCancelEnquiry(selectedEnquiry.id)}
                   isLoading={isCancelling}
                 >
@@ -353,7 +361,7 @@ const CustomerMyEnquiries = () => {
                 </span>
               )}
 
-              <Button variant="primary" size="sm" onClick={() => setIsDetailsModalOpen(false)}>
+              <Button variant="primary" size="sm" onClick={() => setIsDetailsModalOpen(false)} className="rounded-xl">
                 Close Window
               </Button>
             </div>

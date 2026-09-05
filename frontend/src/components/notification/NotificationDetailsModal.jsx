@@ -108,45 +108,45 @@ const NotificationDetailsModal = ({ isOpen, onClose, notification }) => {
       <div className="space-y-4">
         {/* Header Badges & Read Status */}
         <div className="flex items-center justify-between flex-wrap gap-2 pb-3 border-b border-slate-100">
-          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold ${badgeStyle.bg}`}>
+          <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-bold ${badgeStyle.bg}`}>
             <BadgeIcon className="w-3.5 h-3.5" />
             <span>{badgeStyle.label}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Clock className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+            <Clock className="w-3.5 h-3.5 text-slate-400" />
             <span>{formatDate(notification.createdAt)}</span>
           </div>
         </div>
 
         {/* Title */}
         <div>
-          <h3 className="text-base font-bold text-slate-900 leading-snug">
+          <h3 className="text-base font-extrabold text-slate-900 leading-snug">
             {notification.title}
           </h3>
         </div>
 
         {/* Message Body */}
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
+        <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-xs sm:text-sm text-slate-700 leading-relaxed font-normal whitespace-pre-line">
           {notification.message}
         </div>
 
         {/* Read / Unread Status Footer Indicator */}
-        <div className="flex items-center justify-between pt-2 text-xs text-slate-500">
-          <span className="flex items-center gap-1">
-            <span className={`w-2 h-2 rounded-full ${isRead ? 'bg-slate-300' : 'bg-blue-600'}`} />
+        <div className="flex items-center justify-between pt-1 text-xs text-slate-500 font-medium">
+          <span className="flex items-center gap-1.5">
+            <span className={`w-2.5 h-2.5 rounded-full ${isRead ? 'bg-slate-300' : 'bg-blue-600 ring-4 ring-blue-100'}`} />
             {isRead ? `Read at ${formatDate(notification.readAt || notification.updatedAt)}` : 'Unread'}
           </span>
         </div>
 
         {/* Action Controls */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
-          <Button variant="outline" size="sm" onClick={onClose}>
+          <Button variant="outline" size="sm" onClick={onClose} className="rounded-xl">
             Close
           </Button>
 
           {action && (
-            <Button variant="primary" size="sm" onClick={handleNavigate} className="flex items-center gap-2">
+            <Button variant="primary" size="sm" onClick={handleNavigate} className="flex items-center gap-2 rounded-xl bg-blue-600 hover:bg-blue-700 font-bold">
               <span>{action.label}</span>
               <ArrowRight className="w-4 h-4" />
             </Button>

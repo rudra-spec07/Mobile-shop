@@ -73,17 +73,17 @@ const CustomerPartDetails = () => {
           />
 
           {/* Main Part Detail Card */}
-          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden grid grid-cols-1 lg:grid-cols-12">
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden grid grid-cols-1 lg:grid-cols-12">
             {/* Media Section */}
-            <div className="lg:col-span-5 bg-slate-50 p-8 flex items-center justify-center border-b lg:border-b-0 lg:border-r border-slate-200/80 relative">
+            <div className="lg:col-span-5 bg-slate-50/80 p-8 flex items-center justify-center border-b lg:border-b-0 lg:border-r border-slate-200/80 relative">
               {part.imageUrl ? (
                 <img
                   src={part.imageUrl}
                   alt={part.name}
-                  className="max-h-80 w-auto object-contain drop-shadow-sm"
+                  className="max-h-80 w-auto object-contain drop-shadow-xs transition-transform duration-300 hover:scale-105"
                 />
               ) : (
-                <div className="flex flex-col items-center justify-center text-slate-400 gap-3 py-16">
+                <div className="flex flex-col items-center justify-center text-slate-300 gap-3 py-16">
                   <Wrench className="w-16 h-16 stroke-[1.5]" />
                   <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                     Spare Component
@@ -93,7 +93,7 @@ const CustomerPartDetails = () => {
 
               {/* Category Floating Pill */}
               {part.category?.name && (
-                <span className="absolute top-4 left-4 bg-white/95 backdrop-blur-md text-slate-800 text-xs font-semibold px-3 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                <span className="absolute top-4 left-4 bg-white/95 backdrop-blur-md text-slate-800 text-xs font-semibold px-3 py-1 rounded-full border border-slate-200 shadow-xs">
                   {part.category.name}
                 </span>
               )}
@@ -104,8 +104,8 @@ const CustomerPartDetails = () => {
               <div className="space-y-4">
                 {/* Part Number & Status Header */}
                 <div className="flex items-center justify-between gap-4">
-                  <span className="inline-flex items-center px-3 py-1 bg-slate-100 border border-slate-200 text-slate-600 font-mono text-xs font-bold rounded-lg uppercase tracking-wider">
-                    PN: {part.partNumber}
+                  <span className="inline-flex items-center px-3 py-1 bg-slate-100/80 border border-slate-200/80 text-slate-600 font-mono text-xs font-bold rounded-lg uppercase tracking-wider">
+                    PN: {part.partNumber || 'N/A'}
                   </span>
                   <PartStatusBadge status={part.stockStatus} />
                 </div>
@@ -116,9 +116,9 @@ const CustomerPartDetails = () => {
                 </h1>
 
                 {/* Pricing Box */}
-                <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-2xl flex items-center justify-between">
+                <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex items-center justify-between">
                   <div>
-                    <span className="text-[11px] font-medium text-slate-500 block uppercase tracking-wider">
+                    <span className="text-[11px] font-medium text-slate-400 block uppercase tracking-wider">
                       Estimated Retail Price
                     </span>
                     <span className="text-2xl sm:text-3xl font-black text-slate-900">₹{priceFormatted}</span>
@@ -126,11 +126,11 @@ const CustomerPartDetails = () => {
 
                   <div className="text-right text-xs">
                     {part.inStock ? (
-                      <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 bg-emerald-100/80 px-3 py-1.5 rounded-full">
+                      <span className="inline-flex items-center gap-1.5 font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
                         <CheckCircle2 className="w-4 h-4" /> Available in Store
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1.5 font-semibold text-rose-700 bg-rose-100/80 px-3 py-1.5 rounded-full">
+                      <span className="inline-flex items-center gap-1.5 font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-3 py-1 rounded-full">
                         <AlertCircle className="w-4 h-4" /> Temporarily Out of Stock
                       </span>
                     )}
@@ -138,7 +138,7 @@ const CustomerPartDetails = () => {
                 </div>
 
                 {/* Specs & Description */}
-                <div className="space-y-3 pt-2">
+                <div className="space-y-2 pt-2">
                   <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
                     Description & Compatibility
                   </h3>
@@ -149,11 +149,11 @@ const CustomerPartDetails = () => {
 
                 {/* Trust Assurances */}
                 <div className="grid grid-cols-2 gap-3 pt-2">
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2.5">
+                  <div className="p-3 bg-slate-50/80 border border-slate-200/80 rounded-xl flex items-center gap-2.5">
                     <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
                     <span className="text-[11px] font-medium text-slate-700">100% Verified Quality</span>
                   </div>
-                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2.5">
+                  <div className="p-3 bg-slate-50/80 border border-slate-200/80 rounded-xl flex items-center gap-2.5">
                     <Wrench className="w-4 h-4 text-blue-600 shrink-0" />
                     <span className="text-[11px] font-medium text-slate-700">In-Store Installation</span>
                   </div>
@@ -165,20 +165,20 @@ const CustomerPartDetails = () => {
                 <Button
                   variant="primary"
                   size="lg"
-                  className="w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                  className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-md py-3 text-xs sm:text-sm"
                   onClick={() => setIsRequestModalOpen(true)}
                 >
-                  <ShoppingBag className="w-5 h-5" />
+                  <ShoppingBag className="w-4 h-4" />
                   <span>Request Spare Part</span>
                 </Button>
 
                 <Button
                   variant="outline"
                   size="lg"
-                  className="w-full flex items-center justify-center gap-2 border-slate-300 text-slate-700"
+                  className="w-full flex items-center justify-center gap-2 border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl py-3 text-xs sm:text-sm"
                   onClick={() => setIsEnquiryModalOpen(true)}
                 >
-                  <MessageSquare className="w-5 h-5" />
+                  <MessageSquare className="w-4 h-4" />
                   <span>Enquire About Stock & Repair Options</span>
                 </Button>
               </div>

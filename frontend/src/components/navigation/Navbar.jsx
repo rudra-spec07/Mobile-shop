@@ -9,14 +9,16 @@ const Navbar = ({ className = '' }) => {
   ];
 
   return (
-    <nav className={`flex items-center gap-6 text-sm font-medium ${className}`}>
+    <nav className={`flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-medium ${className}`}>
       {links.map((link) => (
         <NavLink
           key={link.path}
           to={link.path}
           className={({ isActive }) =>
-            `transition-colors hover:text-blue-600 ${
-              isActive ? 'text-blue-600 font-semibold border-b-2 border-blue-600 py-1' : 'text-slate-600'
+            `px-3 py-1.5 rounded-full transition-all duration-200 ${
+              isActive
+                ? 'text-blue-600 font-semibold bg-blue-50/80'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
             }`
           }
         >

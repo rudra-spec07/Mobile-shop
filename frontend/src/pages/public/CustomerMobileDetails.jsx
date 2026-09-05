@@ -118,7 +118,7 @@ const CustomerMobileDetails = () => {
         </div>
 
         {/* Top Overview Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs">
           {/* Left Column: Image Gallery */}
           <div className="lg:col-span-5">
             <MobileImageGallery images={mobile.images} mobileName={mobile.name} />
@@ -146,7 +146,7 @@ const CustomerMobileDetails = () => {
               </div>
 
               {/* Price Banner */}
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
+              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-medium text-slate-400 block">Pricing Details</span>
                   <div className="flex items-baseline gap-3 mt-1">
@@ -177,17 +177,17 @@ const CustomerMobileDetails = () => {
               {/* Quick Spec Pills */}
               <div className="flex flex-wrap gap-2 pt-1">
                 {mobile.ram && (
-                  <span className="px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg">
+                  <span className="px-3 py-1 text-xs font-semibold bg-slate-100/80 text-slate-700 rounded-lg">
                     ⚡ {mobile.ram} RAM
                   </span>
                 )}
                 {mobile.storage && (
-                  <span className="px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg">
+                  <span className="px-3 py-1 text-xs font-semibold bg-slate-100/80 text-slate-700 rounded-lg">
                     💾 {mobile.storage} Storage
                   </span>
                 )}
                 {mobile.color && (
-                  <span className="px-3 py-1 text-xs font-semibold bg-slate-100 text-slate-700 rounded-lg">
+                  <span className="px-3 py-1 text-xs font-semibold bg-slate-100/80 text-slate-700 rounded-lg">
                     🎨 {mobile.color}
                   </span>
                 )}
@@ -199,7 +199,7 @@ const CustomerMobileDetails = () => {
               <Button
                 variant="primary"
                 size="lg"
-                className="w-full justify-center text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md py-3"
+                className="w-full justify-center text-xs sm:text-sm font-bold bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md py-3"
                 onClick={() => setIsRequestModalOpen(true)}
               >
                 <ShoppingBag className="w-4 h-4 mr-2" />
@@ -209,7 +209,7 @@ const CustomerMobileDetails = () => {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full justify-center text-sm font-bold border-slate-300 text-slate-700 hover:bg-slate-50 py-3"
+                className="w-full justify-center text-xs sm:text-sm font-bold border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl py-3"
                 onClick={() => setIsEnquiryModalOpen(true)}
               >
                 <MessageSquare className="w-4 h-4 mr-2" />
@@ -225,23 +225,23 @@ const CustomerMobileDetails = () => {
         </div>
 
         {/* Detailed Specs Section */}
-        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
-          <h3 className="text-lg font-bold text-slate-900 border-b border-slate-100 pb-3">
+        <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xs space-y-6">
+          <h3 className="text-lg font-extrabold text-slate-900 border-b border-slate-100 pb-3">
             Full Specifications & Features
           </h3>
 
           {mobile.description && (
-            <div className="space-y-1 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div className="space-y-1 bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80">
               <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Overview</h4>
               <p className="text-xs sm:text-sm text-slate-700 leading-relaxed">{mobile.description}</p>
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
             {specItems.map((spec, idx) => {
               const Icon = spec.icon;
               return (
-                <div key={idx} className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100 flex items-center justify-between">
+                <div key={idx} className="p-3.5 bg-slate-50/70 rounded-2xl border border-slate-100 flex items-center justify-between hover:bg-slate-100/60 transition-colors">
                   <div className="flex items-center gap-2.5 text-slate-500">
                     <Icon className="w-4 h-4 text-blue-600" />
                     <span className="text-xs font-medium">{spec.label}</span>

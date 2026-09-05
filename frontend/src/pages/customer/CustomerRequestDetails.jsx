@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import Breadcrumb from '../../components/navigation/Breadcrumb';
-import Card, { CardBody } from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Loader from '../../components/common/Loader';
 import ErrorState from '../../components/common/ErrorState';
@@ -150,100 +149,94 @@ const CustomerRequestDetails = () => {
       ) : request ? (
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header Card */}
-          <Card className="border-slate-200">
-            <CardBody className="p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Request Reference ID
-                    </span>
-                  </div>
-                  <h1 className="text-xl sm:text-2xl font-mono font-extrabold text-slate-900">{request.id}</h1>
-                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400" /> Submitted on {formatDate(request.createdAt)}
-                  </p>
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
+                    Request Reference ID
+                  </span>
                 </div>
-                <RequestStatusBadge status={request.status} cancellationRequested={request.cancellationRequested} />
+                <h1 className="text-xl sm:text-2xl font-mono font-extrabold text-slate-900">{request.id}</h1>
+                <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5 font-medium">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" /> Submitted on {formatDate(request.createdAt)}
+                </p>
               </div>
-            </CardBody>
-          </Card>
+              <RequestStatusBadge status={request.status} cancellationRequested={request.cancellationRequested} />
+            </div>
+          </div>
 
           {/* Timeline Card */}
-          <Card className="border-slate-200">
-            <CardBody className="p-6">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">Lifecycle Status Timeline</h3>
-              <RequestTimeline status={request.status} />
-            </CardBody>
-          </Card>
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4">Lifecycle Status Timeline</h3>
+            <RequestTimeline status={request.status} />
+          </div>
 
           {cancelSuccessMsg && (
-            <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-2xl flex items-center gap-2">
+            <div className="p-4 bg-emerald-50/80 border border-emerald-200/80 text-emerald-800 text-xs rounded-2xl flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
               <span>{cancelSuccessMsg}</span>
             </div>
           )}
 
           {/* Requested Item Spec Card */}
-          <Card className="border-slate-200">
-            <CardBody className="p-6 space-y-4">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Requested Item Details</h3>
-              <div className="flex items-center gap-4">
-                <div
-                  className={`p-4 rounded-2xl shrink-0 ${
-                    request.mobileId ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
-                  }`}
-                >
-                  {request.mobileId ? <Smartphone className="w-8 h-8" /> : <Wrench className="w-8 h-8" />}
-                </div>
-                <div>
-                  <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
-                    {request.mobile?.name || request.part?.name || request.subject || 'Service Request'}
-                  </h2>
-                  {request.mobile?.modelNumber && (
-                    <p className="text-xs text-slate-500 mt-0.5">Model Number: {request.mobile.modelNumber}</p>
-                  )}
-                  {request.part?.partNumber && (
-                    <p className="text-xs text-slate-500 mt-0.5">Part Number: {request.part.partNumber}</p>
-                  )}
-                </div>
+          <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8 space-y-4">
+            <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Requested Item Details</h3>
+            <div className="flex items-center gap-4">
+              <div
+                className={`p-4 rounded-2xl shrink-0 ${
+                  request.mobileId ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
+                }`}
+              >
+                {request.mobileId ? <Smartphone className="w-8 h-8" /> : <Wrench className="w-8 h-8" />}
               </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900">
+                  {request.mobile?.name || request.part?.name || request.subject || 'Service Request'}
+                </h2>
+                {request.mobile?.modelNumber && (
+                  <p className="text-xs text-slate-500 mt-0.5 font-medium">Model Number: {request.mobile.modelNumber}</p>
+                )}
+                {request.part?.partNumber && (
+                  <p className="text-xs text-slate-500 mt-0.5 font-medium">Part Number: {request.part.partNumber}</p>
+                )}
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-100 text-xs">
-                <div>
-                  <span className="text-slate-400 block font-medium">Quantity</span>
-                  <span className="font-extrabold text-slate-900 text-sm">{request.quantity}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block font-medium">Price Snapshot (Unit)</span>
-                  <span className="font-bold text-slate-900 text-sm">{formatCurrency(request.price)}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block font-medium">Total Amount</span>
-                  <span className="font-extrabold text-blue-700 text-sm">
-                    {formatCurrency(Number(request.price) * request.quantity)}
-                  </span>
-                </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-xs">
+              <div>
+                <span className="text-slate-400 block font-medium">Quantity</span>
+                <span className="font-extrabold text-slate-900 text-sm">{request.quantity}</span>
               </div>
-            </CardBody>
-          </Card>
+              <div>
+                <span className="text-slate-400 block font-medium">Price Snapshot (Unit)</span>
+                <span className="font-bold text-slate-900 text-sm">{formatCurrency(request.price)}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block font-medium">Total Amount</span>
+                <span className="font-extrabold text-blue-600 text-sm">
+                  {formatCurrency(Number(request.price) * request.quantity)}
+                </span>
+              </div>
+            </div>
+          </div>
 
           {/* Request Cancelled Banner */}
           {request.status === 'CANCELLED' && (
-            <div className="p-5 bg-red-50 border border-red-200 rounded-3xl text-xs space-y-2">
-              <div className="flex items-center gap-2 font-bold text-red-900 text-sm">
-                <XCircle className="w-4 h-4 text-red-600" />
+            <div className="p-5 bg-rose-50/80 border border-rose-200/80 rounded-3xl text-xs space-y-2">
+              <div className="flex items-center gap-2 font-bold text-rose-900 text-sm">
+                <XCircle className="w-4 h-4 text-rose-600" />
                 <span>REQUEST CANCELLED</span>
               </div>
-              <p className="text-red-800">
+              <p className="text-rose-800">
                 This request has been cancelled and is no longer being processed.
               </p>
               {(request.cancellationReason || request.adminNotes) && (
-                <div className="mt-2 pt-2 border-t border-red-200/80">
-                  <span className="text-[10px] font-bold text-red-800 uppercase tracking-wider block">
+                <div className="mt-2 pt-2 border-t border-rose-200/80">
+                  <span className="text-[10px] font-bold text-rose-800 uppercase tracking-wider block">
                     Cancellation message from Mobile-Adda Admin:
                   </span>
-                  <p className="text-red-950 font-medium italic mt-0.5">
+                  <p className="text-rose-950 font-medium italic mt-0.5">
                     "{request.cancellationReason || request.adminNotes}"
                   </p>
                 </div>
@@ -253,7 +246,7 @@ const CustomerRequestDetails = () => {
 
           {/* Cancellation Request Review Alert Banner */}
           {request.status === 'PROCESSING' && request.cancellationRequested && (
-            <div className="p-5 bg-amber-50 border border-amber-200 rounded-3xl text-xs space-y-2">
+            <div className="p-5 bg-amber-50/80 border border-amber-200/80 rounded-3xl text-xs space-y-2">
               <div className="flex items-center gap-2 font-bold text-amber-900 text-sm">
                 <Clock className="w-4 h-4 text-amber-600" />
                 <span>Cancellation Request Under Review</span>
@@ -274,14 +267,12 @@ const CustomerRequestDetails = () => {
 
           {/* Customer Original Notes (Read-Only) */}
           {request.notes && (
-            <Card className="border-slate-200">
-              <CardBody className="p-6 space-y-2">
-                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">My Additional Notes</h3>
-                <p className="text-xs text-slate-700 leading-relaxed italic bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  "{request.notes}"
-                </p>
-              </CardBody>
-            </Card>
+            <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 space-y-2">
+              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">My Additional Notes</h3>
+              <p className="text-xs text-slate-700 leading-relaxed italic bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
+                "{request.notes}"
+              </p>
+            </div>
           )}
 
           {/* Action Bar Footer */}
@@ -290,7 +281,7 @@ const CustomerRequestDetails = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-red-600 hover:bg-red-50 border-red-200"
+                className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl"
                 onClick={handleOpenCancelModal}
                 disabled={isSubmittingCancel}
               >
@@ -300,7 +291,7 @@ const CustomerRequestDetails = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-amber-700 hover:bg-amber-50 border-amber-300"
+                className="text-amber-700 hover:bg-amber-50 border-amber-300 rounded-xl"
                 onClick={handleOpenCancelModal}
                 disabled={isSubmittingCancel}
               >
@@ -311,7 +302,7 @@ const CustomerRequestDetails = () => {
             )}
 
             <Link to="/customer/requests">
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="rounded-xl">
                 Back to Requests List
               </Button>
             </Link>

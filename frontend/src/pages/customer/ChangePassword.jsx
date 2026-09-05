@@ -78,21 +78,21 @@ const ChangePassword = () => {
       <div className="max-w-xl mx-auto py-6 px-4 space-y-6">
         <Breadcrumb items={breadcrumbItems} />
 
-        <Card>
-          <CardHeader className="bg-slate-50/50 py-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-blue-100 text-blue-600 rounded-lg shrink-0">
-                <KeyRound className="w-5 h-5" />
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="bg-slate-50/80 p-6 border-b border-slate-100">
+            <div className="flex items-center gap-3.5">
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl shrink-0">
+                <KeyRound className="w-6 h-6" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-slate-900">Change Account Password</h1>
-                <p className="text-xs text-slate-500 mt-0.5">Update your password to keep your account secure</p>
+                <h1 className="text-lg font-extrabold text-slate-900">Change Account Password</h1>
+                <p className="text-xs text-slate-500 mt-0.5 font-medium">Update your password to keep your account secure</p>
               </div>
             </div>
-          </CardHeader>
-          <CardBody>
+          </div>
+          <div className="p-6 sm:p-8">
             {errorMsg && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+              <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200/80 text-rose-700 text-xs rounded-2xl">
                 {errorMsg}
               </div>
             )}
@@ -110,7 +110,7 @@ const ChangePassword = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-8 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3.5 top-8 text-slate-400 hover:text-slate-600 transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -135,14 +135,14 @@ const ChangePassword = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
 
-              <div className="flex items-center gap-3 pt-2">
-                <Button type="submit" variant="primary" isLoading={loading} className="w-full">
+              <div className="flex items-center gap-3 pt-3">
+                <Button type="submit" variant="primary" isLoading={loading} className="w-full rounded-xl py-3 text-sm font-bold shadow-xs">
                   Update Password
                 </Button>
               </div>
             </form>
-          </CardBody>
-        </Card>
+          </div>
+        </div>
       </div>
     </Layout>
   );

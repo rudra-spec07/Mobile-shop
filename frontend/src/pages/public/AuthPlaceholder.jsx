@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import CustomerLayout from '../../components/layout/CustomerLayout';
-import Card, { CardBody, CardHeader } from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import Toast from '../../components/common/Toast';
@@ -79,24 +78,25 @@ const AuthPlaceholder = () => {
     <CustomerLayout>
       {toastMsg && <Toast type={toastMsg.type} message={toastMsg.text} onClose={() => setToastMsg(null)} />}
       
-      <div className="max-w-md mx-auto py-8">
-        <Card>
-          <CardHeader className="text-center bg-slate-50/50 py-6">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-              {isLogin ? <LogIn className="w-6 h-6" /> : <UserPlus className="w-6 h-6" />}
+      <div className="max-w-md mx-auto py-10 px-4">
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div className="text-center bg-slate-50/80 p-6 sm:p-8 border-b border-slate-100">
+            <div className="w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-3.5 shadow-md">
+              {isLogin ? <LogIn className="w-7 h-7" /> : <UserPlus className="w-7 h-7" />}
             </div>
-            <h1 className="text-xl font-bold text-slate-900">
-              {isLogin ? 'Login to Mobile-Adda' : 'Create Customer Account'}
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+              {isLogin ? 'Welcome Back to Mobile-Adda' : 'Create Customer Account'}
             </h1>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed">
               {isLogin
-                ? 'Access your enquiries, service requests, and profile'
-                : 'Register to submit requests and interact with shop admin'}
+                ? 'Sign in to access your inquiries, service requests, and account'
+                : 'Register to submit device requests and interact with Mobile-Adda'}
             </p>
-          </CardHeader>
-          <CardBody>
+          </div>
+
+          <div className="p-6 sm:p-8">
             {errorMsg && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+              <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200/80 text-rose-700 text-xs rounded-2xl">
                 {errorMsg}
               </div>
             )}
@@ -132,7 +132,7 @@ const AuthPlaceholder = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-8 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3.5 top-8 text-slate-400 hover:text-slate-600 transition-colors"
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -151,18 +151,18 @@ const AuthPlaceholder = () => {
               )}
 
               {isLogin && (
-                <div className="flex justify-end">
+                <div className="flex justify-end pt-0.5">
                   <Link
                     to="/forgot-password"
-                    className="text-xs font-semibold text-blue-600 hover:underline"
+                    className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                   >
                     Forgot Password?
                   </Link>
                 </div>
               )}
 
-              <Button type="submit" variant="primary" isLoading={loading} className="w-full">
-                {isLogin ? 'Login' : 'Register Customer Account'}
+              <Button type="submit" variant="primary" isLoading={loading} className="w-full rounded-xl py-3 font-bold shadow-xs">
+                {isLogin ? 'Sign In' : 'Register Account'}
               </Button>
             </form>
 
@@ -170,21 +170,21 @@ const AuthPlaceholder = () => {
               {isLogin ? (
                 <p>
                   Don't have an account?{' '}
-                  <Link to="/register" className="font-semibold text-blue-600 hover:underline">
+                  <Link to="/register" className="font-bold text-blue-600 hover:text-blue-700 transition-colors">
                     Register here
                   </Link>
                 </p>
               ) : (
                 <p>
                   Already have an account?{' '}
-                  <Link to="/login" className="font-semibold text-blue-600 hover:underline">
-                    Login here
+                  <Link to="/login" className="font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                    Sign in here
                   </Link>
                 </p>
               )}
             </div>
-          </CardBody>
-        </Card>
+          </div>
+        </div>
       </div>
     </CustomerLayout>
   );

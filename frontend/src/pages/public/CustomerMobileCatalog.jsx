@@ -167,53 +167,53 @@ const CustomerMobileCatalog = () => {
   return (
     <CustomerLayout>
       <div className="space-y-6">
-        {/* Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-slate-800 text-white p-6 sm:p-8 rounded-2xl shadow-md relative overflow-hidden">
+        {/* iOS Catalog Header Banner */}
+        <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden">
           <div className="max-w-2xl relative z-10 space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-xs font-semibold">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-xs font-semibold">
               <Smartphone className="w-3.5 h-3.5 text-blue-400" />
-              <span>Mobile Catalogue</span>
+              <span>Smartphone Catalog</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Explore Mobile Models</h1>
-            <p className="text-xs sm:text-sm text-slate-300">
-              Search genuine smartphones, compare specs, filter by brand, price, RAM & storage.
+            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">Explore Mobile Models</h1>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Find genuine smartphones, compare specs, filter by brand, price, RAM & storage.
             </p>
           </div>
         </div>
 
         {/* Top Control Bar (Search, Mobile Filter Drawer Toggle, Sort) */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs space-y-3">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-3">
           <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search by model, brand, processor, RAM..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-slate-400 font-medium"
               />
             </div>
             <button
               type="submit"
-              className="w-full sm:w-auto px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-xs"
+              className="w-full sm:w-auto px-6 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-xs"
             >
               Search
             </button>
           </form>
 
           {/* Action Row: Mobile Drawer Button + Sort Dropdown */}
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-between pt-2.5 border-t border-slate-100">
             <button
               onClick={() => setIsMobileFilterOpen(true)}
-              className="lg:hidden inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
+              className="lg:hidden inline-flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200/80 rounded-xl transition-colors"
             >
               <SlidersHorizontal className="w-4 h-4 text-blue-600" />
               Filters {activeChips.length > 0 && `(${activeChips.length})`}
             </button>
 
             <div className="flex items-center gap-2 ml-auto">
-              <span className="text-xs text-slate-500 hidden sm:inline">Sort By:</span>
+              <span className="text-xs font-medium text-slate-500 hidden sm:inline">Sort By:</span>
               <SortDropdown
                 value={sort}
                 onChange={(newSort) => updateQueryParams({ sort: newSort, page: 1 })}
@@ -228,7 +228,7 @@ const CustomerMobileCatalog = () => {
         {/* Main Content Layout: Desktop Sidebar + Results Grid */}
         <div className="flex gap-6 items-start">
           {/* Desktop Persistent Sidebar */}
-          <aside className="hidden lg:block w-64 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-5 shrink-0 sticky top-20">
+          <aside className="hidden lg:block w-64 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-5 shrink-0 sticky top-20">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
                 <Filter className="w-4 h-4 text-blue-600" /> Catalog Filters

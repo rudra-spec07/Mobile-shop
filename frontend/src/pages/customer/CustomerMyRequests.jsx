@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import Breadcrumb from '../../components/navigation/Breadcrumb';
-import Card, { CardBody } from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Loader from '../../components/common/Loader';
 import EmptyState from '../../components/common/EmptyState';
@@ -175,8 +174,8 @@ const CustomerMyRequests = () => {
         </div>
       </div>
 
-      {/* Status Filter Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-6 scrollbar-none">
+      {/* Status Filter Tabs (iOS Segmented Bar) */}
+      <div className="bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60 mb-6 flex items-center gap-1 overflow-x-auto scrollbar-none">
         {statusTabs.map((tab) => (
           <button
             key={tab.value}
@@ -184,10 +183,10 @@ const CustomerMyRequests = () => {
               setStatusFilter(tab.value);
               setCurrentPage(1);
             }}
-            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap border ${
+            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all whitespace-nowrap ${
               statusFilter === tab.value
-                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
             {tab.label}
@@ -221,96 +220,99 @@ const CustomerMyRequests = () => {
               const isEligibleForCancel = ['PENDING', 'CONFIRMED'].includes(req.status);
 
               return (
-                <Card key={req.id} className="hover:shadow-md transition-shadow border-slate-200">
-                  <CardBody className="p-5">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      {/* Left Item Info */}
-                      <div className="flex items-start gap-3.5">
-                        <div
-                          className={`p-3 rounded-2xl shrink-0 ${
-                            isMobileReq ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
-                          }`}
-                        >
-                          {isMobileReq ? <Smartphone className="w-6 h-6" /> : <Wrench className="w-6 h-6" />}
-                        </div>
-
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                              ID: {req.id.slice(0, 8)}...
-                            </span>
-                            <RequestStatusBadge status={req.status} cancellationRequested={req.cancellationRequested} />
-                          </div>
-
-                          <h3 className="text-base font-extrabold text-slate-900 leading-tight">
-                            {itemName || req.subject || 'Service Request'}
-                          </h3>
-
-                          {req.subject && itemName && (
-                            <p className="text-xs text-slate-500 mt-0.5">{req.subject}</p>
-                          )}
-
-                          <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-slate-500">
-                            <span className="flex items-center gap-1 font-medium">
-                              <Calendar className="w-3.5 h-3.5 text-slate-400" /> {formatDate(req.createdAt)}
-                            </span>
-                            <span>•</span>
-                            <span className="font-semibold text-slate-700">Quantity: {req.quantity}</span>
-                          </div>
-                        </div>
+                <div
+                  key={req.id}
+                  className="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-sm transition-all p-5 sm:p-6"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    {/* Left Item Info */}
+                    <div className="flex items-start gap-4">
+                      <div
+                        className={`p-3.5 rounded-2xl shrink-0 ${
+                          isMobileReq ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
+                        }`}
+                      >
+                        {isMobileReq ? <Smartphone className="w-6 h-6" /> : <Wrench className="w-6 h-6" />}
                       </div>
 
-                      {/* Right Price & Actions */}
-                      <div className="flex items-center justify-between md:flex-col md:items-end gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
-                        <div className="text-left md:text-right">
-                          <span className="text-[10px] font-medium text-slate-400 block uppercase">Price Snapshot</span>
-                          <span className="text-lg font-extrabold text-blue-700">
-                            {formatCurrency(Number(req.price) * req.quantity)}
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono">
+                            ID: #{req.id.slice(0, 8)}
                           </span>
+                          <RequestStatusBadge status={req.status} cancellationRequested={req.cancellationRequested} />
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          {isEligibleForCancel ? (
-                            <Button
-                              variant="outline"
-                              size="xs"
-                              className="text-red-600 hover:bg-red-50 border-red-200"
-                              onClick={() => handleOpenCancelModal(req)}
-                              disabled={isSubmittingCancel}
-                            >
-                              <XCircle className="w-3.5 h-3.5 mr-1" /> Cancel
-                            </Button>
-                          ) : req.status === 'PROCESSING' && !req.cancellationRequested ? (
-                            <Button
-                              variant="outline"
-                              size="xs"
-                              className="text-amber-700 hover:bg-amber-50 border-amber-300"
-                              onClick={() => handleOpenCancelModal(req)}
-                              disabled={isSubmittingCancel}
-                            >
-                              <XCircle className="w-3.5 h-3.5 mr-1" /> Request Cancel
-                            </Button>
-                          ) : null}
-                          <Button
-                            variant="primary"
-                            size="xs"
-                            className="bg-slate-900 hover:bg-slate-800"
-                            onClick={() => handleOpenDetails(req)}
-                          >
-                            <Eye className="w-3.5 h-3.5 mr-1" /> View Details
-                          </Button>
+                        <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                          {itemName || req.subject || 'Service Request'}
+                        </h3>
+
+                        {req.subject && itemName && (
+                          <p className="text-xs text-slate-500 mt-0.5">{req.subject}</p>
+                        )}
+
+                        <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-slate-500">
+                          <span className="flex items-center gap-1 font-medium">
+                            <Calendar className="w-3.5 h-3.5 text-slate-400" /> {formatDate(req.createdAt)}
+                          </span>
+                          <span>•</span>
+                          <span className="font-semibold text-slate-700">Quantity: {req.quantity}</span>
                         </div>
                       </div>
                     </div>
-                  </CardBody>
-                </Card>
+
+                    {/* Right Price & Actions */}
+                    <div className="flex items-center justify-between md:flex-col md:items-end gap-3 pt-3 md:pt-0 border-t md:border-t-0 border-slate-100">
+                      <div className="text-left md:text-right">
+                        <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
+                          Price Snapshot
+                        </span>
+                        <span className="text-lg font-extrabold text-blue-600">
+                          {formatCurrency(Number(req.price) * req.quantity)}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {isEligibleForCancel ? (
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl"
+                            onClick={() => handleOpenCancelModal(req)}
+                            disabled={isSubmittingCancel}
+                          >
+                            <XCircle className="w-3.5 h-3.5 mr-1" /> Cancel
+                          </Button>
+                        ) : req.status === 'PROCESSING' && !req.cancellationRequested ? (
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            className="text-amber-700 hover:bg-amber-50 border-amber-300 rounded-xl"
+                            onClick={() => handleOpenCancelModal(req)}
+                            disabled={isSubmittingCancel}
+                          >
+                            <XCircle className="w-3.5 h-3.5 mr-1" /> Request Cancel
+                          </Button>
+                        ) : null}
+                        <Button
+                          variant="primary"
+                          size="xs"
+                          className="bg-slate-900 hover:bg-slate-800 rounded-xl"
+                          onClick={() => handleOpenDetails(req)}
+                        >
+                          <Eye className="w-3.5 h-3.5 mr-1" /> View Details
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               );
             })}
           </div>
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
-            <div className="pt-4">
+            <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-xs">
               <Pagination
                 currentPage={pagination.page}
                 totalPages={pagination.totalPages}
@@ -331,7 +333,7 @@ const CustomerMyRequests = () => {
         >
           <div className="space-y-5">
             {/* Header info */}
-            <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+            <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80">
               <div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   Request Reference Code
@@ -346,25 +348,25 @@ const CustomerMyRequests = () => {
             <RequestTimeline status={selectedRequest.status} />
 
             {actionError && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+              <div className="p-3.5 bg-rose-50 border border-rose-200/80 text-rose-700 text-xs rounded-2xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{actionError}</span>
               </div>
             )}
 
             {cancelSuccessMsg && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl flex items-center gap-2">
+              <div className="p-3.5 bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs rounded-2xl flex items-center gap-2">
                 <Clock className="w-4 h-4 shrink-0 text-emerald-600" />
                 <span>{cancelSuccessMsg}</span>
               </div>
             )}
 
             {/* Requested Item Spec */}
-            <div className="p-4 bg-white rounded-2xl border border-slate-200 space-y-3">
-              <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Requested Item Information</h4>
-              <div className="flex items-center gap-3">
+            <div className="p-4 bg-white rounded-2xl border border-slate-200/80 space-y-3">
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Requested Item Information</h4>
+              <div className="flex items-center gap-3.5">
                 <div
-                  className={`p-3 rounded-xl ${
+                  className={`p-3 rounded-2xl ${
                     selectedRequest.mobileId ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'
                   }`}
                 >
@@ -383,18 +385,18 @@ const CustomerMyRequests = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs border-t border-slate-100">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-3 border-t border-slate-100 text-xs">
                 <div>
-                  <span className="text-slate-400 block">Quantity</span>
+                  <span className="text-slate-400 block font-medium">Quantity</span>
                   <span className="font-extrabold text-slate-900">{selectedRequest.quantity}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">Unit Price Snapshot</span>
+                  <span className="text-slate-400 block font-medium">Unit Price Snapshot</span>
                   <span className="font-bold text-slate-900">{formatCurrency(selectedRequest.price)}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block">Total Amount</span>
-                  <span className="font-extrabold text-blue-700">
+                  <span className="text-slate-400 block font-medium">Total Amount</span>
+                  <span className="font-extrabold text-blue-600">
                     {formatCurrency(Number(selectedRequest.price) * selectedRequest.quantity)}
                   </span>
                 </div>
@@ -403,7 +405,7 @@ const CustomerMyRequests = () => {
 
             {/* Cancellation Request Notice if pending admin review */}
             {selectedRequest.status === 'PROCESSING' && selectedRequest.cancellationRequested && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl text-xs space-y-1">
+              <div className="p-4 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-xs space-y-1">
                 <div className="flex items-center gap-2 font-bold text-amber-900">
                   <Clock className="w-4 h-4 text-amber-600" />
                   <span>Cancellation Request Under Review</span>
@@ -426,9 +428,9 @@ const CustomerMyRequests = () => {
 
             {/* Customer Notes (Original Request Notes - Read Only) */}
             {selectedRequest.notes && (
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-1">
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">My Additional Notes</h4>
-                <p className="text-xs text-slate-700 leading-relaxed italic bg-white p-3 rounded-xl border border-slate-100">
+              <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-1">
+                <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">My Additional Notes</h4>
+                <p className="text-xs text-slate-700 leading-relaxed italic bg-white p-3.5 rounded-xl border border-slate-100">
                   "{selectedRequest.notes}"
                 </p>
               </div>
@@ -440,7 +442,7 @@ const CustomerMyRequests = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-red-600 hover:bg-red-50 border-red-200"
+                  className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl"
                   onClick={() => handleOpenCancelModal(selectedRequest)}
                   disabled={isSubmittingCancel}
                 >
@@ -450,7 +452,7 @@ const CustomerMyRequests = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-amber-700 hover:bg-amber-50 border-amber-300"
+                  className="text-amber-700 hover:bg-amber-50 border-amber-300 rounded-xl"
                   onClick={() => handleOpenCancelModal(selectedRequest)}
                   disabled={isSubmittingCancel}
                 >
@@ -459,7 +461,7 @@ const CustomerMyRequests = () => {
               ) : (
                 <div />
               )}
-              <Button variant="outline" size="sm" onClick={() => setIsDetailsModalOpen(false)}>
+              <Button variant="outline" size="sm" onClick={() => setIsDetailsModalOpen(false)} className="rounded-xl">
                 Close
               </Button>
             </div>
@@ -481,27 +483,27 @@ const CustomerMyRequests = () => {
         >
           <form onSubmit={handleSubmitCancelRequest} className="space-y-4">
             {requestToCancel.status === 'PROCESSING' ? (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2">
+              <div className="p-3.5 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-xs text-amber-800 flex items-start gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
                 <span>
                   This request is currently in processing. Submitting a cancellation request will notify our Super Admin team for review.
                 </span>
               </div>
             ) : (
-              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600">
+              <div className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-xs text-slate-600">
                 Are you sure you want to cancel this request for <strong>{requestToCancel.mobile?.name || requestToCancel.part?.name || requestToCancel.subject || 'this item'}</strong>?
               </div>
             )}
 
             {cancelFormError && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+              <div className="p-3.5 bg-rose-50 border border-rose-200/80 text-rose-700 text-xs rounded-2xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{cancelFormError}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">
                 Why do you want to cancel? <span className="text-slate-400 font-normal">(Optional)</span>
               </label>
               <textarea
@@ -509,7 +511,7 @@ const CustomerMyRequests = () => {
                 value={cancellationReasonInput}
                 onChange={(e) => setCancellationReasonInput(e.target.value)}
                 placeholder="Please tell us why you want to cancel this request (optional)."
-                className="w-full text-xs p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-900 placeholder-slate-400 resize-none"
+                className="w-full text-xs p-3.5 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-900 placeholder-slate-400 resize-none transition-all outline-none"
                 maxLength={1000}
               />
             </div>
@@ -521,6 +523,7 @@ const CustomerMyRequests = () => {
                 size="sm"
                 onClick={handleCloseCancelModal}
                 disabled={isSubmittingCancel}
+                className="rounded-xl"
               >
                 Keep Request
               </Button>
@@ -528,7 +531,7 @@ const CustomerMyRequests = () => {
                 type="submit"
                 variant="danger"
                 size="sm"
-                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                className="bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl"
                 disabled={isSubmittingCancel}
               >
                 {isSubmittingCancel ? (

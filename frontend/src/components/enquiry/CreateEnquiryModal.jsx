@@ -87,26 +87,26 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
       {createdEnquiry ? (
         /* Success State */
         <div className="text-center py-4 space-y-4 animate-fade-in">
-          <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-6 h-6" />
+          <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-200 shadow-xs">
+            <CheckCircle2 className="w-7 h-7" />
           </div>
           <div>
-            <h4 className="text-lg font-bold text-slate-900">Enquiry Submitted Successfully!</h4>
+            <h4 className="text-lg font-extrabold text-slate-900">Enquiry Submitted Successfully!</h4>
             <p className="text-xs text-slate-500 mt-1">
-              Your enquiry reference code is <span className="font-mono font-bold text-slate-700">#{createdEnquiry.id.slice(0, 8)}</span>
+              Your enquiry reference code is <span className="font-mono font-bold text-slate-900">#{createdEnquiry.id.slice(0, 8)}</span>
             </p>
           </div>
 
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-left text-xs space-y-1">
-            <p className="font-semibold text-slate-800">Subject: {createdEnquiry.subject}</p>
-            <p className="text-slate-500 line-clamp-2">{createdEnquiry.message}</p>
+          <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl text-left text-xs space-y-1">
+            <p className="font-bold text-slate-900">Subject: {createdEnquiry.subject}</p>
+            <p className="text-slate-600 line-clamp-2 mt-1 leading-relaxed">{createdEnquiry.message}</p>
           </div>
 
           <div className="flex items-center gap-3 pt-2">
             <Button
               variant="outline"
               size="sm"
-              className="flex-1 justify-center"
+              className="flex-1 justify-center rounded-xl"
               onClick={handleClose}
             >
               Close
@@ -114,7 +114,7 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
             <Button
               variant="primary"
               size="sm"
-              className="flex-1 justify-center bg-blue-600 hover:bg-blue-700"
+              className="flex-1 justify-center bg-blue-600 hover:bg-blue-700 rounded-xl font-bold"
               onClick={() => {
                 handleClose();
                 navigate('/customer/enquiries');
@@ -128,7 +128,7 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
         /* Creation Form */
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-700">
+            <div className="p-3.5 bg-rose-50 border border-rose-200/80 rounded-2xl flex items-center gap-2 text-xs text-rose-700">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
@@ -136,24 +136,24 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
 
           {/* Product Summary Card if attached */}
           {mobile && (
-            <div className="p-3 bg-blue-50/60 border border-blue-100 rounded-xl flex items-center gap-3">
-              <div className="p-2 bg-blue-600 text-white rounded-lg">
-                <Smartphone className="w-4 h-4" />
+            <div className="p-4 bg-blue-50/60 border border-blue-100 rounded-2xl flex items-center gap-3">
+              <div className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs">
+                <Smartphone className="w-5 h-5" />
               </div>
               <div className="text-xs">
-                <span className="font-bold text-slate-900 block">{mobile.name}</span>
+                <span className="font-bold text-slate-900 block text-sm">{mobile.name}</span>
                 <span className="text-slate-500">Model: {mobile.modelNumber || 'Standard'}</span>
               </div>
             </div>
           )}
 
           {part && (
-            <div className="p-3 bg-purple-50/60 border border-purple-100 rounded-xl flex items-center gap-3">
-              <div className="p-2 bg-purple-600 text-white rounded-lg">
-                <Wrench className="w-4 h-4" />
+            <div className="p-4 bg-purple-50/60 border border-purple-100 rounded-2xl flex items-center gap-3">
+              <div className="p-2.5 bg-purple-600 text-white rounded-xl shadow-xs">
+                <Wrench className="w-5 h-5" />
               </div>
               <div className="text-xs">
-                <span className="font-bold text-slate-900 block">{part.name}</span>
+                <span className="font-bold text-slate-900 block text-sm">{part.name}</span>
                 <span className="text-slate-500">Part #: {part.partNumber}</span>
               </div>
             </div>
@@ -161,7 +161,7 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
 
           {/* Subject Field */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-700 mb-1">
               Subject <span className="text-rose-500">*</span>
             </label>
             <Input
@@ -177,7 +177,7 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
 
           {/* Message Field */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
+            <label className="block text-xs font-bold text-slate-700 mb-1">
               Enquiry Message <span className="text-rose-500">*</span>
             </label>
             <textarea
@@ -185,7 +185,7 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
               placeholder="Provide detailed questions regarding warranty, EMI options, compatibility, or in-store inspection..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none"
+              className="w-full px-3.5 py-3 text-xs bg-white border border-slate-200/80 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all resize-none text-slate-900 placeholder-slate-400"
               maxLength={2000}
               required
             />
@@ -203,6 +203,7 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
               size="sm"
               onClick={handleClose}
               disabled={isSubmitting}
+              className="rounded-xl"
             >
               Cancel
             </Button>
@@ -210,7 +211,7 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
               type="submit"
               variant="primary"
               size="sm"
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-blue-600 hover:bg-blue-700 rounded-xl font-bold"
               isLoading={isSubmitting}
             >
               Submit Enquiry

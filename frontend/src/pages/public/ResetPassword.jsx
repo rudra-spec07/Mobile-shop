@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import CustomerLayout from '../../components/layout/CustomerLayout';
-import Card, { CardBody, CardHeader } from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { ShieldCheck, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -54,52 +53,52 @@ const ResetPassword = () => {
 
   return (
     <CustomerLayout>
-      <div className="max-w-md mx-auto py-8">
-        <Card>
-          <CardHeader className="text-center bg-slate-50/50 py-6">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-              <ShieldCheck className="w-6 h-6" />
+      <div className="max-w-md mx-auto py-10 px-4">
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div className="text-center bg-slate-50/80 p-6 sm:p-8 border-b border-slate-100">
+            <div className="w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-3.5 shadow-md">
+              <ShieldCheck className="w-7 h-7" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900">Reset Password</h1>
-            <p className="text-xs text-slate-500 mt-1">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Reset Password</h1>
+            <p className="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed">
               Create a new secure password for your Mobile-Adda account.
             </p>
-          </CardHeader>
-          <CardBody>
+          </div>
+          <div className="p-6 sm:p-8">
             {!token && !success ? (
               <div className="text-center py-4 space-y-4">
-                <div className="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
-                  <AlertCircle className="w-6 h-6" />
+                <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto border border-amber-200">
+                  <AlertCircle className="w-7 h-7" />
                 </div>
-                <h3 className="text-sm font-semibold text-slate-900">Missing Reset Token</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-base font-extrabold text-slate-900">Missing Reset Token</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
                   This reset link is missing a valid security token. Please request a new password reset link.
                 </p>
                 <Link to="/forgot-password">
-                  <Button variant="primary" className="w-full">
+                  <Button variant="primary" className="w-full rounded-xl py-3 font-bold shadow-xs">
                     Request New Reset Link
                   </Button>
                 </Link>
               </div>
             ) : success ? (
               <div className="text-center py-4 space-y-4">
-                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-6 h-6" />
+                <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto border border-emerald-200">
+                  <CheckCircle2 className="w-7 h-7" />
                 </div>
-                <h3 className="text-sm font-semibold text-slate-900">Password Reset Complete</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-base font-extrabold text-slate-900">Password Reset Complete</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
                   Your password has been reset successfully. You can now log in with your new password.
                 </p>
                 <Link to="/login">
-                  <Button variant="primary" className="w-full">
-                    Go to Login
+                  <Button variant="primary" className="w-full rounded-xl py-3 font-bold shadow-xs">
+                    Go to Sign In
                   </Button>
                 </Link>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {errorMsg && (
-                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+                  <div className="p-3.5 bg-rose-50 border border-rose-200/80 text-rose-700 text-xs rounded-2xl">
                     {errorMsg}
                   </div>
                 )}
@@ -116,7 +115,7 @@ const ResetPassword = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-8 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3.5 top-8 text-slate-400 hover:text-slate-600 transition-colors"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -132,13 +131,13 @@ const ResetPassword = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
 
-                <Button type="submit" variant="primary" isLoading={loading} className="w-full">
+                <Button type="submit" variant="primary" isLoading={loading} className="w-full rounded-xl py-3 font-bold shadow-xs">
                   Set New Password
                 </Button>
               </form>
             )}
-          </CardBody>
-        </Card>
+          </div>
+        </div>
       </div>
     </CustomerLayout>
   );

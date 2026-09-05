@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import CustomerLayout from '../../components/layout/CustomerLayout';
-import Card, { CardBody, CardHeader } from '../../components/common/Card';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { KeyRound, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -46,31 +45,31 @@ const ForgotPassword = () => {
 
   return (
     <CustomerLayout>
-      <div className="max-w-md mx-auto py-8">
-        <Card>
-          <CardHeader className="text-center bg-slate-50/50 py-6">
-            <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-              <KeyRound className="w-6 h-6" />
+      <div className="max-w-md mx-auto py-10 px-4">
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div className="text-center bg-slate-50/80 p-6 sm:p-8 border-b border-slate-100">
+            <div className="w-14 h-14 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-3.5 shadow-md">
+              <KeyRound className="w-7 h-7" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900">Forgot Password</h1>
-            <p className="text-xs text-slate-500 mt-1">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Forgot Password</h1>
+            <p className="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed">
               Enter your registered email address or mobile number and we will send you instructions to reset your password.
             </p>
-          </CardHeader>
-          <CardBody>
+          </div>
+          <div className="p-6 sm:p-8">
             {submitted ? (
               <div className="text-center py-4 space-y-4">
-                <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle className="w-6 h-6" />
+                <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto border border-emerald-200">
+                  <CheckCircle className="w-7 h-7" />
                 </div>
-                <h3 className="text-sm font-semibold text-slate-900">Reset Request Submitted</h3>
-                <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                  If the account exists, password reset instructions have been sent.
+                <h3 className="text-base font-extrabold text-slate-900">Reset Request Submitted</h3>
+                <p className="text-xs text-slate-600 bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 leading-relaxed">
+                  If an account exists for the details provided, password reset instructions have been dispatched.
                 </p>
                 <div className="pt-2">
                   <Link to="/login">
-                    <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                      <ArrowLeft className="w-4 h-4" /> Return to Login
+                    <Button variant="outline" className="w-full flex items-center justify-center gap-2 rounded-xl">
+                      <ArrowLeft className="w-4 h-4" /> Return to Sign In
                     </Button>
                   </Link>
                 </div>
@@ -78,7 +77,7 @@ const ForgotPassword = () => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {errorMsg && (
-                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg">
+                  <div className="p-3.5 bg-rose-50 border border-rose-200/80 text-rose-700 text-xs rounded-2xl">
                     {errorMsg}
                   </div>
                 )}
@@ -93,19 +92,19 @@ const ForgotPassword = () => {
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
 
-                <Button type="submit" variant="primary" isLoading={loading} className="w-full">
+                <Button type="submit" variant="primary" isLoading={loading} className="w-full rounded-xl py-3 font-bold shadow-xs">
                   Send Reset Link
                 </Button>
 
                 <div className="pt-2 text-center">
-                  <Link to="/login" className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-blue-600">
-                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Login
+                  <Link to="/login" className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-blue-600 transition-colors">
+                    <ArrowLeft className="w-3.5 h-3.5" /> Back to Sign In
                   </Link>
                 </div>
               </form>
             )}
-          </CardBody>
-        </Card>
+          </div>
+        </div>
       </div>
     </CustomerLayout>
   );

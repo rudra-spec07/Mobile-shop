@@ -90,20 +90,20 @@ const Profile = () => {
       <div className="max-w-4xl mx-auto py-6 px-4 space-y-6">
         <Breadcrumb items={breadcrumbItems} />
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">User Account Profile</h1>
-            <p className="text-xs text-slate-500 mt-1">Manage your personal contact details and view account details</p>
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">User Account Profile</h1>
+            <p className="text-xs text-slate-500 mt-1">Manage your personal contact details and view account status</p>
           </div>
           {!loading && !error && (
             <div className="flex items-center gap-2">
               <Link to={isSuperAdmin ? '/admin/change-password' : '/customer/change-password'}>
-                <Button variant="outline" size="sm" className="flex items-center gap-1.5">
+                <Button variant="outline" size="sm" className="flex items-center gap-1.5 rounded-xl">
                   <KeyRound className="w-4 h-4" /> Change Password
                 </Button>
               </Link>
               {!isEditing && (
-                <Button variant="primary" size="sm" onClick={() => setIsEditing(true)} className="flex items-center gap-1.5">
+                <Button variant="primary" size="sm" onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 rounded-xl">
                   <Edit3 className="w-4 h-4" /> Edit Profile
                 </Button>
               )}
@@ -112,47 +112,41 @@ const Profile = () => {
         </div>
 
         {loading ? (
-          <Card>
-            <CardBody className="py-12">
-              <Loader label="Loading profile information..." />
-            </CardBody>
-          </Card>
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs">
+            <Loader label="Loading profile information..." />
+          </div>
         ) : error ? (
-          <Card>
-            <CardBody className="py-8">
-              <ErrorState title="Profile Load Failed" message={error} onRetry={fetchProfile} />
-            </CardBody>
-          </Card>
+          <div className="bg-white rounded-3xl border border-slate-200/80 p-8 shadow-xs">
+            <ErrorState title="Profile Load Failed" message={error} onRetry={fetchProfile} />
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left Card: Account Overview */}
-            <Card className="md:col-span-1">
-              <CardBody className="text-center py-8">
-                <div className="w-20 h-20 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center mx-auto text-2xl font-bold mb-4 shadow-inner">
-                  {profile.name ? profile.name.charAt(0).toUpperCase() : 'U'}
-                </div>
-                <h2 className="text-lg font-bold text-slate-900">{profile.name}</h2>
-                <p className="text-xs text-slate-500 mt-0.5">{profile.email || profile.mobileNumber}</p>
+            <div className="md:col-span-1 bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 text-center">
+              <div className="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-3xl font-extrabold mb-4 shadow-md">
+                {profile.name ? profile.name.charAt(0).toUpperCase() : 'U'}
+              </div>
+              <h2 className="text-lg font-bold text-slate-900">{profile.name}</h2>
+              <p className="text-xs text-slate-500 mt-0.5 font-medium">{profile.email || profile.mobileNumber}</p>
 
-                <div className="mt-4 flex items-center justify-center gap-2">
-                  <span className="px-2.5 py-1 text-[11px] font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                    Role: {profile.role}
-                  </span>
-                  <span className={`px-2.5 py-1 text-[11px] font-semibold rounded-full ${profile.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-                    {profile.isActive ? 'ACTIVE' : 'INACTIVE'}
-                  </span>
-                </div>
-              </CardBody>
-            </Card>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <span className="px-3 py-1 text-[11px] font-bold rounded-full bg-blue-50 text-blue-700 border border-blue-200/80">
+                  {profile.role}
+                </span>
+                <span className={`px-3 py-1 text-[11px] font-bold rounded-full ${profile.isActive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/80' : 'bg-rose-50 text-rose-700 border border-rose-200/80'}`}>
+                  {profile.isActive ? 'ACTIVE' : 'INACTIVE'}
+                </span>
+              </div>
+            </div>
 
             {/* Right Card: Account Details & Edit Form */}
-            <Card className="md:col-span-2">
-              <CardHeader className="bg-slate-50/50 py-4">
-                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+            <div className="md:col-span-2 bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+              <div className="bg-slate-50/80 px-6 py-4 border-b border-slate-100">
+                <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                   <User className="w-4 h-4 text-blue-600" /> Account Details
                 </h3>
-              </CardHeader>
-              <CardBody>
+              </div>
+              <div className="p-6">
                 {isEditing ? (
                   <form onSubmit={handleSaveProfile} className="space-y-4">
                     <Input
@@ -176,66 +170,66 @@ const Profile = () => {
                         type="text"
                         disabled
                         value={profile.email || 'Not provided'}
-                        className="w-full px-3 py-2 text-xs bg-slate-100 border border-slate-200 rounded-lg text-slate-500 cursor-not-allowed"
+                        className="w-full px-3.5 py-2.5 text-xs bg-slate-100/80 border border-slate-200/80 rounded-xl text-slate-500 cursor-not-allowed"
                       />
                     </div>
 
                     <div className="flex items-center gap-3 pt-2">
-                      <Button type="submit" variant="primary" size="sm" isLoading={saving} className="flex items-center gap-1.5">
+                      <Button type="submit" variant="primary" size="sm" isLoading={saving} className="flex items-center gap-1.5 rounded-xl">
                         <Save className="w-4 h-4" /> Save Changes
                       </Button>
-                      <Button type="button" variant="secondary" size="sm" onClick={handleCancelEdit} disabled={saving} className="flex items-center gap-1.5">
+                      <Button type="button" variant="secondary" size="sm" onClick={handleCancelEdit} disabled={saving} className="flex items-center gap-1.5 rounded-xl">
                         <X className="w-4 h-4" /> Cancel
                       </Button>
                     </div>
                   </form>
                 ) : (
                   <div className="space-y-4 divide-y divide-slate-100">
-                    <div className="flex items-center gap-3 pt-1">
-                      <div className="p-2 bg-slate-100 text-slate-600 rounded-lg shrink-0">
+                    <div className="flex items-center gap-3.5 pt-1">
+                      <div className="p-2.5 bg-slate-100/80 text-slate-600 rounded-xl shrink-0">
                         <User className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Full Name</p>
-                        <p className="text-xs font-semibold text-slate-800 mt-0.5">{profile.name}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Full Name</p>
+                        <p className="text-xs font-semibold text-slate-900 mt-0.5">{profile.name}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-3">
-                      <div className="p-2 bg-slate-100 text-slate-600 rounded-lg shrink-0">
+                    <div className="flex items-center gap-3.5 pt-3.5">
+                      <div className="p-2.5 bg-slate-100/80 text-slate-600 rounded-xl shrink-0">
                         <Mail className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Email Address</p>
-                        <p className="text-xs font-semibold text-slate-800 mt-0.5">{profile.email || 'Not provided'}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Email Address</p>
+                        <p className="text-xs font-semibold text-slate-900 mt-0.5">{profile.email || 'Not provided'}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-3">
-                      <div className="p-2 bg-slate-100 text-slate-600 rounded-lg shrink-0">
+                    <div className="flex items-center gap-3.5 pt-3.5">
+                      <div className="p-2.5 bg-slate-100/80 text-slate-600 rounded-xl shrink-0">
                         <Phone className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Mobile Number</p>
-                        <p className="text-xs font-semibold text-slate-800 mt-0.5">{profile.mobileNumber || 'Not provided'}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Mobile Number</p>
+                        <p className="text-xs font-semibold text-slate-900 mt-0.5">{profile.mobileNumber || 'Not provided'}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 pt-3">
-                      <div className="p-2 bg-slate-100 text-slate-600 rounded-lg shrink-0">
+                    <div className="flex items-center gap-3.5 pt-3.5">
+                      <div className="p-2.5 bg-slate-100/80 text-slate-600 rounded-xl shrink-0">
                         <Calendar className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Account Created</p>
-                        <p className="text-xs font-semibold text-slate-800 mt-0.5">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Account Created</p>
+                        <p className="text-xs font-semibold text-slate-900 mt-0.5">
                           {profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
                         </p>
                       </div>
                     </div>
                   </div>
                 )}
-              </CardBody>
-            </Card>
+              </div>
+            </div>
           </div>
         )}
       </div>

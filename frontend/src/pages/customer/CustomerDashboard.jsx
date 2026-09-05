@@ -37,72 +37,74 @@ const CustomerDashboard = () => {
 
   return (
     <CustomerLayout>
-      <Breadcrumb />
-      
-      {/* Dashboard Welcome Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white p-6 sm:p-8 rounded-2xl mb-6 shadow-sm">
-        <h1 className="text-2xl font-bold">Welcome back, {user?.name || 'Customer'}!</h1>
-        <p className="text-xs sm:text-sm text-blue-100 mt-1">
-          Manage your mobile enquiries, part requests, and track shop responses.
-        </p>
-      </div>
-
-      {/* Metrics Summary Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((stat, idx) => {
-          const Icon = stat.icon;
-          return (
-            <Link key={idx} to={stat.link}>
-              <Card className="hover:shadow-md transition-shadow">
-                <CardBody className="p-4 sm:p-5 flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-slate-500">{stat.label}</p>
-                    <p className="text-lg sm:text-xl font-bold text-slate-900 mt-1">{stat.value}</p>
-                  </div>
-                  <div className={`p-2.5 rounded-xl ${stat.color}`}>
-                    <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                  </div>
-                </CardBody>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
-
-      {/* Recent Activity List */}
-      <Card>
-        <CardHeader className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-slate-500" />
-            <h2 className="text-sm font-semibold text-slate-900">Recent Activity & Requests</h2>
+      <div className="space-y-6">
+        <Breadcrumb />
+        
+        {/* Dashboard Welcome Header */}
+        <div className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden">
+          <div className="relative z-10 space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Welcome back, {user?.name || 'Customer'}!</h1>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-xl">
+              Manage your mobile enquiries, spare part requests, and track shop responses.
+            </p>
           </div>
-          <Link to="/customer/enquiries" className="text-xs font-semibold text-blue-600 hover:text-blue-700 flex items-center">
-            View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-          </Link>
-        </CardHeader>
-        <CardBody className="divide-y divide-slate-100 p-0">
-          {recentActivities.map((act) => (
-            <div key={act.id} className="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-slate-900">{act.title}</span>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${act.badgeClass}`}>
-                    {act.status}
-                  </span>
+        </div>
+
+        {/* Metrics Summary Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+          {stats.map((stat, idx) => {
+            const Icon = stat.icon;
+            return (
+              <Link key={idx} to={stat.link}>
+                <div className="bg-white rounded-2xl border border-slate-200/80 p-4 sm:p-5 flex items-center justify-between hover:shadow-md hover:border-slate-300 transition-all duration-200 h-full">
+                  <div>
+                    <p className="text-[11px] font-medium text-slate-500">{stat.label}</p>
+                    <p className="text-base sm:text-lg font-extrabold text-slate-900 mt-0.5">{stat.value}</p>
+                  </div>
+                  <div className={`p-2.5 rounded-2xl ${stat.color} shrink-0`}>
+                    <Icon className="w-5 h-5 stroke-[1.8]" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 text-[11px] text-slate-500">
-                  <span>Type: {act.type}</span>
-                  <span>•</span>
-                  <span>{act.date}</span>
-                </div>
-              </div>
-              <Link to="/customer/enquiries" className="text-slate-400 hover:text-slate-600 p-1">
-                <ChevronRight className="w-5 h-5" />
               </Link>
+            );
+          })}
+        </div>
+
+        {/* Recent Activity List */}
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-blue-600" />
+              <h2 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Recent Activity & Requests</h2>
             </div>
-          ))}
-        </CardBody>
-      </Card>
+            <Link to="/customer/enquiries" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center">
+              View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+            </Link>
+          </div>
+          <div className="divide-y divide-slate-100">
+            {recentActivities.map((act) => (
+              <div key={act.id} className="p-4 sm:p-5 flex items-center justify-between hover:bg-slate-50/60 transition-colors">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-slate-900">{act.title}</span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${act.badgeClass}`}>
+                      {act.status}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-[11px] text-slate-400 font-medium">
+                    <span>Type: {act.type}</span>
+                    <span>•</span>
+                    <span>{act.date}</span>
+                  </div>
+                </div>
+                <Link to="/customer/enquiries" className="text-slate-400 hover:text-slate-600 p-1">
+                  <ChevronRight className="w-5 h-5" />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </CustomerLayout>
   );
 };

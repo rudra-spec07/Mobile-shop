@@ -80,9 +80,9 @@ const GlobalSearchBar = ({ className = '' }) => {
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.trim() && setIsOpen(true)}
           placeholder="Search mobiles, parts, brands..."
-          className="w-full pl-9 pr-8 py-1.5 text-xs bg-slate-100 hover:bg-slate-50 border border-slate-200 rounded-full text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-inner"
+          className="w-full pl-9 pr-8 py-2 text-xs bg-slate-100/90 hover:bg-slate-100 border border-slate-200/80 rounded-full text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 focus:bg-white transition-all shadow-xs"
         />
-        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         {isLoading ? (
           <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin absolute right-3 top-1/2 -translate-y-1/2" />
         ) : (
@@ -93,7 +93,7 @@ const GlobalSearchBar = ({ className = '' }) => {
                 setQuery('');
                 setIsOpen(false);
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-200/60 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -103,7 +103,7 @@ const GlobalSearchBar = ({ className = '' }) => {
 
       {/* Autocomplete Results Dropdown */}
       {isOpen && (
-        <div className="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-fade-in max-h-96 overflow-y-auto">
+        <div className="absolute left-0 right-0 mt-2 bg-white/98 backdrop-blur-md rounded-2xl shadow-xl border border-slate-200/80 py-2 z-50 animate-fade-in max-h-96 overflow-y-auto">
           {!hasResults && !isLoading ? (
             <div className="px-4 py-3 text-center text-xs text-slate-500">
               No matches found for "<span className="font-semibold text-slate-800">{query}</span>"

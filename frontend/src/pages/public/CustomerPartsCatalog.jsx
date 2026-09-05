@@ -158,40 +158,37 @@ const CustomerPartsCatalog = () => {
   return (
     <CustomerLayout>
       <div className="space-y-6">
-        {/* Hero Banner */}
-        <section className="bg-slate-900 text-white p-6 sm:p-8 rounded-2xl shadow-md relative overflow-hidden border-b border-slate-800">
-          <div className="absolute -right-10 -top-10 w-72 h-72 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-600/20 border border-blue-500/30 text-blue-400 text-xs font-semibold rounded-full mb-2">
-                <Wrench className="w-3.5 h-3.5" /> Authentic Mobile Spare Parts
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Genuine Replacement Components & Spare Parts
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1.5 max-w-xl">
-                Search original screens, battery assemblies, flex cables, and housing units.
-              </p>
+        {/* iOS Hero Banner */}
+        <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl relative overflow-hidden">
+          <div className="max-w-2xl relative z-10 space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold rounded-full">
+              <Wrench className="w-3.5 h-3.5 text-blue-400" /> Authentic Spare Parts
             </div>
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+              Spare Parts & Replacement Components
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Find original screens, battery assemblies, flex cables, fast chargers, and housing units.
+            </p>
           </div>
         </section>
 
         {/* Search & Control Bar */}
-        <div className="bg-white rounded-2xl p-4 shadow-xs border border-slate-200 space-y-3">
+        <div className="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200/80 space-y-3">
           <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative flex-1 w-full">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Search part name, part number, description..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200/80 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition-all placeholder:text-slate-400 font-medium"
               />
             </div>
             <button
               type="submit"
-              className="w-full sm:w-auto px-5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-xs"
+              className="w-full sm:w-auto px-6 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-xs"
             >
               Search
             </button>

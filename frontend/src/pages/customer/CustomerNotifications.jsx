@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Bell, CheckCircle2, RefreshCw, Inbox, Filter } from 'lucide-react';
+import { Bell, CheckCircle2, RefreshCw, Inbox } from 'lucide-react';
 import CustomerLayout from '../../components/layout/CustomerLayout';
-import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import Spinner from '../../components/common/Spinner';
 import EmptyState from '../../components/common/EmptyState';
@@ -83,49 +82,49 @@ const CustomerNotifications = () => {
   return (
     <CustomerLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <Bell className="w-6 h-6 text-blue-600" />
-              <span>My Notifications</span>
-            </h1>
-            <p className="text-xs text-slate-500 mt-1">
-              Stay updated on your service requests, enquiries, and account status.
-            </p>
-          </div>
+        {/* Header Banner */}
+        <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl relative overflow-hidden border border-slate-800 shadow-sm">
+          <div className="absolute -right-10 -top-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold rounded-full mb-2.5">
+                <Bell className="w-3.5 h-3.5" /> Notification Center
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">My Notifications</h1>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                Stay updated on your service requests, enquiries, and account status updates in real-time.
+              </p>
+            </div>
 
-          <div className="flex items-center gap-3">
             <Button
               variant="outline"
               size="sm"
               onClick={loadNotifications}
-              className="flex items-center gap-1.5"
+              className="bg-white/10 hover:bg-white/20 text-white border-white/20 rounded-xl"
             >
-              <RefreshCw className="w-4 h-4" />
-              <span>Refresh</span>
+              <RefreshCw className="w-4 h-4 mr-1.5" /> Refresh
             </Button>
           </div>
         </div>
 
-        {/* Filter Chips */}
-        <div className="flex items-center gap-2">
+        {/* Filter Chips (iOS Segmented Bar) */}
+        <div className="bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/60 flex items-center gap-1 w-fit">
           <button
             onClick={() => setActiveFilter('ALL')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               activeFilter === 'ALL'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
             All Notifications
           </button>
           <button
             onClick={() => setActiveFilter('UNREAD')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
               activeFilter === 'UNREAD'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+                ? 'bg-white text-blue-600 shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
             }`}
           >
             Unread Only
@@ -162,10 +161,10 @@ const CustomerNotifications = () => {
                 <div
                   key={notif.id}
                   onClick={() => handleItemClick(notif)}
-                  className={`p-4 rounded-xl border transition-all cursor-pointer flex items-start gap-4 hover:shadow-md ${
+                  className={`p-4 sm:p-5 rounded-2xl border transition-all cursor-pointer flex items-start gap-4 hover:shadow-xs ${
                     !isRead
-                      ? 'bg-blue-50/50 border-blue-200 shadow-xs'
-                      : 'bg-white border-slate-200 hover:border-slate-300'
+                      ? 'bg-blue-50/40 border-blue-200/80 shadow-xs'
+                      : 'bg-white border-slate-200/80 hover:border-slate-300'
                   }`}
                 >
                   {/* Status Indicator */}
@@ -198,7 +197,7 @@ const CustomerNotifications = () => {
 
             {/* Pagination Controls */}
             {pagination.totalPages > 1 && (
-              <div className="pt-4">
+              <div className="bg-white rounded-2xl p-3 border border-slate-200/80 shadow-xs mt-4">
                 <Pagination
                   currentPage={page}
                   totalPages={pagination.totalPages}
