@@ -3,6 +3,7 @@ const partController = require('../controllers/part.controller');
 const inventoryController = require('../controllers/inventory.controller');
 const { authenticateToken, optionalAuthenticate } = require('../middleware/auth.middleware');
 const { authorizeRoles } = require('../middleware/role.middleware');
+const { singleImageUpload } = require('../middleware/upload.middleware');
 const { ROLES } = require('../utils/constants');
 
 const router = express.Router();
@@ -12,8 +13,9 @@ router.get('/', optionalAuthenticate, partController.getParts);
 router.get('/:id', optionalAuthenticate, partController.getPartById);
 
 // Super Admin Management Routes
-router.post('/', authenticateToken, authorizeRoles(ROLES.SUPER_ADMIN), partController.createPart);
-router.patch('/:id', authenticateToken, authorizeRoles(ROLES.SUPER_ADMIN), partController.updatePart);
+router.post('/', authenticateToken, authorizeRoles(ROLES.SUPER_ADMIN), singleImageUpload, partController.createPart);
+router.patch('/:id', authenticateToken, authorizeRoles(ROLES.SUPER_ADMIN), singleImageUpload, partController.updatePart);
+router.delete('/:id/image', authenticateToken, authorizeRoles(ROLES.SUPER_ADMIN), partController.deletePartImage);
 router.patch('/:id/status', authenticateToken, authorizeRoles(ROLES.SUPER_ADMIN), partController.updatePartStatus);
 
 // Super Admin Stock Operations & Inventory History Routes

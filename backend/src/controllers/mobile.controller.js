@@ -1,4 +1,6 @@
 const mobileService = require('../services/mobile.service');
+const mobileImageService = require('../services/mobile-image.service');
+const cloudinaryService = require('../services/cloudinary.service');
 const {
   createMobileSchema,
   updateMobileSchema,
@@ -10,8 +12,19 @@ const { HTTP_STATUS, ROLES } = require('../utils/constants');
 
 const createMobile = async (req, res, next) => {
   try {
+    let imageUrl = null;
+    if (req.file) {
+      imageUrl = await cloudinaryService.uploadToCloudinary(req.file.buffer, 'mobiles');
+    }
+
     const validatedData = createMobileSchema.parse(req.body);
-    const mobile = await mobileService.createMobile(validatedData);
+    let mobile = await mobileService.createMobile(validatedData);
+
+    if (imageUrl) {
+      await mobileImageService.addImage(mobile.id, { imageUrl, isPrimary: true });
+      mobile = await mobileService.getMobileById(mobile.id, ROLES.SUPER_ADMIN);
+    }
+
     return sendSuccess(res, 'Mobile model created successfully', { mobile }, HTTP_STATUS.CREATED);
   } catch (error) {
     return next(error);

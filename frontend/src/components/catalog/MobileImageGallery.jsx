@@ -57,9 +57,7 @@ const MobileImageGallery = ({ images = [], mobileName = 'Mobile' }) => {
                   className="w-full h-full object-contain"
                 />
                 {img.isPrimary && (
-                  <span className="absolute bottom-0 inset-x-0 bg-blue-600 text-[7px] font-bold text-white text-center py-0.5 tracking-wider uppercase">
-                    Primary
-                  </span>
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-blue-600 ring-2 ring-white shadow-xs" title="Primary Image" />
                 )}
               </button>
             );

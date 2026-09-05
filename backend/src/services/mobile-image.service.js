@@ -100,6 +100,40 @@ const setPrimaryImage = async (mobileId, imageId) => {
   return updatedImage;
 };
 
+const { deleteFromCloudinary } = require('./cloudinary.service');
+
+/**
+ * Replace an existing mobile image with a new image URL (Super Admin only).
+ */
+const replaceImage = async (mobileId, imageId, newImageUrl) => {
+  const image = await prisma.mobileImage.findUnique({ where: { id: imageId } });
+
+  if (!image || image.mobileId !== mobileId) {
+    throw new AppError('Image not found for this mobile', HTTP_STATUS.NOT_FOUND, ERROR_CODES.IMAGE_NOT_FOUND);
+  }
+
+  const oldUrl = image.imageUrl;
+
+  const updatedImage = await prisma.mobileImage.update({
+    where: { id: imageId },
+    data: { imageUrl: newImageUrl },
+  });
+
+  // Clean up old asset after successful DB update
+  if (oldUrl && oldUrl !== newImageUrl) {
+    if (oldUrl.includes('cloudinary.com')) {
+      await deleteFromCloudinary(oldUrl).catch(() => {});
+    } else if (oldUrl.startsWith('/uploads/mobiles/')) {
+      try {
+        const localPath = path.join(process.cwd(), oldUrl);
+        if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
+      } catch (e) {}
+    }
+  }
+
+  return updatedImage;
+};
+
 /**
  * Delete a mobile image (Super Admin only).
  * ENFORCES AUTOMATIC PRIMARY IMAGE PROMOTION RULE:
@@ -135,15 +169,19 @@ const deleteImage = async (mobileId, imageId) => {
     }
   });
 
-  // If local file exists, attempt to remove it from disk
-  if (image.imageUrl && image.imageUrl.startsWith('/uploads/mobiles/')) {
-    try {
-      const localPath = path.join(process.cwd(), image.imageUrl);
-      if (fs.existsSync(localPath)) {
-        fs.unlinkSync(localPath);
+  // Clean up Cloudinary or local file asset
+  if (image.imageUrl) {
+    if (image.imageUrl.includes('cloudinary.com')) {
+      await deleteFromCloudinary(image.imageUrl).catch(() => {});
+    } else if (image.imageUrl.startsWith('/uploads/mobiles/')) {
+      try {
+        const localPath = path.join(process.cwd(), image.imageUrl);
+        if (fs.existsSync(localPath)) {
+          fs.unlinkSync(localPath);
+        }
+      } catch (e) {
+        // Ignore file cleanup errors
       }
-    } catch (e) {
-      // Ignore file cleanup errors
     }
   }
 
@@ -164,6 +202,7 @@ const getMobileImages = async (mobileId) => {
 
 module.exports = {
   addImage,
+  replaceImage,
   setPrimaryImage,
   deleteImage,
   getMobileImages,

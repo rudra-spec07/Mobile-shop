@@ -2,6 +2,7 @@ const { prisma } = require('../config/database');
 const { AppError } = require('../middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
 const { parsePagination } = require('../utils/pagination');
+const { deleteFromCloudinary } = require('./cloudinary.service');
 
 const calculateStockStatus = (quantity, minimumStock) => {
   if (quantity === 0) return 'OUT_OF_STOCK';
@@ -283,6 +284,8 @@ const updatePart = async (id, data) => {
   if (data.minimumStock !== undefined) updateData.minimumStock = data.minimumStock;
   if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
 
+  const oldImageUrl = part.imageUrl;
+
   const updatedPart = await prisma.part.update({
     where: { id },
     data: updateData,
@@ -290,6 +293,33 @@ const updatePart = async (id, data) => {
       category: true,
     },
   });
+
+  if (data.imageUrl !== undefined && oldImageUrl && oldImageUrl !== data.imageUrl) {
+    if (oldImageUrl.includes('cloudinary.com')) {
+      await deleteFromCloudinary(oldImageUrl).catch(() => {});
+    }
+  }
+
+  return formatPartForAdmin(updatedPart);
+};
+
+const deletePartImage = async (id) => {
+  const part = await prisma.part.findUnique({ where: { id } });
+  if (!part) {
+    throw new AppError('Part not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.PART_NOT_FOUND);
+  }
+
+  const oldImageUrl = part.imageUrl;
+
+  const updatedPart = await prisma.part.update({
+    where: { id },
+    data: { imageUrl: null },
+    include: { category: true },
+  });
+
+  if (oldImageUrl && oldImageUrl.includes('cloudinary.com')) {
+    await deleteFromCloudinary(oldImageUrl).catch(() => {});
+  }
 
   return formatPartForAdmin(updatedPart);
 };
@@ -319,5 +349,6 @@ module.exports = {
   getParts,
   getPartById,
   updatePart,
+  deletePartImage,
   updatePartStatus,
 };

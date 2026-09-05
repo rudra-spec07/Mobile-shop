@@ -14,8 +14,15 @@ export const partsService = {
   // Part CRUD Endpoints
   getParts: (params = {}) => apiClient.get('/parts', { params }),
   getPartById: (id) => apiClient.get(`/parts/${id}`),
-  createPart: (data) => apiClient.post('/parts', data),
-  updatePart: (id, data) => apiClient.patch(`/parts/${id}`, data),
+  createPart: (data) =>
+    data instanceof FormData
+      ? apiClient.post('/parts', data, { headers: { 'Content-Type': 'multipart/form-data' } })
+      : apiClient.post('/parts', data),
+  updatePart: (id, data) =>
+    data instanceof FormData
+      ? apiClient.patch(`/parts/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
+      : apiClient.patch(`/parts/${id}`, data),
+  deletePartImage: (id) => apiClient.delete(`/parts/${id}/image`),
   updatePartStatus: (id, status) => apiClient.patch(`/parts/${id}/status`, { status }),
 
   // Stock Operations Endpoints

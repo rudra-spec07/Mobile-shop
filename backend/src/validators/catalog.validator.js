@@ -34,7 +34,7 @@ const createMobileSchema = z.object({
   network: z.string().trim().optional().nullable(),
   simType: z.string().trim().optional().nullable(),
   color: z.string().trim().optional().nullable(),
-  featured: z.boolean().optional(),
+  featured: z.preprocess((val) => (val === 'true' || val === true ? true : false), z.boolean().optional()),
 }).refine((data) => {
   if (data.sellingPrice !== undefined && data.sellingPrice !== null) {
     return data.sellingPrice <= data.price;

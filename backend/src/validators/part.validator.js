@@ -22,11 +22,10 @@ const createPartSchema = z.object({
   categoryId: z.string({ required_error: 'Category ID is required' }).uuid('Invalid Category ID format'),
   name: z.string({ required_error: 'Part name is required' }).min(1, 'Part name cannot be empty').trim(),
   partNumber: z.string({ required_error: 'Part number is required' }).min(1, 'Part number cannot be empty').trim(),
-  description: z.string().optional().nullable(),
-  price: z.number({ required_error: 'Price is required' }).min(0, 'Price must be greater than or equal to 0'),
-  quantity: z.number().int('Quantity must be an integer').min(0, 'Quantity cannot be negative').optional().default(0),
-  minimumStock: z.number().int('Minimum stock must be an integer').min(0, 'Minimum stock cannot be negative').optional().default(0),
-  imageUrl: z.string().url('Invalid image URL format').optional().nullable(),
+  price: z.coerce.number({ required_error: 'Price is required' }).min(0, 'Price must be greater than or equal to 0'),
+  quantity: z.coerce.number().int('Quantity must be an integer').min(0, 'Quantity cannot be negative').optional().default(0),
+  minimumStock: z.coerce.number().int('Minimum stock must be an integer').min(0, 'Minimum stock cannot be negative').optional().default(0),
+  imageUrl: z.string().url('Invalid image URL format').optional().nullable().or(z.literal('')),
 });
 
 const updatePartSchema = z.object({

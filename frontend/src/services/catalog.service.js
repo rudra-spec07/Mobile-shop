@@ -15,15 +15,26 @@ export const catalogService = {
   getMobiles: (params = {}) => apiClient.get('/mobiles', { params }),
   getFeaturedMobiles: (params = {}) => apiClient.get('/mobiles/featured', { params }),
   getMobileById: (id) => apiClient.get(`/mobiles/${id}`),
-  createMobile: (data) => apiClient.post('/mobiles', data),
+  createMobile: (data) =>
+    data instanceof FormData
+      ? apiClient.post('/mobiles', data, { headers: { 'Content-Type': 'multipart/form-data' } })
+      : apiClient.post('/mobiles', data),
   updateMobile: (id, data) => apiClient.patch(`/mobiles/${id}`, data),
   updateMobileStatus: (id, status) => apiClient.patch(`/mobiles/${id}/status`, { status }),
   updateMobileFeatured: (id, featured) => apiClient.patch(`/mobiles/${id}/featured`, { featured }),
 
   // Mobile Image Services
   getMobileImages: (mobileId) => apiClient.get(`/mobiles/${mobileId}/images`),
-  addMobileImage: (mobileId, data) => apiClient.post(`/mobiles/${mobileId}/images`, data),
+  addMobileImage: (mobileId, data) =>
+    data instanceof FormData
+      ? apiClient.post(`/mobiles/${mobileId}/images`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
+      : apiClient.post(`/mobiles/${mobileId}/images`, data),
+  replaceMobileImage: (mobileId, imageId, data) =>
+    data instanceof FormData
+      ? apiClient.put(`/mobiles/${mobileId}/images/${imageId}`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
+      : apiClient.put(`/mobiles/${mobileId}/images/${imageId}`, data),
   setPrimaryImage: (mobileId, imageId) => apiClient.patch(`/mobiles/${mobileId}/images/${imageId}/primary`),
+  deleteMobileImage: (mobileId, imageId) => apiClient.delete(`/mobiles/${mobileId}/images/${imageId}`),
   // Global Search & Metadata Services
   globalSearch: (q, limit = 5) => apiClient.get('/search', { params: { q, limit } }),
   getCatalogFilters: () => apiClient.get('/catalog/filters'),

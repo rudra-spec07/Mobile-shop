@@ -5,7 +5,7 @@ import Input from '../common/Input';
 import Select from '../common/Select';
 import Spinner from '../common/Spinner';
 import catalogService from '../../services/catalog.service';
-import { Plus, Tag } from 'lucide-react';
+import { Plus, Tag, Upload, X, Star, Trash2, RefreshCw, Check } from 'lucide-react';
 
 const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
   const isEditMode = Boolean(mobileToEdit?.id);
@@ -14,6 +14,16 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
   const [isLoadingBrands, setIsLoadingBrands] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+
+  // Image CRUD State for Edit Mode
+  const [existingImages, setExistingImages] = useState([]);
+  const [loadingImages, setLoadingImages] = useState(false);
+  const [confirmDeleteImage, setConfirmDeleteImage] = useState(null);
+  const [isDeletingImage, setIsDeletingImage] = useState(false);
+  const [isAddingNewImage, setIsAddingNewImage] = useState(false);
+  const [replacingImageId, setReplacingImageId] = useState(null);
 
   // Inline Brand Creation State
   const [isAddBrandModalOpen, setIsAddBrandModalOpen] = useState(false);
@@ -65,6 +75,19 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
     }
   };
 
+  const fetchMobileImages = async (mobileId) => {
+    if (!mobileId) return;
+    setLoadingImages(true);
+    try {
+      const res = await catalogService.getMobileImages(mobileId);
+      setExistingImages(res.data?.images || []);
+    } catch (err) {
+      console.error('Failed to fetch mobile images:', err);
+    } finally {
+      setLoadingImages(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
       fetchBrands();
@@ -90,6 +113,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
           featured: Boolean(mobileToEdit.featured),
           status: mobileToEdit.status || 'ACTIVE',
         });
+        fetchMobileImages(mobileToEdit.id);
       } else {
         setFormData({
           brandId: '',
@@ -112,10 +136,118 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
           featured: false,
           status: 'ACTIVE',
         });
+        setExistingImages([]);
       }
       setError('');
+      setImageFile(null);
+      setImagePreview('');
+      setConfirmDeleteImage(null);
     }
   }, [isOpen, mobileToEdit]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedMimeTypes.includes(file.type)) {
+      setError('Invalid file type. Only JPG, JPEG, PNG, and WebP images are allowed.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File size exceeds maximum permitted limit of 5MB.');
+      return;
+    }
+
+    setError('');
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
+  const handleSetPrimary = async (imageId) => {
+    try {
+      await catalogService.setPrimaryImage(mobileToEdit.id, imageId);
+      await fetchMobileImages(mobileToEdit.id);
+      if (onSaved) onSaved();
+    } catch (err) {
+      setError(err.message || 'Failed to update primary image');
+    }
+  };
+
+  const handleAddAdditionalImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedMimeTypes.includes(file.type)) {
+      setError('Invalid file type. Only JPG, JPEG, PNG, and WebP images are allowed.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File size exceeds maximum permitted limit of 5MB.');
+      return;
+    }
+
+    setIsAddingNewImage(true);
+    setError('');
+    try {
+      const formDataPayload = new FormData();
+      formDataPayload.append('image', file);
+      await catalogService.addMobileImage(mobileToEdit.id, formDataPayload);
+      await fetchMobileImages(mobileToEdit.id);
+      if (onSaved) onSaved();
+    } catch (err) {
+      setError(err.message || 'Failed to upload image');
+    } finally {
+      setIsAddingNewImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleReplaceImage = async (imageId, file) => {
+    if (!file) return;
+
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedMimeTypes.includes(file.type)) {
+      setError('Invalid file type. Only JPG, JPEG, PNG, and WebP images are allowed.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File size exceeds maximum permitted limit of 5MB.');
+      return;
+    }
+
+    setReplacingImageId(imageId);
+    setError('');
+    try {
+      const formDataPayload = new FormData();
+      formDataPayload.append('image', file);
+      await catalogService.replaceMobileImage(mobileToEdit.id, imageId, formDataPayload);
+      await fetchMobileImages(mobileToEdit.id);
+      if (onSaved) onSaved();
+    } catch (err) {
+      setError(err.message || 'Failed to replace image');
+    } finally {
+      setReplacingImageId(null);
+    }
+  };
+
+  const handleConfirmDeleteImage = async () => {
+    if (!confirmDeleteImage) return;
+    setIsDeletingImage(true);
+    setError('');
+    try {
+      await catalogService.deleteMobileImage(mobileToEdit.id, confirmDeleteImage.id);
+      await fetchMobileImages(mobileToEdit.id);
+      setConfirmDeleteImage(null);
+      if (onSaved) onSaved();
+    } catch (err) {
+      setError(err.message || 'Failed to delete image');
+    } finally {
+      setIsDeletingImage(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -217,7 +349,18 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
       if (isEditMode) {
         await catalogService.updateMobile(mobileToEdit.id, payload);
       } else {
-        await catalogService.createMobile(payload);
+        if (imageFile) {
+          const formDataPayload = new FormData();
+          Object.keys(payload).forEach((key) => {
+            if (payload[key] !== null && payload[key] !== undefined) {
+              formDataPayload.append(key, payload[key]);
+            }
+          });
+          formDataPayload.append('image', imageFile);
+          await catalogService.createMobile(formDataPayload);
+        } else {
+          await catalogService.createMobile(payload);
+        }
       }
       onClose();
       if (onSaved) onSaved();
@@ -289,7 +432,155 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
                 onChange={handleChange}
               />
             </div>
+
+            {/* Initial Image Upload Field for Create Mode */}
+            {!isEditMode && (
+              <div className="pt-2">
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Mobile Primary Image (Optional)
+                </label>
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-xs text-slate-700">
+                    <Upload className="w-4 h-4 text-slate-500" />
+                    <span>{imageFile ? imageFile.name : 'Select Image File (JPG, PNG, WebP)'}</span>
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                  </label>
+                  {imagePreview && (
+                    <div className="relative w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-50 flex-shrink-0">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setImageFile(null);
+                          setImagePreview('');
+                        }}
+                        className="absolute top-0 right-0 p-0.5 bg-red-500 text-white rounded-bl"
+                        title="Remove Image"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Edit Mode Product Gallery Management */}
+          {isEditMode && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Product Gallery & Images
+                </h4>
+                <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
+                  {isAddingNewImage ? (
+                    <Spinner size="xs" />
+                  ) : (
+                    <Plus className="w-3.5 h-3.5" />
+                  )}
+                  <span>Add Image</span>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    className="hidden"
+                    onChange={handleAddAdditionalImage}
+                    disabled={isAddingNewImage}
+                  />
+                </label>
+              </div>
+
+              {loadingImages ? (
+                <div className="py-4 text-center text-xs text-slate-400">Loading gallery images...</div>
+              ) : existingImages.length === 0 ? (
+                <div className="p-4 text-center border border-dashed border-slate-200 rounded-xl text-xs text-slate-400">
+                  No images added yet. Click "+ Add Image" above to upload photos.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {existingImages.map((img) => {
+                    const isReplacingThis = replacingImageId === img.id;
+                    return (
+                      <div
+                        key={img.id}
+                        className={`relative rounded-xl border p-2 bg-slate-50 flex flex-col items-center gap-2 group transition-all ${
+                          img.isPrimary
+                            ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-xs'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="relative w-full h-24 rounded-lg overflow-hidden bg-white flex items-center justify-center">
+                          <img
+                            src={img.imageUrl}
+                            alt="Mobile product"
+                            className="max-h-full max-w-full object-contain"
+                          />
+                          {img.isPrimary && (
+                            <span
+                              className="absolute top-1 right-1 bg-blue-600 text-white rounded-full p-1 shadow-xs"
+                              title="Primary Image"
+                            >
+                              <Star className="w-3 h-3 fill-current" />
+                            </span>
+                          )}
+                          {isReplacingThis && (
+                            <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                              <Spinner size="sm" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between w-full pt-1 border-t border-slate-200/60 text-[11px]">
+                          {!img.isPrimary ? (
+                            <button
+                              type="button"
+                              onClick={() => handleSetPrimary(img.id)}
+                              className="text-slate-600 hover:text-blue-600 font-semibold transition-colors"
+                            >
+                              Make Primary
+                            </button>
+                          ) : (
+                            <span className="font-bold text-blue-600 flex items-center gap-0.5">
+                              <Check className="w-3 h-3" /> Primary
+                            </span>
+                          )}
+
+                          <div className="flex items-center gap-1">
+                            <label
+                              className="p-1 text-slate-500 hover:text-blue-600 rounded cursor-pointer transition-colors"
+                              title="Replace Image"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                              <input
+                                type="file"
+                                accept="image/jpeg,image/jpg,image/png,image/webp"
+                                className="hidden"
+                                onChange={(e) => handleReplaceImage(img.id, e.target.files?.[0])}
+                              />
+                            </label>
+
+                            <button
+                              type="button"
+                              onClick={() => setConfirmDeleteImage(img)}
+                              className="p-1 text-slate-500 hover:text-red-600 rounded transition-colors"
+                              title="Delete Image"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Pricing & Status */}
           <div className="space-y-3">
@@ -444,6 +735,41 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Delete Mobile Image Confirmation Modal */}
+      <Modal
+        isOpen={Boolean(confirmDeleteImage)}
+        onClose={() => setConfirmDeleteImage(null)}
+        title="Delete Product Image"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-xs text-slate-600">
+            Are you sure you want to delete this product image? The Cloudinary asset will be removed and this action cannot be undone.
+          </p>
+          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+            <Button
+              variant="outline"
+              size="sm"
+              type="button"
+              onClick={() => setConfirmDeleteImage(null)}
+              disabled={isDeletingImage}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              type="button"
+              onClick={handleConfirmDeleteImage}
+              isDisabled={isDeletingImage}
+            >
+              {isDeletingImage ? <Spinner size="sm" className="mr-1" /> : <Trash2 className="w-3.5 h-3.5 mr-1" />}
+              Delete Image
+            </Button>
+          </div>
+        </div>
       </Modal>
 
       {/* Inline Brand Creation Dialog */}

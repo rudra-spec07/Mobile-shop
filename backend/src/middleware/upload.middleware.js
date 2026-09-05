@@ -1,3 +1,4 @@
+const multer = require('multer');
 const { HTTP_STATUS, ERROR_CODES } = require('../utils/constants');
 const { sendError } = require('../utils/response');
 
@@ -23,8 +24,49 @@ const validateImageUpload = (file) => {
   return { isValid: true };
 };
 
+const storage = multer.memoryStorage();
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
+      const err = new Error('Invalid file type. Only JPEG, PNG, and WebP images are allowed.');
+      err.isValidationError = true;
+      return cb(err, false);
+    }
+    cb(null, true);
+  },
+});
+
 /**
- * Placeholder upload middleware for handling file attachment validations
+ * Middleware wrapper for optional single file field 'image'
+ */
+const singleImageUpload = (req, res, next) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return sendError(
+          res,
+          'File size exceeds maximum permitted limit of 5MB.',
+          HTTP_STATUS.BAD_REQUEST,
+          ERROR_CODES.VALIDATION_ERROR
+        );
+      }
+      return sendError(
+        res,
+        err.message || 'Image upload failed validation',
+        HTTP_STATUS.BAD_REQUEST,
+        ERROR_CODES.VALIDATION_ERROR
+      );
+    }
+    next();
+  });
+};
+
+/**
+ * Legacy upload middleware for existing usage
  */
 const uploadMiddleware = (req, res, next) => {
   if (req.file) {
@@ -39,4 +81,5 @@ const uploadMiddleware = (req, res, next) => {
 module.exports = {
   validateImageUpload,
   uploadMiddleware,
+  singleImageUpload,
 };

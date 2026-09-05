@@ -1,4 +1,5 @@
 const partService = require('../services/part.service');
+const { uploadToCloudinary } = require('../services/cloudinary.service');
 const {
   createPartSchema,
   updatePartSchema,
@@ -9,6 +10,10 @@ const { HTTP_STATUS, ROLES } = require('../utils/constants');
 
 const createPart = async (req, res, next) => {
   try {
+    if (req.file) {
+      const uploadedUrl = await uploadToCloudinary(req.file.buffer, 'parts');
+      req.body.imageUrl = uploadedUrl;
+    }
     const validatedData = createPartSchema.parse(req.body);
     const userId = req.user?.id || req.user?.email || 'SUPER_ADMIN';
     const part = await partService.createPart(validatedData, userId);
@@ -40,9 +45,22 @@ const getPartById = async (req, res, next) => {
 
 const updatePart = async (req, res, next) => {
   try {
+    if (req.file) {
+      const uploadedUrl = await uploadToCloudinary(req.file.buffer, 'parts');
+      req.body.imageUrl = uploadedUrl;
+    }
     const validatedData = updatePartSchema.parse(req.body);
     const part = await partService.updatePart(req.params.id, validatedData);
     return sendSuccess(res, 'Part updated successfully', { part });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const deletePartImage = async (req, res, next) => {
+  try {
+    const part = await partService.deletePartImage(req.params.id);
+    return sendSuccess(res, 'Part image deleted successfully', { part });
   } catch (error) {
     return next(error);
   }
@@ -63,5 +81,6 @@ module.exports = {
   getParts,
   getPartById,
   updatePart,
+  deletePartImage,
   updatePartStatus,
 };

@@ -5,12 +5,14 @@ import Select from '../common/Select';
 import Button from '../common/Button';
 import CategoryFormModal from './CategoryFormModal';
 import partsService from '../../services/parts.service';
-import { Plus, RefreshCw, AlertCircle } from 'lucide-react';
+import { Plus, RefreshCw, AlertCircle, Upload, X, Trash2, Image as ImageIcon } from 'lucide-react';
 
 const PartFormModal = ({ isOpen, onClose, part = null, onSuccess, onCategoryCreated }) => {
   const isEdit = Boolean(part?.id);
 
   const [categories, setCategories] = useState([]);
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [formData, setFormData] = useState({
     categoryId: '',
     name: '',
@@ -30,6 +32,10 @@ const PartFormModal = ({ isOpen, onClose, part = null, onSuccess, onCategoryCrea
 
   // Inline Category Creation Modal State
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+
+  // Image Deletion Confirmation Modal State
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [deletingImage, setDeletingImage] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -59,8 +65,56 @@ const PartFormModal = ({ isOpen, onClose, part = null, onSuccess, onCategoryCrea
       }
       setErrorMessage('');
       setFieldErrors({});
+      setImageFile(null);
+      setImagePreview('');
+      setIsDeleteConfirmOpen(false);
     }
   }, [isOpen, part]);
+
+  const handleDeleteImage = async () => {
+    if (!isEdit || !part?.id) {
+      setImageFile(null);
+      setImagePreview('');
+      setFormData((prev) => ({ ...prev, imageUrl: '' }));
+      setIsDeleteConfirmOpen(false);
+      return;
+    }
+
+    try {
+      setDeletingImage(true);
+      await partsService.deletePartImage(part.id);
+      setImageFile(null);
+      setImagePreview('');
+      setFormData((prev) => ({ ...prev, imageUrl: '' }));
+      setIsDeleteConfirmOpen(false);
+      onSuccess?.();
+    } catch (err) {
+      setErrorMessage(err.message || 'Failed to delete part image');
+      setIsDeleteConfirmOpen(false);
+    } finally {
+      setDeletingImage(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedMimeTypes.includes(file.type)) {
+      setErrorMessage('Invalid file type. Only JPG, JPEG, PNG, and WebP images are allowed.');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage('File size exceeds maximum permitted limit of 5MB.');
+      return;
+    }
+
+    setErrorMessage('');
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
 
   const fetchActiveCategories = async (selectNewId = null) => {
     try {
@@ -164,7 +218,18 @@ const PartFormModal = ({ isOpen, onClose, part = null, onSuccess, onCategoryCrea
           minimumStock: Number(formData.minimumStock),
           imageUrl: formData.imageUrl.trim() || null,
         };
-        await partsService.createPart(payload);
+        if (imageFile) {
+          const formDataPayload = new FormData();
+          Object.keys(payload).forEach((key) => {
+            if (payload[key] !== null && payload[key] !== undefined) {
+              formDataPayload.append(key, payload[key]);
+            }
+          });
+          formDataPayload.append('image', imageFile);
+          await partsService.createPart(formDataPayload);
+        } else {
+          await partsService.createPart(payload);
+        }
       }
       onSuccess?.();
       onClose();
@@ -332,15 +397,85 @@ const PartFormModal = ({ isOpen, onClose, part = null, onSuccess, onCategoryCrea
               )}
             </div>
 
-            {/* Image URL */}
-            <div className="md:col-span-2">
-              <Input
-                label="Image URL (Optional)"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                placeholder="https://images.unsplash.com/photo-..."
-              />
+            {/* Image Management Section */}
+            <div className="md:col-span-2 space-y-2 pt-2 border-t border-slate-100">
+              <label className="block text-xs font-semibold text-slate-700">
+                Part Image
+              </label>
+
+              {(formData.imageUrl || imagePreview) ? (
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-16 rounded-lg border border-slate-200 bg-white p-1 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <img
+                          src={imagePreview || formData.imageUrl}
+                          alt="Part Preview"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-800">
+                          {imageFile ? imageFile.name : 'Current Part Image'}
+                        </p>
+                        {imageFile ? (
+                          <span className="inline-block mt-0.5 text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                            New file selected (Save changes to upload)
+                          </span>
+                        ) : (
+                          <span className="text-[11px] text-slate-500 block truncate max-w-[200px]">
+                            {formData.imageUrl}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg text-xs font-medium text-slate-700 cursor-pointer transition-colors shadow-sm">
+                        <Upload className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Replace</span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                          className="hidden"
+                          onChange={handleFileChange}
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIsDeleteConfirmOpen(true)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 border border-red-200 hover:bg-red-100 rounded-lg text-xs font-medium text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <label className="flex items-center gap-2 px-3 py-2 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-xs text-slate-700">
+                      <Upload className="w-4 h-4 text-slate-500" />
+                      <span>{imageFile ? imageFile.name : 'Upload Image File (JPG, PNG, WebP)'}</span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handleFileChange}
+                      />
+                    </label>
+                    <div className="flex-1">
+                      <Input
+                        placeholder="or enter Image URL (https://...)"
+                        name="imageUrl"
+                        value={formData.imageUrl}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Description */}
@@ -367,6 +502,45 @@ const PartFormModal = ({ isOpen, onClose, part = null, onSuccess, onCategoryCrea
             </Button>
           </div>
         </form>
+      </Modal>
+
+      {/* Image Delete Confirmation Modal */}
+      <Modal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        title="Delete Part Image"
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4">
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2.5">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="text-xs text-red-700 space-y-1">
+              <p className="font-semibold">Are you sure you want to delete this part image?</p>
+              <p>This action will remove the image from the database and Cloudinary storage. This cannot be undone.</p>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDeleteConfirmOpen(false)}
+              disabled={deletingImage}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="danger"
+              size="sm"
+              onClick={handleDeleteImage}
+              loading={deletingImage}
+              disabled={deletingImage}
+            >
+              Delete Image
+            </Button>
+          </div>
+        </div>
       </Modal>
     </>
   );
