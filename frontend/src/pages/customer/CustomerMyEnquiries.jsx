@@ -97,7 +97,7 @@ const CustomerMyEnquiries = () => {
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">My Inquiries & Support</h1>
             <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Track responses from Mobile-Adda support for your device and spare part inquiries.
+              Track responses from MS-Centre support for your device and spare part inquiries.
             </p>
           </div>
         </div>
@@ -330,7 +330,7 @@ const CustomerMyEnquiries = () => {
                   </p>
                   {selectedEnquiry.respondedAt && (
                     <div className="text-[11px] text-emerald-700 font-semibold pt-2 border-t border-emerald-200/60 flex items-center justify-between">
-                      <span>Answered by Mobile-Adda Support</span>
+                      <span>Answered by MS-Centre Support</span>
                       <span>{formatDate(selectedEnquiry.respondedAt)}</span>
                     </div>
                   )}

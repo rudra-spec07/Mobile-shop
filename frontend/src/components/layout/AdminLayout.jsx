@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 import NotificationDropdown from '../navigation/NotificationDropdown';
+import msCentreLogo from '../../assets/images/ms-centre-logo.jpeg';
 
 const AdminLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -33,8 +34,10 @@ const AdminLayout = ({ children }) => {
               <Menu className="w-5 h-5" />
             </button>
             <Link to="/admin" className="flex items-center gap-2 lg:hidden font-bold text-slate-900 text-sm">
-              <Smartphone className="w-5 h-5 text-blue-600" />
-              <span>Mobile-Adda Admin</span>
+              <div className="w-6 h-6 rounded-full overflow-hidden border border-slate-200 bg-slate-900 shrink-0">
+                <img src={msCentreLogo} alt="MS-Centre" className="w-full h-full object-cover" />
+              </div>
+              <span>MS-Centre Admin</span>
             </Link>
             <h2 className="hidden lg:block text-sm font-semibold text-slate-800">
               Super Admin Console
@@ -51,8 +54,8 @@ const AdminLayout = ({ children }) => {
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                 className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 transition-colors"
               >
-                <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-xs shadow-xs">
-                  {user?.name ? user.name.charAt(0).toUpperCase() : 'A'}
+                <div className="w-8 h-8 rounded-full border border-slate-200/80 shadow-xs overflow-hidden flex items-center justify-center bg-slate-900 shrink-0">
+                  <img src={msCentreLogo} alt="MS-Centre Avatar" className="w-full h-full object-cover" />
                 </div>
                 <div className="hidden sm:block text-left">
                   <p className="text-xs font-semibold text-slate-900 leading-tight flex items-center gap-1">

@@ -85,12 +85,12 @@ const AuthPlaceholder = () => {
               {isLogin ? <LogIn className="w-7 h-7" /> : <UserPlus className="w-7 h-7" />}
             </div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              {isLogin ? 'Welcome Back to Mobile-Adda' : 'Create Customer Account'}
+              {isLogin ? 'Welcome Back to MS-Centre' : 'Create Customer Account'}
             </h1>
             <p className="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed">
               {isLogin
                 ? 'Sign in to access your inquiries, service requests, and account'
-                : 'Register to submit device requests and interact with Mobile-Adda'}
+                : 'Register to submit device requests and interact with MS-Centre'}
             </p>
           </div>
 

@@ -13,11 +13,13 @@ import { ROLES } from '../../utils/constants';
 import apiClient from '../../services/api';
 import { User, Mail, Phone, Calendar, Edit3, Save, X, KeyRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import msCentreLogo from '../../assets/images/ms-centre-logo.jpeg';
 
-const Profile = () => {
+const Profile = ({ embedded = false }) => {
   const { user: authUser, role, updateUser } = useAuth();
   const isSuperAdmin = role === ROLES.SUPER_ADMIN;
   const Layout = isSuperAdmin ? AdminLayout : CustomerLayout;
+  const Container = embedded ? React.Fragment : Layout;
 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -84,32 +86,34 @@ const Profile = () => {
     : [{ label: 'Home', path: '/' }, { label: 'Dashboard', path: '/customer' }, { label: 'My Profile' }];
 
   return (
-    <Layout>
+    <Container>
       {toastMsg && <Toast type={toastMsg.type} message={toastMsg.text} onClose={() => setToastMsg(null)} />}
 
-      <div className="max-w-4xl mx-auto py-6 px-4 space-y-6">
-        <Breadcrumb items={breadcrumbItems} />
+      <div className={embedded ? 'space-y-6' : 'max-w-4xl mx-auto py-6 px-4 space-y-6'}>
+        {!embedded && <Breadcrumb items={breadcrumbItems} />}
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">User Account Profile</h1>
-            <p className="text-xs text-slate-500 mt-1">Manage your personal contact details and view account status</p>
-          </div>
-          {!loading && !error && (
-            <div className="flex items-center gap-2">
-              <Link to={isSuperAdmin ? '/admin/change-password' : '/customer/change-password'}>
-                <Button variant="outline" size="sm" className="flex items-center gap-1.5 rounded-xl">
-                  <KeyRound className="w-4 h-4" /> Change Password
-                </Button>
-              </Link>
-              {!isEditing && (
-                <Button variant="primary" size="sm" onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 rounded-xl">
-                  <Edit3 className="w-4 h-4" /> Edit Profile
-                </Button>
-              )}
+        {!embedded && (
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">User Account Profile</h1>
+              <p className="text-xs text-slate-500 mt-1">Manage your personal contact details and view account status</p>
             </div>
-          )}
-        </div>
+            {!loading && !error && (
+              <div className="flex items-center gap-2">
+                <Link to={isSuperAdmin ? '/admin/change-password' : '/customer/change-password'}>
+                  <Button variant="outline" size="sm" className="flex items-center gap-1.5 rounded-xl">
+                    <KeyRound className="w-4 h-4" /> Change Password
+                  </Button>
+                </Link>
+                {!isEditing && (
+                  <Button variant="primary" size="sm" onClick={() => setIsEditing(true)} className="flex items-center gap-1.5 rounded-xl">
+                    <Edit3 className="w-4 h-4" /> Edit Profile
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {loading ? (
           <div className="bg-white rounded-3xl border border-slate-200/80 p-12 text-center shadow-xs">
@@ -123,9 +127,15 @@ const Profile = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left Card: Account Overview */}
             <div className="md:col-span-1 bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 text-center">
-              <div className="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-3xl font-extrabold mb-4 shadow-md">
-                {profile.name ? profile.name.charAt(0).toUpperCase() : 'U'}
-              </div>
+              {isSuperAdmin ? (
+                <div className="w-24 h-24 rounded-full border-2 border-slate-200 shadow-md overflow-hidden flex items-center justify-center mx-auto mb-4 bg-slate-900 shrink-0">
+                  <img src={msCentreLogo} alt="MS-Centre Logo" className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-3xl font-extrabold mb-4 shadow-md">
+                  {profile.name ? profile.name.charAt(0).toUpperCase() : 'U'}
+                </div>
+              )}
               <h2 className="text-lg font-bold text-slate-900">{profile.name}</h2>
               <p className="text-xs text-slate-500 mt-0.5 font-medium">{profile.email || profile.mobileNumber}</p>
 
@@ -233,7 +243,7 @@ const Profile = () => {
           </div>
         )}
       </div>
-    </Layout>
+    </Container>
   );
 };
 

@@ -12,11 +12,12 @@ import { ROLES } from '../../utils/constants';
 import { KeyRound, Eye, EyeOff } from 'lucide-react';
 import apiClient from '../../services/api';
 
-const ChangePassword = () => {
+const ChangePassword = ({ embedded = false }) => {
   const { role } = useAuth();
   const navigate = useNavigate();
   const isSuperAdmin = role === ROLES.SUPER_ADMIN;
   const Layout = isSuperAdmin ? AdminLayout : CustomerLayout;
+  const Container = embedded ? React.Fragment : Layout;
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -72,11 +73,11 @@ const ChangePassword = () => {
       ];
 
   return (
-    <Layout>
+    <Container>
       {toastMsg && <Toast type={toastMsg.type} message={toastMsg.text} onClose={() => setToastMsg(null)} />}
 
-      <div className="max-w-xl mx-auto py-6 px-4 space-y-6">
-        <Breadcrumb items={breadcrumbItems} />
+      <div className={embedded ? 'space-y-6' : 'max-w-xl mx-auto py-6 px-4 space-y-6'}>
+        {!embedded && <Breadcrumb items={breadcrumbItems} />}
 
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
           <div className="bg-slate-50/80 p-6 border-b border-slate-100">
@@ -144,7 +145,7 @@ const ChangePassword = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </Container>
   );
 };
 

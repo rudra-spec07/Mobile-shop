@@ -455,7 +455,7 @@ const AdminCustomerList = () => {
 
             {statusModalUser.isActive && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-[11px]">
-                ⚠️ Deactivating this account will prevent the customer from logging into Mobile-Adda until reactivated.
+                ⚠️ Deactivating this account will prevent the customer from logging into MS-Centre until reactivated.
               </div>
             )}
 

@@ -234,7 +234,7 @@ const CustomerRequestDetails = () => {
               {(request.cancellationReason || request.adminNotes) && (
                 <div className="mt-2 pt-2 border-t border-rose-200/80">
                   <span className="text-[10px] font-bold text-rose-800 uppercase tracking-wider block">
-                    Cancellation message from Mobile-Adda Admin:
+                    Cancellation message from MS-Centre Admin:
                   </span>
                   <p className="text-rose-950 font-medium italic mt-0.5">
                     "{request.cancellationReason || request.adminNotes}"

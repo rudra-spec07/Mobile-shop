@@ -83,7 +83,7 @@ const Home = () => {
           <div className="max-w-2xl relative z-10 space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-xs font-semibold">
               <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span>Mobile-Adda Certified Shop</span>
+              <span>MS-Centre Certified Shop</span>
             </div>
             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
               Upgrade to the latest technology

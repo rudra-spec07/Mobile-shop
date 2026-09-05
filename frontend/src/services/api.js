@@ -40,7 +40,7 @@ apiClient.interceptors.response.use(
     let safeMessage = responseData?.message || error.message || 'An unexpected error occurred';
 
     if (isNetworkError) {
-      safeMessage = 'Unable to connect to Mobile-Adda server. Please check your network connection.';
+      safeMessage = 'Unable to connect to MS-Centre server. Please check your network connection.';
     } else if (status === 401) {
       // Clear token & user state on 401 unauthorized
       localStorage.removeItem(STORAGE_KEYS.TOKEN);
@@ -54,7 +54,7 @@ apiClient.interceptors.response.use(
     } else if (status === 429) {
       safeMessage = responseData?.message || 'Too many requests. Please try again after a few minutes.';
     } else if (status === 503) {
-      safeMessage = 'Mobile-Adda service is temporarily unavailable for maintenance. Please try again shortly.';
+      safeMessage = 'MS-Centre service is temporarily unavailable for maintenance. Please try again shortly.';
     }
 
     return Promise.reject({

@@ -61,7 +61,7 @@ const ResetPassword = () => {
             </div>
             <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Reset Password</h1>
             <p className="text-xs text-slate-500 mt-1.5 font-medium leading-relaxed">
-              Create a new secure password for your Mobile-Adda account.
+              Create a new secure password for your MS-Centre account.
             </p>
           </div>
           <div className="p-6 sm:p-8">

@@ -9,6 +9,7 @@ import { useAuth } from '../../context/AuthContext';
 import { ROLES } from '../../utils/constants';
 
 import NotificationDropdown from '../navigation/NotificationDropdown';
+import msCentreLogo from '../../assets/images/ms-centre-logo.jpeg';
 
 const Header = () => {
   const { user, isAuthenticated, role } = useAuth();
@@ -24,11 +25,11 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="h-16 flex items-center justify-between gap-3 sm:gap-4">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-2.5 text-blue-600 font-extrabold text-lg sm:text-xl tracking-tight shrink-0 hover:opacity-90 transition-opacity">
-            <div className="p-2 bg-blue-600 text-white rounded-xl shadow-xs flex items-center justify-center">
-              <Smartphone className="w-5 h-5 stroke-[2.2]" />
+          <Link to="/" className="flex items-center gap-2.5 font-extrabold text-lg sm:text-xl tracking-tight shrink-0 hover:opacity-90 transition-opacity">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-slate-200/80 shadow-xs overflow-hidden flex items-center justify-center bg-slate-900 shrink-0">
+              <img src={msCentreLogo} alt="MS-Centre Logo" className="w-full h-full object-cover" />
             </div>
-            <span className="text-slate-900 font-bold">Mobile-Adda</span>
+            <span className="text-slate-900 font-bold">MS-Centre</span>
           </Link>
 
           {/* Global Search Bar (Desktop/Tablet) */}

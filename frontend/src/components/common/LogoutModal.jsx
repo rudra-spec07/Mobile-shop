@@ -34,7 +34,7 @@ const LogoutModal = ({ isOpen, onClose }) => {
             <LogOut className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-slate-900">Log out of Mobile-Adda?</h3>
+            <h3 className="text-sm font-semibold text-slate-900">Log out of MS-Centre?</h3>
             <p className="text-xs text-slate-500 mt-1">
               You will be returned to the login screen and will need to log back in to access your account.
             </p>

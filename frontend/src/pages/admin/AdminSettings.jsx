@@ -68,11 +68,11 @@ const AdminSettings = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-slate-50 rounded-b-xl">
+        <div className="bg-slate-50 p-4 sm:p-6 rounded-b-2xl border border-t-0 border-slate-200/80 shadow-xs">
           {activeTab === 'profile' ? (
-            <Profile />
+            <Profile embedded />
           ) : (
-            <ChangePassword />
+            <ChangePassword embedded />
           )}
         </div>
       </div>
