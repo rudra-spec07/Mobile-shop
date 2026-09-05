@@ -78,7 +78,7 @@ const Footer = () => {
             </div>
             <div className="flex items-center gap-2 text-slate-300">
               <MapPin className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-              <span>Main Road Mobile Market, City</span>
+              <span>Near Rehla Garhwa Road Gramin bank ,Palamu Jharkhand 822124</span>
             </div>
             {/* Social Media Links */}
             <div className="pt-2 flex items-center gap-2 text-slate-400">
