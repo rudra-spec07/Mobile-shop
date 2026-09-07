@@ -129,7 +129,7 @@ const Profile = ({ embedded = false }) => {
             <div className="md:col-span-1 bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 text-center">
               {isSuperAdmin ? (
                 <div className="w-24 h-24 rounded-full border-2 border-slate-200 shadow-md overflow-hidden flex items-center justify-center mx-auto mb-4 bg-slate-900 shrink-0">
-                  <img src={msCentreLogo} alt="MS-Centre Logo" className="w-full h-full object-cover" />
+                  <img src={msCentreLogo} alt="Armaan Mobile Service Centre Logo" className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <div className="w-24 h-24 bg-gradient-to-tr from-blue-600 to-indigo-600 text-white rounded-full flex items-center justify-center mx-auto text-3xl font-extrabold mb-4 shadow-md">

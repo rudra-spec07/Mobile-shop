@@ -25,11 +25,18 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="h-16 flex items-center justify-between gap-3 sm:gap-4">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-2.5 font-extrabold text-lg sm:text-xl tracking-tight shrink-0 hover:opacity-90 transition-opacity">
+          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 hover:opacity-90 transition-opacity">
             <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-slate-200/80 shadow-xs overflow-hidden flex items-center justify-center bg-slate-900 shrink-0">
-              <img src={msCentreLogo} alt="MS-Centre Logo" className="w-full h-full object-cover" />
+              <img src={msCentreLogo} alt="Armaan Mobile Service Centre Logo" className="w-full h-full object-cover" />
             </div>
-            <span className="text-slate-900 font-bold">MS-Centre</span>
+            <div className="flex flex-col justify-center leading-none">
+              <span className="font-extrabold text-slate-900 tracking-tight text-xs sm:text-sm md:text-base lg:text-lg">
+                Armaan Mobile
+              </span>
+              <span className="font-semibold text-slate-500 tracking-wide text-[9px] sm:text-[10px] md:text-xs mt-0.5">
+                Service Centre
+              </span>
+            </div>
           </Link>
 
           {/* Global Search Bar (Desktop/Tablet) */}

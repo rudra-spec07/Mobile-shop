@@ -35,9 +35,9 @@ const AdminLayout = ({ children }) => {
             </button>
             <Link to="/admin" className="flex items-center gap-2 lg:hidden font-bold text-slate-900 text-sm">
               <div className="w-6 h-6 rounded-full overflow-hidden border border-slate-200 bg-slate-900 shrink-0">
-                <img src={msCentreLogo} alt="MS-Centre" className="w-full h-full object-cover" />
+                <img src={msCentreLogo} alt="Armaan Mobile Service Centre" className="w-full h-full object-cover" />
               </div>
-              <span>MS-Centre Admin</span>
+              <span>Armaan Mobile Service Centre Admin</span>
             </Link>
             <h2 className="hidden lg:block text-sm font-semibold text-slate-800">
               Super Admin Console
@@ -55,7 +55,7 @@ const AdminLayout = ({ children }) => {
                 className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-50 transition-colors"
               >
                 <div className="w-8 h-8 rounded-full border border-slate-200/80 shadow-xs overflow-hidden flex items-center justify-center bg-slate-900 shrink-0">
-                  <img src={msCentreLogo} alt="MS-Centre Avatar" className="w-full h-full object-cover" />
+                  <img src={msCentreLogo} alt="Armaan Mobile Service Centre Avatar" className="w-full h-full object-cover" />
                 </div>
                 <div className="hidden sm:block text-left">
                   <p className="text-xs font-semibold text-slate-900 leading-tight flex items-center gap-1">

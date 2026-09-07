@@ -12,9 +12,9 @@ const Footer = () => {
           <div className="space-y-3">
             <div className="flex items-center gap-2.5 text-white font-bold text-base">
               <div className="w-9 h-9 rounded-full border border-slate-700 shadow-xs overflow-hidden flex items-center justify-center bg-slate-900 shrink-0">
-                <img src={msCentreLogo} alt="MS-Centre Logo" className="w-full h-full object-cover" />
+                <img src={msCentreLogo} alt="Armaan Mobile Service Centre Logo" className="w-full h-full object-cover" />
               </div>
-              <span className="font-extrabold tracking-tight">MS-Centre</span>
+              <span className="font-extrabold tracking-tight">Armaan Mobile Service Centre</span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed max-w-xs">
               Your one-stop digital platform for mobile phones, spare parts, and expert repair services.
@@ -123,7 +123,7 @@ const Footer = () => {
         </div>
 
         <div className="pt-6 border-t border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-500 gap-2">
-          <p>© {new Date().getFullYear()} MS-Centre. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Armaan Mobile Service Centre. All rights reserved.</p>
           <p>Designed for Mobile Shop Management & Customer Interactions</p>
         </div>
       </div>
