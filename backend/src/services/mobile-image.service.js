@@ -15,27 +15,11 @@ const addImage = async (mobileId, { imageUrl, isPrimary = false, sortOrder = 0 }
     throw new AppError('Mobile model not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.MOBILE_NOT_FOUND);
   }
 
-  let finalImageUrl = imageUrl;
   if (typeof imageUrl === 'string' && imageUrl.startsWith('data:image/')) {
-    const matches = imageUrl.match(/^data:image\/([a-zA-Z0-9-+.]+);base64,(.+)$/);
-    if (matches && matches.length === 3) {
-      let ext = matches[1].toLowerCase();
-      if (ext === 'jpeg') ext = 'jpg';
-      const buffer = Buffer.from(matches[2], 'base64');
-
-      const uploadsDir = path.join(process.cwd(), 'uploads', 'mobiles');
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-
-      const randomStr = crypto.randomBytes(4).toString('hex');
-      const filename = `mobile-${mobileId}-${Date.now()}-${randomStr}.${ext}`;
-      const filePath = path.join(uploadsDir, filename);
-
-      fs.writeFileSync(filePath, buffer);
-      finalImageUrl = `/uploads/mobiles/${filename}`;
-    }
+    throw new AppError('Local disk image storage is not supported. Images must be uploaded directly to Cloudinary.', HTTP_STATUS.BAD_REQUEST, ERROR_CODES.VALIDATION_ERROR);
   }
+
+  const finalImageUrl = imageUrl;
 
   const existingImagesCount = await prisma.mobileImage.count({ where: { mobileId } });
 

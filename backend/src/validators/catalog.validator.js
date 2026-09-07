@@ -86,7 +86,7 @@ const updateFeaturedSchema = z.object({
 // Image Validators
 const addImageSchema = z.object({
   imageUrl: z.string().trim().min(1, { message: 'Image URL is required' }),
-  isPrimary: z.boolean().optional(),
+  isPrimary: z.preprocess((val) => (val === 'true' || val === true ? true : val === 'false' || val === false ? false : undefined), z.boolean().optional()),
   sortOrder: z.coerce.number().int().optional(),
 });
 

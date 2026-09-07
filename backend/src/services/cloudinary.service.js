@@ -18,8 +18,8 @@ const extractPublicId = (url) => {
     const parts = url.split('/upload/');
     if (parts.length < 2) return null;
     let pathPart = parts[1];
-    // Remove version prefix (e.g. v123456789/)
-    pathPart = pathPart.replace(/^v\d+\//, '');
+    // Remove transformation options and version prefix (e.g. c_fill,w_500/v1573840393/ -> mobiles/sample)
+    pathPart = pathPart.replace(/^(?:[a-zA-Z0-9_,-]+\/)?v\d+\//, '');
     // Remove extension
     const lastDotIndex = pathPart.lastIndexOf('.');
     if (lastDotIndex !== -1) {

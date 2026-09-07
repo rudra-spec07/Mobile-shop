@@ -155,17 +155,7 @@ const MobileImageManagerModal = ({ isOpen, onClose, mobile, onImagesUpdated }) =
     });
   };
 
-  // Convert File to Base64 Data URL helper
-  const readFileAsDataURL = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
-  };
-
-  // Batch Upload Selected Local Files
+  // Batch Upload Selected Local Files (Cloudinary Multipart Form Data)
   const handleUploadSelectedFiles = async () => {
     if (selectedFiles.length === 0) return;
     setIsUploading(true);
@@ -175,12 +165,13 @@ const MobileImageManagerModal = ({ isOpen, onClose, mobile, onImagesUpdated }) =
     try {
       for (let i = 0; i < selectedFiles.length; i++) {
         const item = selectedFiles[i];
-        const base64DataUrl = await readFileAsDataURL(item.file);
-        await catalogService.addMobileImage(mobile.id, {
-          imageUrl: base64DataUrl,
-          sortOrder: i,
-          isPrimary: images.length === 0 && i === 0,
-        });
+        const formDataPayload = new FormData();
+        formDataPayload.append('image', item.file);
+        formDataPayload.append('sortOrder', i);
+        if (images.length === 0 && i === 0) {
+          formDataPayload.append('isPrimary', 'true');
+        }
+        await catalogService.addMobileImage(mobile.id, formDataPayload);
       }
 
       // Cleanup preview URLs
