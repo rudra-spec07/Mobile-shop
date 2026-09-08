@@ -116,9 +116,9 @@ const stockOut = async (partId, quantity, userId) => {
           message: `${result.part.name} has reached its minimum stock level (${newQuantity} remaining, minimum threshold: ${result.part.minimumStock}).`,
           referenceId: result.part.id,
           referenceType: 'PART',
-        }).catch(() => {});
+        }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
       }
-    }).catch(() => {});
+    }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
   }
 
   const { createAuditLog } = require('./audit.service');
@@ -190,9 +190,9 @@ const stockAdjustment = async (partId, newQuantity, reason, userId) => {
           message: `${result.part.name} has reached its minimum stock level (${newQuantity} remaining, minimum threshold: ${result.part.minimumStock}).`,
           referenceId: result.part.id,
           referenceType: 'PART',
-        }).catch(() => {});
+        }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
       }
-    }).catch(() => {});
+    }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
   }
 
   const { createAuditLog } = require('./audit.service');
@@ -222,15 +222,17 @@ const getInventoryHistory = async (partId, query = {}) => {
 
   const { page, limit, skip } = parsePagination(query);
 
-  const history = await prisma.inventoryTransaction.findMany({
-    where: { partId },
-    skip,
-    take: limit,
-    orderBy: { createdAt: 'desc' },
-  });
-  const total = await prisma.inventoryTransaction.count({
-    where: { partId },
-  });
+  const [history, total] = await Promise.all([
+    prisma.inventoryTransaction.findMany({
+      where: { partId },
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.inventoryTransaction.count({
+      where: { partId },
+    }),
+  ]);
 
   return {
     history,
@@ -241,73 +243,91 @@ const getInventoryHistory = async (partId, query = {}) => {
 const getLowStockReport = async (query = {}) => {
   const { page, limit, skip } = parsePagination(query);
 
-  const allParts = await prisma.part.findMany({
-    orderBy: { quantity: 'asc' },
-    include: { category: true },
-  });
+  try {
+    const [rawParts, totalRes] = await Promise.all([
+      prisma.$queryRaw`
+        SELECT p.*, row_to_json(c.*) as category
+        FROM parts p
+        LEFT JOIN part_categories c ON p."categoryId" = c.id
+        WHERE p.quantity > 0 AND p.quantity <= p."minimumStock"
+        ORDER BY p.quantity ASC
+        LIMIT ${limit} OFFSET ${skip}
+      `,
+      prisma.$queryRaw`
+        SELECT COUNT(*)::int as count
+        FROM parts
+        WHERE quantity > 0 AND quantity <= "minimumStock"
+      `,
+    ]);
 
-  const lowStockParts = allParts
-    .filter((p) => p.quantity > 0 && p.quantity <= p.minimumStock)
-    .map((p) => formatPartForAdmin(p));
+    const parts = (rawParts || []).map((p) => formatPartForAdmin(p));
+    const total = totalRes[0]?.count || parts.length;
 
-  const total = lowStockParts.length;
-  const paginatedParts = lowStockParts.slice(skip, skip + limit);
-
-  return {
-    parts: paginatedParts,
-    pagination: { page, limit, total },
-  };
+    return {
+      parts,
+      pagination: { page, limit, total },
+    };
+  } catch (err) {
+    // Fallback if raw query fails
+    const allParts = await prisma.part.findMany({
+      orderBy: { quantity: 'asc' },
+      include: { category: true },
+    });
+    const lowStockParts = allParts
+      .filter((p) => p.quantity > 0 && p.quantity <= p.minimumStock)
+      .map((p) => formatPartForAdmin(p));
+    const total = lowStockParts.length;
+    const paginatedParts = lowStockParts.slice(skip, skip + limit);
+    return { parts: paginatedParts, pagination: { page, limit, total } };
+  }
 };
 
 const getOutOfStockReport = async (query = {}) => {
   const { page, limit, skip } = parsePagination(query);
 
-  const allParts = await prisma.part.findMany({
-    orderBy: { createdAt: 'desc' },
-    include: { category: true },
-  });
+  const where = { quantity: 0 };
 
-  const outOfStockParts = allParts
-    .filter((p) => p.quantity === 0)
-    .map((p) => formatPartForAdmin(p));
+  const [rawParts, total] = await Promise.all([
+    prisma.part.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { category: true },
+    }),
+    prisma.part.count({ where }),
+  ]);
 
-  const total = outOfStockParts.length;
-  const paginatedParts = outOfStockParts.slice(skip, skip + limit);
+  const parts = rawParts.map((p) => formatPartForAdmin(p));
 
   return {
-    parts: paginatedParts,
+    parts,
     pagination: { page, limit, total },
   };
 };
 
 const getInventorySummary = async () => {
-  const allParts = await prisma.part.findMany({
-    select: {
-      id: true,
-      quantity: true,
-      minimumStock: true,
-    },
-  });
+  let lowStockCount = 0;
+  try {
+    const res = await prisma.$queryRaw`
+      SELECT COUNT(*)::int as count 
+      FROM parts 
+      WHERE quantity > 0 AND quantity <= "minimumStock"
+    `;
+    lowStockCount = res[0]?.count || 0;
+  } catch (e) {}
 
-  let totalParts = allParts.length;
-  let inStock = 0;
-  let lowStock = 0;
-  let outOfStock = 0;
+  const [totalParts, outOfStock] = await Promise.all([
+    prisma.part.count(),
+    prisma.part.count({ where: { quantity: 0 } }),
+  ]);
 
-  for (const part of allParts) {
-    if (part.quantity === 0) {
-      outOfStock++;
-    } else if (part.quantity <= part.minimumStock) {
-      lowStock++;
-    } else {
-      inStock++;
-    }
-  }
+  const inStock = Math.max(0, totalParts - outOfStock - lowStockCount);
 
   return {
     totalParts,
     inStock,
-    lowStock,
+    lowStock: lowStockCount,
     outOfStock,
   };
 };

@@ -58,7 +58,7 @@ const forgotPassword = async (identifierInput) => {
         title: 'Password Reset Request',
         message: 'A password reset request was initiated for your Mobile-Adda account.',
         emailData: { resetUrl },
-      }).catch(() => {});
+      }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
     } else {
       // System notification for mobile-only accounts
       // Note: Actual SMS delivery requires an external SMS gateway provider configuration
@@ -68,7 +68,7 @@ const forgotPassword = async (identifierInput) => {
         channel: 'SYSTEM',
         title: 'Password Reset Request',
         message: 'A password reset request was initiated for your mobile account.',
-      }).catch(() => {});
+      }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
     }
   }
 

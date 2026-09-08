@@ -2,6 +2,7 @@ const { prisma } = require('../config/database');
 const { AppError } = require('../middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
 const { parsePagination } = require('../utils/pagination');
+const { categoryCache } = require('../utils/cache');
 
 const createCategory = async (data) => {
   const existingCategory = await prisma.partCategory.findUnique({
@@ -19,11 +20,18 @@ const createCategory = async (data) => {
     },
   });
 
+  categoryCache.clear();
   return category;
 };
 
 const getCategories = async (query = {}, userRole = ROLES.CUSTOMER) => {
   const { page, limit, skip } = parsePagination(query);
+
+  const cacheKey = `categories_${userRole}_${page}_${limit}_${query.status || ''}_${query.search || ''}`;
+  const cached = categoryCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
 
   const where = {};
 
@@ -41,23 +49,28 @@ const getCategories = async (query = {}, userRole = ROLES.CUSTOMER) => {
     ];
   }
 
-  const categories = await prisma.partCategory.findMany({
-    where,
-    skip,
-    take: limit,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      _count: {
-        select: { parts: true },
+  const [categories, total] = await Promise.all([
+    prisma.partCategory.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        _count: {
+          select: { parts: true },
+        },
       },
-    },
-  });
-  const total = await prisma.partCategory.count({ where });
+    }),
+    prisma.partCategory.count({ where }),
+  ]);
 
-  return {
+  const result = {
     categories,
     pagination: { page, limit, total },
   };
+
+  categoryCache.set(cacheKey, result);
+  return result;
 };
 
 const getCategoryById = async (id, userRole = ROLES.CUSTOMER) => {
@@ -104,6 +117,7 @@ const updateCategory = async (id, data) => {
     },
   });
 
+  categoryCache.clear();
   return updatedCategory;
 };
 
@@ -118,6 +132,7 @@ const updateCategoryStatus = async (id, status) => {
     data: { status },
   });
 
+  categoryCache.clear();
   return updatedCategory;
 };
 

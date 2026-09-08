@@ -43,6 +43,7 @@ model User {
   requests            ServiceRequest[]
   notifications       Notification[]
 
+  @@index([role, isActive])
   @@map("users")
 }
 
@@ -102,6 +103,8 @@ model Mobile {
   @@index([featured])
   @@index([price])
   @@index([createdAt])
+  @@index([status, brandId])
+  @@index([status, featured])
   @@map("mobiles")
 }
 
@@ -169,6 +172,8 @@ model Part {
   @@index([status])
   @@index([price])
   @@index([createdAt])
+  @@index([status, categoryId])
+  @@index([quantity])
   @@map("parts")
 }
 
@@ -223,6 +228,8 @@ model Enquiry {
   @@index([partId])
   @@index([status])
   @@index([createdAt])
+  @@index([customerId, status])
+  @@index([status, createdAt])
   @@map("enquiries")
 }
 
@@ -265,6 +272,8 @@ model ServiceRequest {
   @@index([mobileId])
   @@index([partId])
   @@index([createdAt])
+  @@index([customerId, status])
+  @@index([status, createdAt])
   @@map("service_requests")
 }
 
@@ -320,6 +329,8 @@ model Notification {
   @@index([type])
   @@index([createdAt])
   @@index([referenceId])
+  @@index([userId, status])
+  @@index([userId, readAt])
   @@map("notifications")
 }
 

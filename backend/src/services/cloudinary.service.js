@@ -37,14 +37,28 @@ const extractPublicId = (url) => {
  * @param {string} folder
  * @returns {Promise<string>} secure_url
  */
-const uploadToCloudinary = (fileBuffer, folder = 'mobile-adda') => {
+const uploadToCloudinary = (fileBuffer, folder = 'mobile-adda', timeoutMs = 15000) => {
   return new Promise((resolve, reject) => {
+    let isSettled = false;
+
+    const timer = setTimeout(() => {
+      if (!isSettled) {
+        isSettled = true;
+        reject(new Error(`Cloudinary upload request timed out after ${timeoutMs}ms`));
+      }
+    }, timeoutMs);
+
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         folder,
         resource_type: 'image',
+        timeout: timeoutMs,
       },
       (error, result) => {
+        clearTimeout(timer);
+        if (isSettled) return;
+        isSettled = true;
+
         if (error) {
           return reject(error);
         }

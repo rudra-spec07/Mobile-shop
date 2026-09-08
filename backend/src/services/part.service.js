@@ -188,34 +188,66 @@ const getParts = async (query = {}, userRole = ROLES.CUSTOMER) => {
     }
   }
 
-  let rawParts = await prisma.part.findMany({
-    where,
-    skip: query.stockStatus ? undefined : skip,
-    take: query.stockStatus ? undefined : limit,
-    orderBy,
-    include: {
-      category: true,
-    },
-  });
-
-  let formattedParts = rawParts.map((p) => (userRole === ROLES.SUPER_ADMIN ? formatPartForAdmin(p) : formatPartForCustomer(p)));
-
-  // Filter by calculated stockStatus if specified
-  if (query.stockStatus === 'LOW_STOCK') {
-    formattedParts = formattedParts.filter((p) => p.stockStatus === 'LOW_STOCK');
-  } else if (query.stockStatus === 'OUT_OF_STOCK') {
-    formattedParts = formattedParts.filter((p) => p.stockStatus === 'OUT_OF_STOCK');
+  if (query.stockStatus === 'OUT_OF_STOCK') {
+    where.quantity = 0;
   } else if (query.stockStatus === 'IN_STOCK') {
-    formattedParts = formattedParts.filter((p) => p.stockStatus === 'IN_STOCK');
+    where.quantity = { gt: 0 };
   }
 
-  let total;
-  if (query.stockStatus) {
-    total = formattedParts.length;
-    formattedParts = formattedParts.slice(skip, skip + limit);
-  } else {
-    total = await prisma.part.count({ where });
+  // Handle LOW_STOCK DB query or execution
+  if (query.stockStatus === 'LOW_STOCK') {
+    try {
+      const [rawParts, totalRes] = await Promise.all([
+        prisma.$queryRaw`
+          SELECT p.*, row_to_json(c.*) as category
+          FROM parts p
+          LEFT JOIN part_categories c ON p."categoryId" = c.id
+          WHERE p.quantity > 0 AND p.quantity <= p."minimumStock"
+          ORDER BY p."createdAt" DESC
+          LIMIT ${limit} OFFSET ${skip}
+        `,
+        prisma.$queryRaw`
+          SELECT COUNT(*)::int as count
+          FROM parts
+          WHERE quantity > 0 AND quantity <= "minimumStock"
+        `,
+      ]);
+
+      const formattedParts = (rawParts || []).map((p) =>
+        userRole === ROLES.SUPER_ADMIN ? formatPartForAdmin(p) : formatPartForCustomer(p)
+      );
+      const total = totalRes[0]?.count || formattedParts.length;
+
+      return {
+        parts: formattedParts,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit) || 1,
+        },
+      };
+    } catch (err) {
+      // Fallback if raw query is not supported
+    }
   }
+
+  const [rawParts, total] = await Promise.all([
+    prisma.part.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy,
+      include: {
+        category: true,
+      },
+    }),
+    prisma.part.count({ where }),
+  ]);
+
+  const formattedParts = rawParts.map((p) =>
+    userRole === ROLES.SUPER_ADMIN ? formatPartForAdmin(p) : formatPartForCustomer(p)
+  );
 
   return {
     parts: formattedParts,
@@ -296,7 +328,7 @@ const updatePart = async (id, data) => {
 
   if (data.imageUrl !== undefined && oldImageUrl && oldImageUrl !== data.imageUrl) {
     if (oldImageUrl.includes('cloudinary.com')) {
-      await deleteFromCloudinary(oldImageUrl).catch(() => {});
+      await deleteFromCloudinary(oldImageUrl).catch((err) => console.error('⚠️ [IMAGE CLEANUP ERROR]:', err?.message || err));
     }
   }
 
@@ -318,7 +350,7 @@ const deletePartImage = async (id) => {
   });
 
   if (oldImageUrl && oldImageUrl.includes('cloudinary.com')) {
-    await deleteFromCloudinary(oldImageUrl).catch(() => {});
+    await deleteFromCloudinary(oldImageUrl).catch((err) => console.error('⚠️ [IMAGE CLEANUP ERROR]:', err?.message || err));
   }
 
   return formatPartForAdmin(updatedPart);

@@ -128,7 +128,7 @@ const createRequest = async (data, customerId) => {
       quantity: request.quantity,
       price: request.price,
     },
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   notificationService.getSuperAdminUserId().then((admin) => {
     if (admin) {
@@ -140,9 +140,9 @@ const createRequest = async (data, customerId) => {
         message: `New service request from ${request.customer?.name || 'Customer'} for ${itemName}`,
         referenceId: request.id,
         referenceType: 'SERVICE_REQUEST',
-      }).catch(() => {});
+      }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
     }
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   return formatRequest(request, false);
 };
@@ -264,9 +264,9 @@ const cancelCustomerRequest = async (requestId, customerId, reason = null) => {
           message: `Customer ${updated.customer?.name || 'Customer'} requested cancellation for ${itemName}.${reason ? ` Reason: "${reason.trim()}"` : ''}`,
           referenceId: updated.id,
           referenceType: 'SERVICE_REQUEST',
-        }).catch(() => {});
+        }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
       }
-    }).catch(() => {});
+    }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
     return formatRequest(updated, false);
   }
@@ -418,7 +418,7 @@ const confirmRequest = async (requestId) => {
     referenceId: updated.id,
     referenceType: 'SERVICE_REQUEST',
     emailData: { itemName, newStatus: 'CONFIRMED' },
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   const { createAuditLog } = require('./audit.service');
   createAuditLog({
@@ -471,7 +471,7 @@ const processRequest = async (requestId) => {
     referenceId: updated.id,
     referenceType: 'SERVICE_REQUEST',
     emailData: { itemName, newStatus: 'PROCESSING' },
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   const { createAuditLog } = require('./audit.service');
   createAuditLog({
@@ -530,7 +530,7 @@ const completeRequest = async (requestId, adminId) => {
     referenceId: updated.id,
     referenceType: 'SERVICE_REQUEST',
     emailData: { itemName, newStatus: 'COMPLETED' },
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   const { createAuditLog } = require('./audit.service');
   createAuditLog({
@@ -592,7 +592,7 @@ const adminCancelRequest = async (requestId, reason = null) => {
     referenceId: updated.id,
     referenceType: 'SERVICE_REQUEST',
     emailData: { itemName, newStatus: 'CANCELLED', adminNotes: reason },
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   const { createAuditLog } = require('./audit.service');
   createAuditLog({
@@ -653,7 +653,7 @@ const rejectCancellationRequest = async (requestId, adminNotes = null) => {
       newStatus: 'PROCESSING',
       adminNotes: trimmedNotes,
     },
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   return formatRequest(updated, true);
 };

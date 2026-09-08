@@ -3,6 +3,7 @@ const { generateSlug } = require('../utils/slug');
 const { parsePagination } = require('../utils/pagination');
 const AppError = require('../middleware/error.middleware').AppError;
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
+const { brandCache } = require('../utils/cache');
 
 /**
  * Create a new brand (Super Admin only).
@@ -31,6 +32,7 @@ const createBrand = async ({ name, logoUrl }) => {
     },
   });
 
+  brandCache.clear();
   return brand;
 };
 
@@ -42,6 +44,12 @@ const createBrand = async ({ name, logoUrl }) => {
 const getBrands = async (query = {}, userRole = ROLES.CUSTOMER) => {
   const { page, limit, skip } = parsePagination(query.page, query.limit);
   const search = query.search?.trim();
+
+  const cacheKey = `brands_${userRole}_${page}_${limit}_${query.status || ''}_${search || ''}`;
+  const cached = brandCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
 
   const where = {};
 
@@ -72,7 +80,7 @@ const getBrands = async (query = {}, userRole = ROLES.CUSTOMER) => {
     }),
   ]);
 
-  return {
+  const result = {
     brands,
     pagination: {
       page,
@@ -80,6 +88,9 @@ const getBrands = async (query = {}, userRole = ROLES.CUSTOMER) => {
       total,
     },
   };
+
+  brandCache.set(cacheKey, result);
+  return result;
 };
 
 /**
@@ -150,6 +161,7 @@ const updateBrand = async (id, { name, logoUrl }) => {
     data: updateData,
   });
 
+  brandCache.clear();
   return updatedBrand;
 };
 
@@ -168,6 +180,7 @@ const updateBrandStatus = async (id, status) => {
     data: { status },
   });
 
+  brandCache.clear();
   return updatedBrand;
 };
 

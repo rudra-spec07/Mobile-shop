@@ -106,7 +106,7 @@ const replaceImage = async (mobileId, imageId, newImageUrl) => {
   // Clean up old asset after successful DB update
   if (oldUrl && oldUrl !== newImageUrl) {
     if (oldUrl.includes('cloudinary.com')) {
-      await deleteFromCloudinary(oldUrl).catch(() => {});
+      await deleteFromCloudinary(oldUrl).catch((err) => console.error('⚠️ [IMAGE CLEANUP ERROR]:', err?.message || err));
     } else if (oldUrl.startsWith('/uploads/mobiles/')) {
       try {
         const localPath = path.join(process.cwd(), oldUrl);
@@ -156,7 +156,7 @@ const deleteImage = async (mobileId, imageId) => {
   // Clean up Cloudinary or local file asset
   if (image.imageUrl) {
     if (image.imageUrl.includes('cloudinary.com')) {
-      await deleteFromCloudinary(image.imageUrl).catch(() => {});
+      await deleteFromCloudinary(image.imageUrl).catch((err) => console.error('⚠️ [IMAGE CLEANUP ERROR]:', err?.message || err));
     } else if (image.imageUrl.startsWith('/uploads/mobiles/')) {
       try {
         const localPath = path.join(process.cwd(), image.imageUrl);

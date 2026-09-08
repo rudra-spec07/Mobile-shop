@@ -98,7 +98,7 @@ const createEnquiry = async (data, customerId) => {
     referenceId: enquiry.id,
     referenceType: 'ENQUIRY',
     emailData: { subject, message },
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   notificationService.getSuperAdminUserId().then((admin) => {
     if (admin) {
@@ -110,9 +110,9 @@ const createEnquiry = async (data, customerId) => {
         message: `New enquiry from ${enquiry.customer?.name || 'Customer'}: "${subject}"`,
         referenceId: enquiry.id,
         referenceType: 'ENQUIRY',
-      }).catch(() => {});
+      }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
     }
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   return formatEnquiry(enquiry);
 };
@@ -332,7 +332,7 @@ const respondToEnquiry = async (enquiryId, responseText, adminId) => {
     referenceId: updated.id,
     referenceType: 'ENQUIRY',
     emailData: { subject: updated.subject, adminResponse: responseText.trim() },
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   return formatEnquiry(updated);
 };

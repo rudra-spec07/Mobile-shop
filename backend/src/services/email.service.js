@@ -22,6 +22,9 @@ const createTransporter = () => {
         user: env.EMAIL_USER,
         pass: env.EMAIL_PASSWORD,
       },
+      connectionTimeout: 5000, // 5 seconds connection timeout
+      greetingTimeout: 5000,   // 5 seconds SMTP greeting timeout
+      socketTimeout: 10000,    // 10 seconds socket timeout
     });
   }
   return null; // Development fallback

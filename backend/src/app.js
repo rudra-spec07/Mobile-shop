@@ -11,8 +11,16 @@ const { errorHandler } = require('./middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES } = require('./utils/constants');
 const { sendError } = require('./utils/response');
 const { requestIdMiddleware } = require('./middleware/request-id.middleware');
+const { performanceMiddleware } = require('./middleware/performance.middleware');
+const { compressionMiddleware } = require('./middleware/compression.middleware');
 
 const app = express();
+
+// Performance Monitoring & Slow Request Logging
+app.use(performanceMiddleware);
+
+// JSON / Text Response Compression
+app.use(compressionMiddleware);
 
 // Request ID Correlation Middleware
 app.use(requestIdMiddleware);

@@ -63,7 +63,7 @@ const registerCustomer = async (data) => {
     channel: 'EMAIL',
     title: 'Welcome to Mobile-Adda!',
     message: 'Your customer account has been created successfully.',
-  }).catch(() => {});
+  }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
   // Remove password hash from returned user object
   const { password: _, ...userWithoutPassword } = newUser;
