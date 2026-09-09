@@ -4,15 +4,15 @@ const adminUserService = {
   /**
    * Super Admin: Fetch paginated list of users with search, status filter, and pagination
    */
-  getAdminUsers: async (params = {}) => {
-    return await apiClient.get('/admin/users', { params });
+  getAdminUsers: async (params = {}, options = {}) => {
+    return await apiClient.get('/admin/users', { params, ...options });
   },
 
   /**
    * Super Admin: Fetch single user details with transaction count by ID
    */
-  getAdminUserById: async (id) => {
-    return await apiClient.get(`/admin/users/${id}`);
+  getAdminUserById: async (id, options = {}) => {
+    return await apiClient.get(`/admin/users/${id}`, options);
   },
 
   /**

@@ -12,15 +12,15 @@ const requestService = {
   /**
    * Customer fetches their own service request history.
    */
-  getMyRequests: async (params = {}) => {
-    return await apiClient.get('/requests/my', { params });
+  getMyRequests: async (params = {}, options = {}) => {
+    return await apiClient.get('/requests/my', { params, ...options });
   },
 
   /**
    * Customer or Admin fetches single service request details.
    */
-  getRequestById: async (id) => {
-    return await apiClient.get(`/requests/${id}`);
+  getRequestById: async (id, options = {}) => {
+    return await apiClient.get(`/requests/${id}`, options);
   },
 
   /**
@@ -33,15 +33,15 @@ const requestService = {
   /**
    * Super Admin lists all customer service requests with search, filters & pagination.
    */
-  getAdminRequests: async (params = {}) => {
-    return await apiClient.get('/admin/requests', { params });
+  getAdminRequests: async (params = {}, options = {}) => {
+    return await apiClient.get('/admin/requests', { params, ...options });
   },
 
   /**
    * Super Admin fetches single admin request details.
    */
-  getAdminRequestById: async (id) => {
-    return await apiClient.get(`/admin/requests/${id}`);
+  getAdminRequestById: async (id, options = {}) => {
+    return await apiClient.get(`/admin/requests/${id}`, options);
   },
 
   /**

@@ -6,7 +6,7 @@ import Spinner from '../common/Spinner';
 import catalogService from '../../services/catalog.service';
 import { AlertCircle } from 'lucide-react';
 
-const StatusChangeModal = ({ isOpen, onClose, mobile, onStatusUpdated }) => {
+const StatusChangeModal = ({ isOpen, onClose, mobile, onStatusUpdated, onSuccess }) => {
   const [status, setStatus] = useState('ACTIVE');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +27,8 @@ const StatusChangeModal = ({ isOpen, onClose, mobile, onStatusUpdated }) => {
     try {
       await catalogService.updateMobileStatus(mobile.id, status);
       onClose();
-      if (onStatusUpdated) onStatusUpdated();
+      const handleCallback = onSuccess || onStatusUpdated;
+      if (handleCallback) handleCallback();
     } catch (err) {
       setError(err.message || 'Failed to update status');
     } finally {

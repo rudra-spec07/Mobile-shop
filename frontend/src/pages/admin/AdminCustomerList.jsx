@@ -9,6 +9,8 @@ import ErrorState from '../../components/common/ErrorState';
 import Pagination from '../../components/common/Pagination';
 import Modal from '../../components/common/Modal';
 import Spinner from '../../components/common/Spinner';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import useDebounce from '../../hooks/useDebounce';
 import adminUserService from '../../services/adminUser.service';
 import {
   Users,
@@ -38,13 +40,11 @@ const formatDate = (dateStr) => {
 };
 
 const AdminCustomerList = () => {
-  const [users, setUsers] = useState([]);
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 350);
   const [statusFilter, setStatusFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // Selected User Modal State
   const [selectedUser, setSelectedUser] = useState(null);
@@ -56,40 +56,40 @@ const AdminCustomerList = () => {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [statusActionError, setStatusActionError] = useState('');
 
-  const fetchUsers = async (page = 1, searchQuery = search, status = statusFilter) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const params = { page, limit: 10 };
-      if (searchQuery.trim()) params.search = searchQuery.trim();
-      if (status) params.status = status;
-
-      const res = await adminUserService.getAdminUsers(params);
-      setUsers(res.data || []);
-      if (res.pagination) {
-        setPagination({
-          page: res.pagination.page || page,
-          limit: res.pagination.limit || 10,
-          total: res.pagination.total || 0,
-          totalPages: Math.ceil((res.pagination.total || 0) / (res.pagination.limit || 10)),
-        });
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to fetch customer list');
-    } finally {
-      setIsLoading(false);
-    }
+  // React Query: Admin Customers list
+  const adminUserQueryParams = {
+    page: currentPage,
+    limit: 10,
+    search: debouncedSearch.trim() || undefined,
+    status: statusFilter || undefined,
   };
 
-  useEffect(() => {
-    fetchUsers(currentPage, search, statusFilter);
-  }, [currentPage, statusFilter]);
+  const {
+    data: userRes,
+    isLoading,
+    error: userErr,
+    refetch: fetchUsers,
+  } = useQuery({
+    queryKey: ['adminUsers', adminUserQueryParams],
+    queryFn: ({ signal }) => adminUserService.getAdminUsers(adminUserQueryParams, { signal }),
+    staleTime: 1 * 60 * 1000,
+  });
+
+  const users = userRes?.data || [];
+  const pagination = userRes?.pagination
+    ? {
+        page: userRes.pagination.page || currentPage,
+        limit: userRes.pagination.limit || 10,
+        total: userRes.pagination.total || users.length,
+        totalPages: Math.ceil((userRes.pagination.total || users.length) / (userRes.pagination.limit || 10)),
+      }
+    : { page: 1, limit: 10, total: users.length, totalPages: 1 };
+  const error = userErr ? (userErr.message || 'Failed to fetch customer list') : null;
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    fetchUsers(1, search, statusFilter);
+    fetchUsers();
   };
 
   const handleOpenDetailModal = async (user) => {
@@ -128,10 +128,7 @@ const AdminCustomerList = () => {
       const res = await adminUserService.updateUserStatus(statusModalUser.id, { status: newStatus });
       const updatedUser = res.data?.user;
 
-      // Update state locally
-      setUsers((prev) =>
-        prev.map((u) => (u.id === statusModalUser.id ? { ...u, isActive: updatedUser.isActive } : u))
-      );
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
 
       if (selectedUser?.id === statusModalUser.id) {
         setSelectedUser((prev) => ({ ...prev, isActive: updatedUser.isActive }));
@@ -139,6 +136,7 @@ const AdminCustomerList = () => {
 
       setIsStatusModalOpen(false);
       setStatusModalUser(null);
+      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
     } catch (err) {
       setStatusActionError(err.message || 'Failed to update customer account status');
     } finally {

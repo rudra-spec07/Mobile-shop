@@ -31,6 +31,7 @@ const MobileCard = ({ mobile }) => {
             <img
               src={primaryImage}
               alt={mobile.name}
+              loading="lazy"
               className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 e.target.onerror = null;

@@ -12,15 +12,15 @@ const enquiryService = {
   /**
    * Customer fetches their own enquiry list.
    */
-  getMyEnquiries: async (params = {}) => {
-    return await apiClient.get('/enquiries/my', { params });
+  getMyEnquiries: async (params = {}, options = {}) => {
+    return await apiClient.get('/enquiries/my', { params, ...options });
   },
 
   /**
    * Customer or Admin fetches single enquiry details.
    */
-  getEnquiryById: async (id) => {
-    return await apiClient.get(`/enquiries/${id}`);
+  getEnquiryById: async (id, options = {}) => {
+    return await apiClient.get(`/enquiries/${id}`, options);
   },
 
   /**
@@ -33,15 +33,15 @@ const enquiryService = {
   /**
    * Super Admin lists all customer enquiries with search, filters & pagination.
    */
-  getAdminEnquiries: async (params = {}) => {
-    return await apiClient.get('/admin/enquiries', { params });
+  getAdminEnquiries: async (params = {}, options = {}) => {
+    return await apiClient.get('/admin/enquiries', { params, ...options });
   },
 
   /**
    * Super Admin fetches single admin enquiry details.
    */
-  getAdminEnquiryById: async (id) => {
-    return await apiClient.get(`/admin/enquiries/${id}`);
+  getAdminEnquiryById: async (id, options = {}) => {
+    return await apiClient.get(`/admin/enquiries/${id}`, options);
   },
 
   /**

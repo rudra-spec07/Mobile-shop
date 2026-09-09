@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { prisma } = require('../config/database');
 const { AppError } = require('../middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
@@ -63,11 +64,12 @@ const createPart = async (data, userId) => {
   }
 
   const initialQuantity = data.quantity || 0;
+  const partId = crypto.randomUUID();
 
-  // Execute in transaction if initial stock > 0
-  const result = await prisma.$transaction(async (tx) => {
-    const newPart = await tx.part.create({
+  const operations = [
+    prisma.part.create({
       data: {
+        id: partId,
         categoryId: data.categoryId,
         name: data.name,
         partNumber: data.partNumber,
@@ -80,12 +82,14 @@ const createPart = async (data, userId) => {
       include: {
         category: true,
       },
-    });
+    }),
+  ];
 
-    if (initialQuantity > 0) {
-      await tx.inventoryTransaction.create({
+  if (initialQuantity > 0) {
+    operations.push(
+      prisma.inventoryTransaction.create({
         data: {
-          partId: newPart.id,
+          partId,
           type: 'STOCK_IN',
           quantity: initialQuantity,
           previousQuantity: 0,
@@ -93,13 +97,14 @@ const createPart = async (data, userId) => {
           reason: 'Initial stock on part creation',
           performedBy: userId || 'SYSTEM',
         },
-      });
-    }
+      })
+    );
+  }
 
-    return newPart;
-  });
+  const results = await prisma.$transaction(operations);
+  const newPart = results[0];
 
-  return formatPartForAdmin(result);
+  return formatPartForAdmin(newPart);
 };
 
 const getParts = async (query = {}, userRole = ROLES.CUSTOMER) => {

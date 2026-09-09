@@ -12,6 +12,8 @@ import Pagination from '../../components/common/Pagination';
 import Modal from '../../components/common/Modal';
 import RequestStatusBadge from '../../components/request/RequestStatusBadge';
 import RequestTimeline from '../../components/request/RequestTimeline';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import useDebounce from '../../hooks/useDebounce';
 import requestService from '../../services/request.service';
 import {
   FileText,
@@ -40,16 +42,14 @@ const formatCurrency = (val) => {
 };
 
 const AdminRequestList = () => {
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialStatus = searchParams.get('status') || '';
 
-  const [requests, setRequests] = useState([]);
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 350);
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // Synchronize statusFilter with URL searchParams if URL changes
   useEffect(() => {
@@ -75,27 +75,28 @@ const AdminRequestList = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectReasonInput, setShowRejectReasonInput] = useState(false);
 
-  const fetchAdminRequests = async (page = 1, searchQuery = search, status = statusFilter) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const params = { page, limit: 10 };
-      if (searchQuery) params.search = searchQuery;
-      if (status) params.status = status;
-
-      const res = await requestService.getAdminRequests(params);
-      setRequests(res.data || []);
-      if (res.pagination) setPagination(res.pagination);
-    } catch (err) {
-      setError(err.message || 'Failed to load customer requests');
-    } finally {
-      setIsLoading(false);
-    }
+  // React Query: Admin Requests List
+  const adminReqQueryParams = {
+    page: currentPage,
+    limit: 10,
+    search: debouncedSearch.trim() || undefined,
+    status: statusFilter || undefined,
   };
 
-  useEffect(() => {
-    fetchAdminRequests(currentPage, search, statusFilter);
-  }, [currentPage, search, statusFilter]);
+  const {
+    data: reqRes,
+    isLoading,
+    error: reqErr,
+    refetch: fetchAdminRequests,
+  } = useQuery({
+    queryKey: ['adminRequests', adminReqQueryParams],
+    queryFn: ({ signal }) => requestService.getAdminRequests(adminReqQueryParams, { signal }),
+    staleTime: 30 * 1000,
+  });
+
+  const requests = reqRes?.data || [];
+  const pagination = reqRes?.pagination || { page: 1, limit: 10, total: requests.length, totalPages: 1 };
+  const error = reqErr ? (reqErr.message || 'Failed to load customer requests') : null;
 
   // Handle Deep-Link query parameter (e.g. ?requestId=UUID)
   useEffect(() => {
@@ -143,9 +144,9 @@ const AdminRequestList = () => {
       const res = await requestService.confirmRequest(requestId);
       const updated = res.data?.request || res.data;
 
-      setRequests((prev) => prev.map((r) => (r.id === requestId ? updated : r)));
       if (selectedRequest?.id === requestId) setSelectedRequest(updated);
       setActionSuccessMsg('Request has been CONFIRMED successfully.');
+      queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
     } catch (err) {
       setActionError(err.message || 'Failed to confirm request');
     } finally {
@@ -161,9 +162,9 @@ const AdminRequestList = () => {
       const res = await requestService.processRequest(requestId);
       const updated = res.data?.request || res.data;
 
-      setRequests((prev) => prev.map((r) => (r.id === requestId ? updated : r)));
       if (selectedRequest?.id === requestId) setSelectedRequest(updated);
       setActionSuccessMsg('Request is now IN PROCESSING status.');
+      queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
     } catch (err) {
       setActionError(err.message || 'Failed to update to processing');
     } finally {
@@ -179,9 +180,9 @@ const AdminRequestList = () => {
       const res = await requestService.completeRequest(requestId);
       const updated = res.data?.request || res.data;
 
-      setRequests((prev) => prev.map((r) => (r.id === requestId ? updated : r)));
       if (selectedRequest?.id === requestId) setSelectedRequest(updated);
       setActionSuccessMsg('Request has been marked COMPLETED.');
+      queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
     } catch (err) {
       setActionError(err.message || 'Failed to complete request');
     } finally {
@@ -199,11 +200,11 @@ const AdminRequestList = () => {
       const res = await requestService.cancelAdminRequest(requestId, payload);
       const updated = res.data?.request || res.data;
 
-      setRequests((prev) => prev.map((r) => (r.id === requestId ? updated : r)));
       if (selectedRequest?.id === requestId) setSelectedRequest(updated);
       setActionSuccessMsg('Request has been CANCELLED.');
       setShowCancelReasonInput(false);
       setCancelReason('');
+      queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
     } catch (err) {
       setActionError(err.message || 'Failed to cancel request');
     } finally {

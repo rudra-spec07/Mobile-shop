@@ -5,15 +5,15 @@ import apiClient from './api';
  */
 export const partsService = {
   // Part Category Endpoints
-  getPartCategories: (params = {}) => apiClient.get('/part-categories', { params }),
-  getPartCategoryById: (id) => apiClient.get(`/part-categories/${id}`),
+  getPartCategories: (params = {}, options = {}) => apiClient.get('/part-categories', { params, ...options }),
+  getPartCategoryById: (id, options = {}) => apiClient.get(`/part-categories/${id}`, options),
   createPartCategory: (data) => apiClient.post('/part-categories', data),
   updatePartCategory: (id, data) => apiClient.patch(`/part-categories/${id}`, data),
   updatePartCategoryStatus: (id, status) => apiClient.patch(`/part-categories/${id}/status`, { status }),
 
   // Part CRUD Endpoints
-  getParts: (params = {}) => apiClient.get('/parts', { params }),
-  getPartById: (id) => apiClient.get(`/parts/${id}`),
+  getParts: (params = {}, options = {}) => apiClient.get('/parts', { params, ...options }),
+  getPartById: (id, options = {}) => apiClient.get(`/parts/${id}`, options),
   createPart: (data) =>
     data instanceof FormData
       ? apiClient.post('/parts', data, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -33,12 +33,12 @@ export const partsService = {
       newQuantity: Number(newQuantity),
       reason,
     }),
-  getInventoryHistory: (id, params = {}) => apiClient.get(`/parts/${id}/inventory-history`, { params }),
+  getInventoryHistory: (id, params = {}, options = {}) => apiClient.get(`/parts/${id}/inventory-history`, { params, ...options }),
 
   // Reports & Summary Endpoints
-  getLowStock: (params = {}) => apiClient.get('/inventory/low-stock', { params }),
-  getOutOfStock: (params = {}) => apiClient.get('/inventory/out-of-stock', { params }),
-  getInventorySummary: () => apiClient.get('/inventory/summary'),
+  getLowStock: (params = {}, options = {}) => apiClient.get('/inventory/low-stock', { params, ...options }),
+  getOutOfStock: (params = {}, options = {}) => apiClient.get('/inventory/out-of-stock', { params, ...options }),
+  getInventorySummary: (options = {}) => apiClient.get('/inventory/summary', options),
 };
 
 export default partsService;

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AdminLayout from '../../components/layout/AdminLayout';
 import Card, { CardBody, CardHeader } from '../../components/common/Card';
-import Loader from '../../components/common/Loader';
 import ErrorState from '../../components/common/ErrorState';
+import { KpiSkeleton } from '../../components/common/Skeleton';
 import RequestStatusBadge from '../../components/request/RequestStatusBadge';
 import adminDashboardService from '../../services/adminDashboard.service';
 import {
@@ -15,9 +16,6 @@ import {
   AlertTriangle,
   ArrowRight,
   RefreshCw,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
   Package,
 } from 'lucide-react';
 
@@ -41,39 +39,51 @@ const formatDate = (dateStr) => {
 };
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState(null);
-  const [recentEnquiries, setRecentEnquiries] = useState([]);
-  const [recentRequests, setRecentRequests] = useState([]);
-  const [attention, setAttention] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
 
-  const fetchDashboardData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  // React Query: Single optimized dashboard API + recent feeds
+  const {
+    data: dashRes,
+    isLoading: isDashLoading,
+    error: dashErr,
+    refetch,
+  } = useQuery({
+    queryKey: ['adminDashboard'],
+    queryFn: ({ signal }) => adminDashboardService.getDashboard({ signal }),
+    staleTime: 30 * 1000,
+  });
 
-      const [dashRes, enqRes, reqRes, attRes] = await Promise.all([
-        adminDashboardService.getDashboard(),
-        adminDashboardService.getRecentEnquiries(5),
-        adminDashboardService.getRecentRequests(5),
-        adminDashboardService.getAttentionItems(),
-      ]);
+  const { data: enqRes } = useQuery({
+    queryKey: ['adminRecentEnquiries', 5],
+    queryFn: ({ signal }) => adminDashboardService.getRecentEnquiries(5, { signal }),
+    staleTime: 30 * 1000,
+  });
 
-      setStats(dashRes.data?.stats || null);
-      setRecentEnquiries(enqRes.data?.enquiries || []);
-      setRecentRequests(reqRes.data?.requests || []);
-      setAttention(attRes.data?.attention || null);
-    } catch (err) {
-      setError(err.message || 'Failed to load admin dashboard data');
-    } finally {
-      setIsLoading(false);
-    }
+  const { data: reqRes } = useQuery({
+    queryKey: ['adminRecentRequests', 5],
+    queryFn: ({ signal }) => adminDashboardService.getRecentRequests(5, { signal }),
+    staleTime: 30 * 1000,
+  });
+
+  const { data: attRes } = useQuery({
+    queryKey: ['adminAttentionItems'],
+    queryFn: ({ signal }) => adminDashboardService.getAttentionItems({ signal }),
+    staleTime: 30 * 1000,
+  });
+
+  const stats = dashRes?.data?.stats || null;
+  const recentEnquiries = enqRes?.data?.enquiries || [];
+  const recentRequests = reqRes?.data?.requests || [];
+  const attention = attRes?.data?.attention || null;
+  const isLoading = isDashLoading;
+  const error = dashErr ? (dashErr.message || 'Failed to load admin dashboard data') : null;
+
+  const handleRefresh = () => {
+    queryClient.invalidateQueries({ queryKey: ['adminDashboard'] });
+    queryClient.invalidateQueries({ queryKey: ['adminRecentEnquiries'] });
+    queryClient.invalidateQueries({ queryKey: ['adminRecentRequests'] });
+    queryClient.invalidateQueries({ queryKey: ['adminAttentionItems'] });
   };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
 
   return (
     <AdminLayout>
@@ -88,7 +98,7 @@ const AdminDashboard = () => {
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={fetchDashboardData}
+              onClick={handleRefresh}
               disabled={isLoading}
               className="p-2 text-slate-600 hover:text-blue-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-xs font-semibold flex items-center gap-1.5"
               title="Refresh Dashboard"
@@ -110,8 +120,12 @@ const AdminDashboard = () => {
         </div>
 
         {isLoading ? (
-          <div className="py-20">
-            <Loader text="Loading live dashboard statistics..." />
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <KpiSkeleton key={i} />
+              ))}
+            </div>
           </div>
         ) : error ? (
           <div className="py-12">
@@ -119,7 +133,7 @@ const AdminDashboard = () => {
               title="Dashboard Data Unavailable"
               description={error}
               actionText="Retry Loading"
-              onRetry={fetchDashboardData}
+              onRetry={() => refetch()}
             />
           </div>
         ) : (

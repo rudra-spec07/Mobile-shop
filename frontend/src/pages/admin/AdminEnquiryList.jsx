@@ -11,21 +11,20 @@ import Modal from '../../components/common/Modal';
 import EnquiryStatusBadge from '../../components/enquiry/EnquiryStatusBadge';
 import AdminRespondModal from '../../components/enquiry/AdminRespondModal';
 import AdminStatusModal from '../../components/enquiry/AdminStatusModal';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import useDebounce from '../../hooks/useDebounce';
 import enquiryService from '../../services/enquiry.service';
 import { MessageSquare, Search, Filter, Smartphone, Wrench, Eye, Edit3, Sliders, RefreshCw, User, Mail, Phone } from 'lucide-react';
 
 const AdminEnquiryList = () => {
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialStatus = searchParams.get('status') || '';
 
-  const [enquiries, setEnquiries] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 350);
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   // Synchronize statusFilter with URL searchParams if URL changes
   useEffect(() => {
@@ -42,27 +41,28 @@ const AdminEnquiryList = () => {
   const [isRespondModalOpen, setIsRespondModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
-  const fetchAdminEnquiries = async (page = 1, search = searchTerm, status = statusFilter) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const params = { page, limit: 10 };
-      if (search.trim()) params.search = search.trim();
-      if (status) params.status = status;
-
-      const res = await enquiryService.getAdminEnquiries(params);
-      setEnquiries(res.data || []);
-      if (res.pagination) setPagination(res.pagination);
-    } catch (err) {
-      setError(err.message || 'Failed to load customer enquiries');
-    } finally {
-      setIsLoading(false);
-    }
+  // React Query: Admin Enquiries list
+  const adminEnqQueryParams = {
+    page: currentPage,
+    limit: 10,
+    search: debouncedSearchTerm.trim() || undefined,
+    status: statusFilter || undefined,
   };
 
-  useEffect(() => {
-    fetchAdminEnquiries(currentPage, searchTerm, statusFilter);
-  }, [currentPage, statusFilter]);
+  const {
+    data: enqRes,
+    isLoading,
+    error: enqErr,
+    refetch: fetchAdminEnquiries,
+  } = useQuery({
+    queryKey: ['adminEnquiries', adminEnqQueryParams],
+    queryFn: ({ signal }) => enquiryService.getAdminEnquiries(adminEnqQueryParams, { signal }),
+    staleTime: 30 * 1000,
+  });
+
+  const enquiries = enqRes?.data || [];
+  const pagination = enqRes?.pagination || { page: 1, limit: 10, total: enquiries.length, totalPages: 1 };
+  const error = enqErr ? (enqErr.message || 'Failed to load customer enquiries') : null;
 
   const handleStatusFilterChange = (st) => {
     setStatusFilter(st);
@@ -89,10 +89,10 @@ const AdminEnquiryList = () => {
   };
 
   const handleUpdatedEnquiry = (updated) => {
-    setEnquiries((prev) => prev.map((e) => (e.id === updated.id ? updated : e)));
     if (selectedEnquiry?.id === updated.id) {
       setSelectedEnquiry(updated);
     }
+    queryClient.invalidateQueries({ queryKey: ['adminEnquiries'] });
   };
 
   const formatDate = (dateStr) => {

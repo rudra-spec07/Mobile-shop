@@ -17,6 +17,7 @@ const PartCard = ({ part }) => {
             <img
               src={part.imageUrl}
               alt={part.name}
+              loading="lazy"
               className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
                 e.target.onerror = null;

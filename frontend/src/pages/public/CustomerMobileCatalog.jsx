@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import MobileCard from '../../components/catalog/MobileCard';
 import Pagination from '../../components/common/Pagination';
@@ -7,15 +8,18 @@ import SortDropdown from '../../components/common/SortDropdown';
 import FilterChips from '../../components/common/FilterChips';
 import SearchEmptyState from '../../components/search/SearchEmptyState';
 import SearchErrorState from '../../components/search/SearchErrorState';
-import Loader from '../../components/common/Loader';
+import { CardSkeleton } from '../../components/common/Skeleton';
 import catalogService from '../../services/catalog.service';
-import { Search, Smartphone, Filter, SlidersHorizontal, X, RotateCcw } from 'lucide-react';
+import useDebounce from '../../hooks/useDebounce';
+import { Search, Smartphone, Filter, SlidersHorizontal, X } from 'lucide-react';
 
 const CustomerMobileCatalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // State derived from URL query params
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const debouncedSearchTerm = useDebounce(searchTerm, 350);
+
   const [selectedBrandId, setSelectedBrandId] = useState(searchParams.get('brandId') || '');
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');
   const [maxPrice, setMaxPrice] = useState(searchParams.get('maxPrice') || '');
@@ -25,13 +29,6 @@ const CustomerMobileCatalog = () => {
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1', 10));
 
-  // Data & Metadata State
-  const [mobiles, setMobiles] = useState([]);
-  const [brands, setBrands] = useState([]);
-  const [filterMetadata, setFilterMetadata] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0, totalPages: 1 });
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Sync state with URL params change
@@ -47,57 +44,49 @@ const CustomerMobileCatalog = () => {
     setCurrentPage(parseInt(searchParams.get('page') || '1', 10));
   }, [searchParams]);
 
-  // Load filter metadata & brands
-  const fetchMetadata = async () => {
-    try {
-      const [brandRes, filterRes] = await Promise.all([
-        catalogService.getBrands({ limit: 100 }),
-        catalogService.getCatalogFilters(),
-      ]);
-      setBrands(brandRes.data || []);
-      if (filterRes.data?.success) {
-        setFilterMetadata(filterRes.data.data?.mobiles || null);
-      }
-    } catch (err) {
-      console.error('Failed to fetch catalog metadata:', err);
-    }
+  // React Query: Fetch metadata & brands (Long-lived cache)
+  const { data: brandRes } = useQuery({
+    queryKey: ['brands', { limit: 100 }],
+    queryFn: ({ signal }) => catalogService.getBrands({ limit: 100 }, { signal }),
+    staleTime: 10 * 60 * 1000,
+  });
+  const brands = brandRes?.data || [];
+
+  const { data: filterRes } = useQuery({
+    queryKey: ['catalogFilters'],
+    queryFn: ({ signal }) => catalogService.getCatalogFilters({ signal }),
+    staleTime: 10 * 60 * 1000,
+  });
+  const filterMetadata = filterRes?.data?.success ? filterRes.data.data?.mobiles : null;
+
+  // React Query: Fetch Mobiles (Medium cache + AbortSignal cancellation)
+  const mobileQueryParams = {
+    page: currentPage,
+    limit: 12,
+    sort,
+    search: debouncedSearchTerm.trim() || undefined,
+    brandId: selectedBrandId || undefined,
+    minPrice: minPrice || undefined,
+    maxPrice: maxPrice || undefined,
+    ram: ram || undefined,
+    storage: storage || undefined,
+    operatingSystem: operatingSystem || undefined,
   };
 
-  // Fetch Mobiles
-  const fetchMobiles = async () => {
-    setIsLoading(true);
-    setError('');
-    try {
-      const params = {
-        page: currentPage,
-        limit: 12,
-        sort,
-      };
-      if (searchTerm.trim()) params.search = searchTerm.trim();
-      if (selectedBrandId) params.brandId = selectedBrandId;
-      if (minPrice) params.minPrice = minPrice;
-      if (maxPrice) params.maxPrice = maxPrice;
-      if (ram) params.ram = ram;
-      if (storage) params.storage = storage;
-      if (operatingSystem) params.operatingSystem = operatingSystem;
+  const {
+    data: mobilesRes,
+    isLoading,
+    error: mobileErr,
+    refetch: fetchMobiles,
+  } = useQuery({
+    queryKey: ['mobiles', mobileQueryParams],
+    queryFn: ({ signal }) => catalogService.getMobiles(mobileQueryParams, { signal }),
+    staleTime: 3 * 60 * 1000,
+  });
 
-      const res = await catalogService.getMobiles(params);
-      setMobiles(res.data || []);
-      setPagination(res.pagination || { page: 1, limit: 12, total: res.data?.length || 0, totalPages: 1 });
-    } catch (err) {
-      setError(err.message || 'Unable to load mobile catalog');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMetadata();
-  }, []);
-
-  useEffect(() => {
-    fetchMobiles();
-  }, [searchTerm, selectedBrandId, minPrice, maxPrice, ram, storage, operatingSystem, sort, currentPage]);
+  const mobiles = mobilesRes?.data || [];
+  const pagination = mobilesRes?.pagination || { page: 1, limit: 12, total: mobiles.length, totalPages: 1 };
+  const error = mobileErr ? (mobileErr.message || 'Unable to load mobile catalog') : '';
 
   const updateQueryParams = (newParams) => {
     const updated = new URLSearchParams(searchParams);
@@ -342,8 +331,10 @@ const CustomerMobileCatalog = () => {
           {/* Results Area */}
           <main className="flex-1 min-w-0">
             {isLoading ? (
-              <div className="py-16">
-                <Loader text="Searching mobile catalog..." />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <CardSkeleton key={i} />
+                ))}
               </div>
             ) : error ? (
               <SearchErrorState message={error} onRetry={() => fetchMobiles()} />
