@@ -233,7 +233,7 @@ const AdminRequestList = () => {
       const res = await requestService.rejectCancellationRequest(requestId, { reason: rejectReason.trim() });
       const updated = res.data?.request || res.data;
 
-      setRequests((prev) => prev.map((r) => (r.id === requestId ? updated : r)));
+      queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
       if (selectedRequest?.id === requestId) setSelectedRequest(updated);
       setActionSuccessMsg('Customer cancellation request rejected. Customer notified with your message.');
       setShowRejectReasonInput(false);
