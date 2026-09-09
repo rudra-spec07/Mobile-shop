@@ -206,7 +206,18 @@ const PartFormModal = ({ isOpen, onClose, part = null, onSuccess, onCategoryCrea
           minimumStock: Number(formData.minimumStock),
           imageUrl: formData.imageUrl.trim() || null,
         };
-        await partsService.updatePart(part.id, payload);
+        if (imageFile) {
+          const formDataPayload = new FormData();
+          Object.keys(payload).forEach((key) => {
+            if (payload[key] !== null && payload[key] !== undefined) {
+              formDataPayload.append(key, payload[key]);
+            }
+          });
+          formDataPayload.append('image', imageFile);
+          await partsService.updatePart(part.id, formDataPayload);
+        } else {
+          await partsService.updatePart(part.id, payload);
+        }
       } else {
         const payload = {
           categoryId: formData.categoryId,

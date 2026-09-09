@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { prisma } = require('../config/database');
 const AppError = require('../middleware/error.middleware').AppError;
 const { HTTP_STATUS, ERROR_CODES } = require('../utils/constants');
+const socketService = require('./socket.service');
 
 /**
  * Add a new image to a mobile listing (Super Admin only).
@@ -54,6 +55,11 @@ const addImage = async (mobileId, { imageUrl, isPrimary = false, sortOrder = 0 }
     });
   }
 
+  socketService.broadcastEvent('mobile:updated', {
+    mobileId,
+    timestamp: new Date().toISOString(),
+  });
+
   return newImage;
 };
 
@@ -79,6 +85,11 @@ const setPrimaryImage = async (mobileId, imageId) => {
       where: { id: imageId },
       data: { isPrimary: true },
     });
+  });
+
+  socketService.broadcastEvent('mobile:updated', {
+    mobileId,
+    timestamp: new Date().toISOString(),
   });
 
   return updatedImage;
@@ -114,6 +125,11 @@ const replaceImage = async (mobileId, imageId, newImageUrl) => {
       } catch (e) {}
     }
   }
+
+  socketService.broadcastEvent('mobile:updated', {
+    mobileId,
+    timestamp: new Date().toISOString(),
+  });
 
   return updatedImage;
 };
@@ -168,6 +184,11 @@ const deleteImage = async (mobileId, imageId) => {
       }
     }
   }
+
+  socketService.broadcastEvent('mobile:updated', {
+    mobileId,
+    timestamp: new Date().toISOString(),
+  });
 
   return { message: 'Image deleted successfully' };
 };

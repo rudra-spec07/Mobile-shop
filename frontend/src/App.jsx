@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import queryClient from './utils/queryClient';
 import { AuthProvider } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import { NotificationProvider } from './context/NotificationContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import AppRoutes from './routes/AppRoutes';
@@ -28,9 +29,11 @@ function App() {
         )}
         <BrowserRouter>
           <AuthProvider>
-            <NotificationProvider>
-              <AppRoutes />
-            </NotificationProvider>
+            <SocketProvider>
+              <NotificationProvider>
+                <AppRoutes />
+              </NotificationProvider>
+            </SocketProvider>
           </AuthProvider>
         </BrowserRouter>
       </QueryClientProvider>

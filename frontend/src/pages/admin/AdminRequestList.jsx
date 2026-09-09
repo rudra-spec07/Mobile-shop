@@ -15,6 +15,7 @@ import RequestTimeline from '../../components/request/RequestTimeline';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import useDebounce from '../../hooks/useDebounce';
 import requestService from '../../services/request.service';
+import { useSocket } from '../../context/SocketContext';
 import {
   FileText,
   Search,
@@ -97,6 +98,38 @@ const AdminRequestList = () => {
   const requests = reqRes?.data || [];
   const pagination = reqRes?.pagination || { page: 1, limit: 10, total: requests.length, totalPages: 1 };
   const error = reqErr ? (reqErr.message || 'Failed to load customer requests') : null;
+
+  const { socket } = useSocket();
+
+  // Listen for Customer -> Admin realtime request events
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRequestCreated = () => {
+      queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
+    };
+
+    const handleCancellationRequested = (payload) => {
+      queryClient.invalidateQueries({ queryKey: ['adminRequests'] });
+      if (payload?.requestId && selectedRequest?.id === payload.requestId) {
+        requestService
+          .getAdminRequestById(payload.requestId)
+          .then((res) => {
+            const updated = res.data?.request || res.data;
+            if (updated) setSelectedRequest(updated);
+          })
+          .catch((err) => console.warn('⚠️ [SOCKET MODAL SYNC ERROR]:', err?.message || err));
+      }
+    };
+
+    socket.on('request:created', handleRequestCreated);
+    socket.on('request:cancellation_requested', handleCancellationRequested);
+
+    return () => {
+      socket.off('request:created', handleRequestCreated);
+      socket.off('request:cancellation_requested', handleCancellationRequested);
+    };
+  }, [socket, queryClient, selectedRequest?.id]);
 
   // Handle Deep-Link query parameter (e.g. ?requestId=UUID)
   useEffect(() => {

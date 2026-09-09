@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import PartCard from '../../components/parts/PartCard';
 import Pagination from '../../components/common/Pagination';
@@ -11,9 +11,12 @@ import SearchErrorState from '../../components/search/SearchErrorState';
 import { CardSkeleton } from '../../components/common/Skeleton';
 import partsService from '../../services/parts.service';
 import useDebounce from '../../hooks/useDebounce';
+import { useSocket } from '../../context/SocketContext';
 import { Wrench, Search, Filter, SlidersHorizontal, X } from 'lucide-react';
 
 const CustomerPartsCatalog = () => {
+  const queryClient = useQueryClient();
+  const { socket } = useSocket();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // State from URL query params
@@ -39,6 +42,25 @@ const CustomerPartsCatalog = () => {
     setSort(searchParams.get('sort') || 'newest');
     setCurrentPage(parseInt(searchParams.get('page') || '1', 10));
   }, [searchParams]);
+
+  // Realtime Socket listener for parts catalog synchronization
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePartChange = () => {
+      queryClient.invalidateQueries({ queryKey: ['parts'] });
+    };
+
+    socket.on('part:created', handlePartChange);
+    socket.on('part:updated', handlePartChange);
+    socket.on('part:deleted', handlePartChange);
+
+    return () => {
+      socket.off('part:created', handlePartChange);
+      socket.off('part:updated', handlePartChange);
+      socket.off('part:deleted', handlePartChange);
+    };
+  }, [socket, queryClient]);
 
   // React Query: Fetch active part categories (Long-lived cache)
   const { data: categoryRes } = useQuery({

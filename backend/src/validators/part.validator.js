@@ -33,8 +33,8 @@ const updatePartSchema = z.object({
   name: z.string().min(1, 'Part name cannot be empty').trim().optional(),
   partNumber: z.string().min(1, 'Part number cannot be empty').trim().optional(),
   description: z.string().optional().nullable(),
-  price: z.number().min(0, 'Price must be greater than or equal to 0').optional(),
-  minimumStock: z.number().int('Minimum stock must be an integer').min(0, 'Minimum stock cannot be negative').optional(),
+  price: z.coerce.number().min(0, 'Price must be greater than or equal to 0').optional(),
+  minimumStock: z.coerce.number().int('Minimum stock must be an integer').min(0, 'Minimum stock cannot be negative').optional(),
   imageUrl: z.string().url('Invalid image URL format').optional().nullable(),
 });
 

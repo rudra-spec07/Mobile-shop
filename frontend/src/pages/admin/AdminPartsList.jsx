@@ -19,6 +19,7 @@ import Button from '../../components/common/Button';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import useDebounce from '../../hooks/useDebounce';
 import partsService from '../../services/parts.service';
+import { useSocket } from '../../context/SocketContext';
 import {
   Wrench,
   Plus,
@@ -39,6 +40,7 @@ import {
 const AdminPartsList = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { socket } = useSocket();
 
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 350);
@@ -56,6 +58,26 @@ const AdminPartsList = () => {
   const [isStockOutOpen, setIsStockOutOpen] = useState(false);
   const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  // Realtime Socket listener for Admin Parts List synchronization
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePartChange = () => {
+      queryClient.invalidateQueries({ queryKey: ['adminParts'] });
+      queryClient.invalidateQueries({ queryKey: ['partCategories'] });
+    };
+
+    socket.on('part:created', handlePartChange);
+    socket.on('part:updated', handlePartChange);
+    socket.on('part:deleted', handlePartChange);
+
+    return () => {
+      socket.off('part:created', handlePartChange);
+      socket.off('part:updated', handlePartChange);
+      socket.off('part:deleted', handlePartChange);
+    };
+  }, [socket, queryClient]);
 
   // React Query: Part categories (Long-lived cache)
   const { data: categoryRes } = useQuery({

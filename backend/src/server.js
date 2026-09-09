@@ -1,7 +1,9 @@
+const http = require('http');
 const app = require('./app');
 const env = require('./config/env');
 const { prisma } = require('./config/database');
 const { seedInitialSuperAdmin } = require('./services/auth.service');
+const { initSocket } = require('./config/socket');
 
 const PORT = env.PORT || 5000;
 
@@ -12,7 +14,17 @@ const startServer = async () => {
     // Seed initial Super Admin if not present
     await seedInitialSuperAdmin();
 
-    server = app.listen(PORT, '0.0.0.0', () => {
+    const httpServer = http.createServer(app);
+
+    // Initialize Socket.IO Server attached to HTTP Server (Failure Isolated)
+    try {
+      initSocket(httpServer);
+      console.log('⚡ Socket.IO Realtime Engine initialized');
+    } catch (socketErr) {
+      console.error('⚠️ [SOCKET INITIALIZATION WARNING]:', socketErr.message);
+    }
+
+    server = httpServer.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Mobile-Adda Backend running on port ${PORT}`);
       console.log(`🌐 Environment: ${env.NODE_ENV}`);
       console.log(`📚 API Docs: http://localhost:${PORT}/api/docs`);

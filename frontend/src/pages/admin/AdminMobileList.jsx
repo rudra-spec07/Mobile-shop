@@ -16,6 +16,7 @@ import { TableSkeleton } from '../../components/common/Skeleton';
 import useDebounce from '../../hooks/useDebounce';
 import catalogService from '../../services/catalog.service';
 import { getImageUrl } from '../../utils/image';
+import { useSocket } from '../../context/SocketContext';
 import {
   Smartphone,
   Plus,
@@ -40,6 +41,7 @@ const formatCurrency = (val) => {
 
 const AdminMobileList = () => {
   const queryClient = useQueryClient();
+  const { socket } = useSocket();
 
   // Filters & Pagination
   const [searchTerm, setSearchTerm] = useState('');
@@ -59,6 +61,25 @@ const AdminMobileList = () => {
 
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [selectedMobileForStatus, setSelectedMobileForStatus] = useState(null);
+
+  // Realtime Socket listener for Admin Mobile List synchronization
+  React.useEffect(() => {
+    if (!socket) return;
+
+    const handleMobileChange = () => {
+      queryClient.invalidateQueries({ queryKey: ['adminMobiles'] });
+    };
+
+    socket.on('mobile:created', handleMobileChange);
+    socket.on('mobile:updated', handleMobileChange);
+    socket.on('mobile:deleted', handleMobileChange);
+
+    return () => {
+      socket.off('mobile:created', handleMobileChange);
+      socket.off('mobile:updated', handleMobileChange);
+      socket.off('mobile:deleted', handleMobileChange);
+    };
+  }, [socket, queryClient]);
 
   // React Query: Admin Mobile List
   const adminMobileQueryParams = {

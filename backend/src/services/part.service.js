@@ -4,6 +4,7 @@ const { AppError } = require('../middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
 const { parsePagination } = require('../utils/pagination');
 const { deleteFromCloudinary } = require('./cloudinary.service');
+const socketService = require('./socket.service');
 
 const calculateStockStatus = (quantity, minimumStock) => {
   if (quantity === 0) return 'OUT_OF_STOCK';
@@ -103,6 +104,11 @@ const createPart = async (data, userId) => {
 
   const results = await prisma.$transaction(operations);
   const newPart = results[0];
+
+  socketService.broadcastEvent('part:created', {
+    partId: newPart.id,
+    timestamp: new Date().toISOString(),
+  });
 
   return formatPartForAdmin(newPart);
 };
@@ -337,6 +343,11 @@ const updatePart = async (id, data) => {
     }
   }
 
+  socketService.broadcastEvent('part:updated', {
+    partId: id,
+    timestamp: new Date().toISOString(),
+  });
+
   return formatPartForAdmin(updatedPart);
 };
 
@@ -358,6 +369,11 @@ const deletePartImage = async (id) => {
     await deleteFromCloudinary(oldImageUrl).catch((err) => console.error('⚠️ [IMAGE CLEANUP ERROR]:', err?.message || err));
   }
 
+  socketService.broadcastEvent('part:updated', {
+    partId: id,
+    timestamp: new Date().toISOString(),
+  });
+
   return formatPartForAdmin(updatedPart);
 };
 
@@ -373,6 +389,11 @@ const updatePartStatus = async (id, status) => {
     include: {
       category: true,
     },
+  });
+
+  socketService.broadcastEvent('part:updated', {
+    partId: id,
+    timestamp: new Date().toISOString(),
   });
 
   return formatPartForAdmin(updatedPart);

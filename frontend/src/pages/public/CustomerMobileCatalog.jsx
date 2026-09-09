@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import MobileCard from '../../components/catalog/MobileCard';
 import Pagination from '../../components/common/Pagination';
@@ -11,9 +11,12 @@ import SearchErrorState from '../../components/search/SearchErrorState';
 import { CardSkeleton } from '../../components/common/Skeleton';
 import catalogService from '../../services/catalog.service';
 import useDebounce from '../../hooks/useDebounce';
+import { useSocket } from '../../context/SocketContext';
 import { Search, Smartphone, Filter, SlidersHorizontal, X } from 'lucide-react';
 
 const CustomerMobileCatalog = () => {
+  const queryClient = useQueryClient();
+  const { socket } = useSocket();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // State derived from URL query params
@@ -43,6 +46,26 @@ const CustomerMobileCatalog = () => {
     setSort(searchParams.get('sort') || 'newest');
     setCurrentPage(parseInt(searchParams.get('page') || '1', 10));
   }, [searchParams]);
+
+  // Realtime Socket listener for mobile catalog synchronization
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMobileChange = () => {
+      queryClient.invalidateQueries({ queryKey: ['mobiles'] });
+      queryClient.invalidateQueries({ queryKey: ['catalogFilters'] });
+    };
+
+    socket.on('mobile:created', handleMobileChange);
+    socket.on('mobile:updated', handleMobileChange);
+    socket.on('mobile:deleted', handleMobileChange);
+
+    return () => {
+      socket.off('mobile:created', handleMobileChange);
+      socket.off('mobile:updated', handleMobileChange);
+      socket.off('mobile:deleted', handleMobileChange);
+    };
+  }, [socket, queryClient]);
 
   // React Query: Fetch metadata & brands (Long-lived cache)
   const { data: brandRes } = useQuery({
