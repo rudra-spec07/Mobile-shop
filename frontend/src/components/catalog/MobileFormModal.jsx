@@ -62,7 +62,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, mobile = null, 
       const res = await catalogService.getBrands({ limit: 100 });
       const allBrands = res.data || [];
       const activeBrands = allBrands.filter(
-        (b) => b.status === 'ACTIVE' || b.id === mobileToEdit?.brandId || b.id === autoSelectBrandId
+        (b) => b.status === 'ACTIVE' || b.id === targetMobile?.brandId || b.id === autoSelectBrandId
       );
       setBrands(activeBrands);
 
@@ -168,8 +168,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, mobile = null, 
 
   const handleSetPrimary = async (imageId) => {
     try {
-      await catalogService.setPrimaryImage(mobileToEdit.id, imageId);
-      await fetchMobileImages(mobileToEdit.id);
+      await catalogService.setPrimaryImage(targetMobile.id, imageId);
+      await fetchMobileImages(targetMobile.id);
       if (onSaved) onSaved();
     } catch (err) {
       setError(err.message || 'Failed to update primary image');
@@ -195,8 +195,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, mobile = null, 
     try {
       const formDataPayload = new FormData();
       formDataPayload.append('image', file);
-      await catalogService.addMobileImage(mobileToEdit.id, formDataPayload);
-      await fetchMobileImages(mobileToEdit.id);
+      await catalogService.addMobileImage(targetMobile.id, formDataPayload);
+      await fetchMobileImages(targetMobile.id);
       if (onSaved) onSaved();
     } catch (err) {
       setError(err.message || 'Failed to upload image');
@@ -224,8 +224,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, mobile = null, 
     try {
       const formDataPayload = new FormData();
       formDataPayload.append('image', file);
-      await catalogService.replaceMobileImage(mobileToEdit.id, imageId, formDataPayload);
-      await fetchMobileImages(mobileToEdit.id);
+      await catalogService.replaceMobileImage(targetMobile.id, imageId, formDataPayload);
+      await fetchMobileImages(targetMobile.id);
       if (onSaved) onSaved();
     } catch (err) {
       setError(err.message || 'Failed to replace image');
@@ -239,8 +239,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, mobile = null, 
     setIsDeletingImage(true);
     setError('');
     try {
-      await catalogService.deleteMobileImage(mobileToEdit.id, confirmDeleteImage.id);
-      await fetchMobileImages(mobileToEdit.id);
+      await catalogService.deleteMobileImage(targetMobile.id, confirmDeleteImage.id);
+      await fetchMobileImages(targetMobile.id);
       setConfirmDeleteImage(null);
       if (onSaved) onSaved();
     } catch (err) {
@@ -348,7 +348,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, mobile = null, 
 
     try {
       if (isEditMode) {
-        await catalogService.updateMobile(mobileToEdit.id, payload);
+        await catalogService.updateMobile(targetMobile.id, payload);
       } else {
         if (imageFile) {
           const formDataPayload = new FormData();
@@ -378,7 +378,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, mobile = null, 
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={isEditMode ? `Edit Mobile: ${mobileToEdit?.name}` : 'Add New Mobile Model'}
+        title={isEditMode ? `Edit Mobile: ${targetMobile?.name}` : 'Add New Mobile Model'}
         size="2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-6">

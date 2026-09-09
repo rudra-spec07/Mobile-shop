@@ -349,6 +349,7 @@ const AdminMobileList = () => {
       {isMobileFormOpen && (
         <MobileFormModal
           isOpen={isMobileFormOpen}
+          mobileToEdit={mobileToEdit}
           mobile={mobileToEdit}
           onClose={() => {
             setIsMobileFormOpen(false);
