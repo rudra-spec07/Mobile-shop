@@ -14,6 +14,8 @@ import CatalogPlaceholder from '../pages/public/CatalogPlaceholder';
 import AuthPlaceholder from '../pages/public/AuthPlaceholder';
 import ForgotPassword from '../pages/public/ForgotPassword';
 import ResetPassword from '../pages/public/ResetPassword';
+import TermsAndConditions from '../pages/public/TermsAndConditions';
+import PrivacyPolicy from '../pages/public/PrivacyPolicy';
 
 // Customer Pages
 import CustomerDashboard from '../pages/customer/CustomerDashboard';
@@ -46,6 +48,8 @@ import NotFound from '../pages/error/NotFound';
 import AccessDenied from '../pages/error/AccessDenied';
 import ServiceUnavailable from '../pages/error/ServiceUnavailable';
 
+import ServicesPage from '../pages/public/ServicesPage';
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -55,10 +59,13 @@ const AppRoutes = () => {
       <Route path="/mobiles/:id" element={<CustomerMobileDetails />} />
       <Route path="/parts" element={<CustomerPartsCatalog />} />
       <Route path="/parts/:id" element={<CustomerPartDetails />} />
+      <Route path="/services" element={<ServicesPage />} />
       <Route path="/login" element={<AuthPlaceholder />} />
       <Route path="/register" element={<AuthPlaceholder />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+      <Route path="/terms" element={<TermsAndConditions />} />
+      <Route path="/privacy" element={<PrivacyPolicy />} />
 
       {/* Customer Panel Protected Routes */}
       <Route

@@ -381,24 +381,34 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
       >
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="p-3 text-xs bg-red-50 text-red-600 border border-red-200 rounded-lg">
-              {error}
+            <div className="p-3.5 text-xs bg-red-50 text-red-600 border border-red-200 rounded-xl flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+              <span>{error}</span>
             </div>
           )}
 
-          {/* Basic Information */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1">
-              Basic Information
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* Section 1: Basic Information */}
+          <div className="bg-slate-50/60 rounded-2xl p-4 sm:p-5 border border-slate-200/80 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-blue-600" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                  Basic Information
+                </h4>
+              </div>
+              <span className="text-[11px] text-slate-400 font-medium">* Required fields</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-slate-700">Brand *</label>
+                  <label className="text-xs font-semibold text-slate-700">
+                    Brand <span className="text-red-500">*</span>
+                  </label>
                   <button
                     type="button"
                     onClick={() => setIsAddBrandModalOpen(true)}
-                    className="text-[11px] font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-0.5"
+                    className="text-[11px] font-bold text-blue-600 hover:text-blue-700 inline-flex items-center gap-1 hover:underline"
                   >
                     <Plus className="w-3 h-3" /> Add Brand
                   </button>
@@ -407,8 +417,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
                   name="brandId"
                   value={formData.brandId}
                   onChange={handleChange}
+                  placeholder="-- Select Brand --"
                   options={[
-                    { value: '', label: isLoadingBrands ? 'Loading brands...' : '-- Select Brand --' },
                     ...brands.map((b) => ({ value: b.id, label: b.name })),
                     { value: '__ADD_NEW_BRAND__', label: '+ Add New Brand...' },
                   ]}
@@ -417,13 +427,14 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
               </div>
 
               <Input
-                label="Model Name *"
+                label="Model Name"
                 name="name"
                 placeholder="e.g. Galaxy S24 Ultra / iPhone 16"
                 value={formData.name}
                 onChange={handleChange}
                 required
               />
+
               <Input
                 label="Model Number"
                 name="modelNumber"
@@ -433,16 +444,16 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
               />
             </div>
 
-            {/* Initial Image Upload Field for Create Mode */}
+            {/* Primary Image Upload (Create Mode) */}
             {!isEditMode && (
-              <div className="pt-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Mobile Primary Image (Optional)
+              <div className="pt-2 border-t border-slate-200/60">
+                <label className="block text-xs font-semibold text-slate-700 mb-2">
+                  Primary Product Image (Optional)
                 </label>
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors text-xs text-slate-700">
-                    <Upload className="w-4 h-4 text-slate-500" />
-                    <span>{imageFile ? imageFile.name : 'Select Image File (JPG, PNG, WebP)'}</span>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <label className="flex items-center gap-2.5 px-4 py-2.5 border-2 border-dashed border-slate-300 hover:border-blue-500 bg-white hover:bg-blue-50/20 rounded-xl cursor-pointer transition-all text-xs font-semibold text-slate-700 shadow-2xs">
+                    <Upload className="w-4 h-4 text-blue-600" />
+                    <span>{imageFile ? 'Change Selected Image' : 'Choose Photo File (JPG, PNG, WebP)'}</span>
                     <input
                       type="file"
                       accept="image/jpeg,image/jpg,image/png,image/webp"
@@ -450,19 +461,30 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
                       onChange={handleFileChange}
                     />
                   </label>
+
                   {imagePreview && (
-                    <div className="relative w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-50 flex-shrink-0">
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-200 shadow-2xs">
+                      <div className="relative w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
+                        <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
+                      </div>
+                      <div className="min-w-0 pr-2">
+                        <p className="text-xs font-semibold text-slate-800 truncate max-w-[180px]">
+                          {imageFile?.name || 'Selected Image'}
+                        </p>
+                        <p className="text-[10px] text-slate-400">
+                          {imageFile ? `${(imageFile.size / 1024).toFixed(1)} KB` : 'Ready to upload'}
+                        </p>
+                      </div>
                       <button
                         type="button"
                         onClick={() => {
                           setImageFile(null);
                           setImagePreview('');
                         }}
-                        className="absolute top-0 right-0 p-0.5 bg-red-500 text-white rounded-bl"
+                        className="p-1 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
                         title="Remove Image"
                       >
-                        <X className="w-3 h-3" />
+                        <X className="w-4 h-4" />
                       </button>
                     </div>
                   )}
@@ -473,12 +495,15 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
 
           {/* Edit Mode Product Gallery Management */}
           {isEditMode && (
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-1">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Product Gallery & Images
-                </h4>
-                <label className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 cursor-pointer">
+            <div className="bg-slate-50/60 rounded-2xl p-4 sm:p-5 border border-slate-200/80 space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-indigo-600" />
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                    Product Gallery & Images
+                  </h4>
+                </div>
+                <label className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg text-xs font-bold cursor-pointer transition-colors">
                   {isAddingNewImage ? (
                     <Spinner size="xs" />
                   ) : (
@@ -496,9 +521,12 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
               </div>
 
               {loadingImages ? (
-                <div className="py-4 text-center text-xs text-slate-400">Loading gallery images...</div>
+                <div className="py-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                  <Spinner size="sm" />
+                  <span>Loading gallery images...</span>
+                </div>
               ) : existingImages.length === 0 ? (
-                <div className="p-4 text-center border border-dashed border-slate-200 rounded-xl text-xs text-slate-400">
+                <div className="p-6 text-center border-2 border-dashed border-slate-200 rounded-xl text-xs text-slate-400 bg-white">
                   No images added yet. Click "+ Add Image" above to upload photos.
                 </div>
               ) : (
@@ -508,13 +536,13 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
                     return (
                       <div
                         key={img.id}
-                        className={`relative rounded-xl border p-2 bg-slate-50 flex flex-col items-center gap-2 group transition-all ${
+                        className={`relative rounded-xl border p-2.5 bg-white flex flex-col items-center gap-2 group transition-all shadow-2xs ${
                           img.isPrimary
-                            ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-xs'
+                            ? 'border-blue-500 ring-2 ring-blue-500/20'
                             : 'border-slate-200 hover:border-slate-300'
                         }`}
                       >
-                        <div className="relative w-full h-24 rounded-lg overflow-hidden bg-white flex items-center justify-center">
+                        <div className="relative w-full h-24 rounded-lg overflow-hidden bg-slate-50 flex items-center justify-center p-1">
                           <img
                             src={img.imageUrl}
                             alt="Mobile product"
@@ -535,7 +563,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
                           )}
                         </div>
 
-                        <div className="flex items-center justify-between w-full pt-1 border-t border-slate-200/60 text-[11px]">
+                        <div className="flex items-center justify-between w-full pt-1.5 border-t border-slate-100 text-[11px]">
                           {!img.isPrimary ? (
                             <button
                               type="button"
@@ -582,14 +610,18 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
             </div>
           )}
 
-          {/* Pricing & Status */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1">
-              Pricing & Status
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Section 2: Pricing & Status */}
+          <div className="bg-slate-50/60 rounded-2xl p-4 sm:p-5 border border-slate-200/80 space-y-4">
+            <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-600" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                Pricing & Status
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Input
-                label="Regular Price (₹) *"
+                label="Regular Price (₹)"
                 name="price"
                 type="number"
                 placeholder="129999"
@@ -606,7 +638,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
                 onChange={handleChange}
               />
               <Select
-                label="Catalog Status *"
+                label="Catalog Status"
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
@@ -615,10 +647,12 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
                   { value: 'OUT_OF_STOCK', label: 'OUT OF STOCK' },
                   { value: 'INACTIVE', label: 'INACTIVE (Hidden)' },
                 ]}
+                required
               />
             </div>
-            <div className="pt-1">
-              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+
+            <div className="pt-2 border-t border-slate-200/60">
+              <label className="inline-flex items-center gap-2.5 cursor-pointer text-xs font-semibold text-slate-700 select-none">
                 <input
                   type="checkbox"
                   name="featured"
@@ -626,17 +660,21 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
                   onChange={handleChange}
                   className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
                 />
-                <span>Mark as Featured Mobile (Highlight on Customer Home Page)</span>
+                <span>Mark as Featured Mobile (Highlight prominently on Customer Home Page)</span>
               </label>
             </div>
           </div>
 
-          {/* Specifications Grid */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 pb-1">
-              Hardware Specifications
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* Section 3: Hardware Specifications */}
+          <div className="bg-slate-50/60 rounded-2xl p-4 sm:p-5 border border-slate-200/80 space-y-4">
+            <div className="flex items-center gap-2 border-b border-slate-200/60 pb-2.5">
+              <span className="w-2 h-2 rounded-full bg-purple-600" />
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+                Hardware Specifications
+              </h4>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Input
                 label="RAM"
                 name="ram"
@@ -703,34 +741,36 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
             </div>
           </div>
 
-          {/* Description */}
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-slate-700">Description</label>
+          {/* Section 4: Description */}
+          <div className="bg-slate-50/60 rounded-2xl p-4 sm:p-5 border border-slate-200/80 space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-800 block">
+              Product Description
+            </label>
             <textarea
               name="description"
               rows="3"
-              placeholder="Detailed description of features, warranty, and highlights..."
+              placeholder="Detailed description of features, warranty, accessories, and highlights..."
               value={formData.description}
               onChange={handleChange}
-              className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+              className="w-full px-3.5 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-colors placeholder:text-slate-400"
             />
           </div>
 
-          {/* Form Actions */}
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-100">
-            <Button variant="outline" size="sm" type="button" onClick={onClose}>
+          {/* Form Actions (Sticky / Bottom Bar) */}
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+            <Button variant="outline" size="sm" type="button" onClick={onClose} className="rounded-xl px-4 py-2">
               Cancel
             </Button>
-            <Button variant="primary" size="sm" type="submit" isDisabled={isSubmitting}>
+            <Button variant="primary" size="sm" type="submit" isDisabled={isSubmitting} className="rounded-xl px-5 py-2 bg-blue-600 hover:bg-blue-700 shadow-xs">
               {isSubmitting ? (
                 <>
                   <Spinner size="sm" className="mr-1.5" />
                   Saving Mobile...
                 </>
               ) : isEditMode ? (
-                'Update Mobile'
+                'Update Mobile Model'
               ) : (
-                'Create Mobile'
+                'Create Mobile Model'
               )}
             </Button>
           </div>
@@ -787,7 +827,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
           )}
 
           <Input
-            label="Brand Name *"
+            label="Brand Name"
             placeholder="e.g. Nothing, Apple, OnePlus"
             value={newBrandName}
             onChange={(e) => setNewBrandName(e.target.value)}
