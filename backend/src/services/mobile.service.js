@@ -3,6 +3,7 @@ const { generateSlug } = require('../utils/slug');
 const { parsePagination } = require('../utils/pagination');
 const AppError = require('../middleware/error.middleware').AppError;
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
+const socketService = require('./socket.service');
 
 /**
  * Create a new mobile listing (Super Admin only).
@@ -87,6 +88,11 @@ const createMobile = async (data) => {
         orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
       },
     },
+  });
+
+  socketService.broadcastEvent('mobile:created', {
+    mobileId: mobile.id,
+    timestamp: new Date().toISOString(),
   });
 
   return mobile;
@@ -402,6 +408,11 @@ const updateMobile = async (id, data) => {
     newValue: { name: updatedMobile.name, price: Number(updatedMobile.price), status: updatedMobile.status },
   });
 
+  socketService.broadcastEvent('mobile:updated', {
+    mobileId: id,
+    timestamp: new Date().toISOString(),
+  });
+
   return updatedMobile;
 };
 
@@ -437,6 +448,11 @@ const updateMobileStatus = async (id, status) => {
     newValue: { status: updatedMobile.status },
   });
 
+  socketService.broadcastEvent('mobile:updated', {
+    mobileId: id,
+    timestamp: new Date().toISOString(),
+  });
+
   return updatedMobile;
 };
 
@@ -461,6 +477,11 @@ const updateFeaturedStatus = async (id, featured) => {
         orderBy: [{ isPrimary: 'desc' }, { sortOrder: 'asc' }],
       },
     },
+  });
+
+  socketService.broadcastEvent('mobile:updated', {
+    mobileId: id,
+    timestamp: new Date().toISOString(),
   });
 
   return updatedMobile;

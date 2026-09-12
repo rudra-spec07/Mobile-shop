@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import notificationService from '../services/notification.service';
 import { useAuth } from './AuthContext';
+import { useSocket } from './SocketContext';
 
 const NotificationContext = createContext(null);
 
 export const NotificationProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
+  const { socket } = useSocket();
   const [unreadCount, setUnreadCount] = useState(0);
   const [recentNotifications, setRecentNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -81,6 +83,22 @@ export const NotificationProvider = ({ children }) => {
       setRecentNotifications([]);
     }
   }, [isAuthenticated, fetchUnreadCount]);
+
+  // Realtime notification listener via Socket.IO
+  useEffect(() => {
+    if (!socket || !isAuthenticated) return;
+
+    const handleNewNotification = () => {
+      fetchUnreadCount();
+      fetchRecentNotifications();
+    };
+
+    socket.on('notification:new', handleNewNotification);
+
+    return () => {
+      socket.off('notification:new', handleNewNotification);
+    };
+  }, [socket, isAuthenticated, fetchUnreadCount, fetchRecentNotifications]);
 
   return (
     <NotificationContext.Provider

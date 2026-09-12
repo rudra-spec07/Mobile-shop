@@ -6,7 +6,8 @@ import Spinner from '../common/Spinner';
 import catalogService from '../../services/catalog.service';
 import { Plus, Edit2, CheckCircle, XCircle, Tag } from 'lucide-react';
 
-const BrandManagerModal = ({ isOpen, onClose, onBrandsUpdated }) => {
+const BrandManagerModal = ({ isOpen, onClose, onBrandsUpdated, onUpdated }) => {
+  const triggerUpdated = onUpdated || onBrandsUpdated;
   const [brands, setBrands] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -75,7 +76,7 @@ const BrandManagerModal = ({ isOpen, onClose, onBrandsUpdated }) => {
       }
       resetForm();
       await fetchBrands();
-      if (onBrandsUpdated) onBrandsUpdated();
+      if (triggerUpdated) triggerUpdated();
     } catch (err) {
       setError(err.message || 'Failed to save brand');
     } finally {
@@ -88,7 +89,7 @@ const BrandManagerModal = ({ isOpen, onClose, onBrandsUpdated }) => {
     try {
       await catalogService.updateBrandStatus(brand.id, newStatus);
       await fetchBrands();
-      if (onBrandsUpdated) onBrandsUpdated();
+      if (triggerUpdated) triggerUpdated();
     } catch (err) {
       setError(err.message || 'Failed to update brand status');
     }

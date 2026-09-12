@@ -11,6 +11,7 @@ import Spinner from '../../components/common/Spinner';
 import RequestStatusBadge from '../../components/request/RequestStatusBadge';
 import RequestTimeline from '../../components/request/RequestTimeline';
 import requestService from '../../services/request.service';
+import { useSocket } from '../../context/SocketContext';
 import {
   FileText,
   Smartphone,
@@ -73,6 +74,39 @@ const CustomerMyRequests = () => {
   useEffect(() => {
     fetchRequests(currentPage, statusFilter);
   }, [currentPage, statusFilter]);
+
+  const { socket } = useSocket();
+
+  // Listen for Admin -> Customer realtime request events
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleRequestSync = (payload) => {
+      if (!payload?.requestId) return;
+
+      // Update background list preserving current page & filter
+      fetchRequests(currentPage, statusFilter);
+
+      // If open modal matches affected request, fetch fresh authoritative data
+      if (selectedRequest?.id === payload.requestId) {
+        requestService
+          .getRequestById(payload.requestId)
+          .then((res) => {
+            const updated = res.data?.request || res.data;
+            if (updated) setSelectedRequest(updated);
+          })
+          .catch((err) => console.warn('⚠️ [CUSTOMER SOCKET SYNC ERROR]:', err?.message || err));
+      }
+    };
+
+    socket.on('request:status_updated', handleRequestSync);
+    socket.on('cancellation:decision', handleRequestSync);
+
+    return () => {
+      socket.off('request:status_updated', handleRequestSync);
+      socket.off('cancellation:decision', handleRequestSync);
+    };
+  }, [socket, currentPage, statusFilter, selectedRequest?.id]);
 
   const handleOpenCancelModal = (requestItem) => {
     setRequestToCancel(requestItem);

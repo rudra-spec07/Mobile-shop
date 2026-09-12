@@ -5,16 +5,16 @@ import apiClient from './api';
  */
 export const catalogService = {
   // Brand Services
-  getBrands: (params = {}) => apiClient.get('/brands', { params }),
-  getBrandById: (id) => apiClient.get(`/brands/${id}`),
+  getBrands: (params = {}, options = {}) => apiClient.get('/brands', { params, ...options }),
+  getBrandById: (id, options = {}) => apiClient.get(`/brands/${id}`, options),
   createBrand: (data) => apiClient.post('/brands', data),
   updateBrand: (id, data) => apiClient.patch(`/brands/${id}`, data),
   updateBrandStatus: (id, status) => apiClient.patch(`/brands/${id}/status`, { status }),
 
   // Mobile Services
-  getMobiles: (params = {}) => apiClient.get('/mobiles', { params }),
-  getFeaturedMobiles: (params = {}) => apiClient.get('/mobiles/featured', { params }),
-  getMobileById: (id) => apiClient.get(`/mobiles/${id}`),
+  getMobiles: (params = {}, options = {}) => apiClient.get('/mobiles', { params, ...options }),
+  getFeaturedMobiles: (params = {}, options = {}) => apiClient.get('/mobiles/featured', { params, ...options }),
+  getMobileById: (id, options = {}) => apiClient.get(`/mobiles/${id}`, options),
   createMobile: (data) =>
     data instanceof FormData
       ? apiClient.post('/mobiles', data, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -24,7 +24,7 @@ export const catalogService = {
   updateMobileFeatured: (id, featured) => apiClient.patch(`/mobiles/${id}/featured`, { featured }),
 
   // Mobile Image Services
-  getMobileImages: (mobileId) => apiClient.get(`/mobiles/${mobileId}/images`),
+  getMobileImages: (mobileId, options = {}) => apiClient.get(`/mobiles/${mobileId}/images`, options),
   addMobileImage: (mobileId, data) =>
     data instanceof FormData
       ? apiClient.post(`/mobiles/${mobileId}/images`, data, { headers: { 'Content-Type': 'multipart/form-data' } })
@@ -36,8 +36,8 @@ export const catalogService = {
   setPrimaryImage: (mobileId, imageId) => apiClient.patch(`/mobiles/${mobileId}/images/${imageId}/primary`),
   deleteMobileImage: (mobileId, imageId) => apiClient.delete(`/mobiles/${mobileId}/images/${imageId}`),
   // Global Search & Metadata Services
-  globalSearch: (q, limit = 5) => apiClient.get('/search', { params: { q, limit } }),
-  getCatalogFilters: () => apiClient.get('/catalog/filters'),
+  globalSearch: (q, limit = 5, options = {}) => apiClient.get('/search', { params: { q, limit }, ...options }),
+  getCatalogFilters: (options = {}) => apiClient.get('/catalog/filters', options),
 };
 
 export default catalogService;

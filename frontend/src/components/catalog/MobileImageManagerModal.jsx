@@ -15,7 +15,8 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
-const MobileImageManagerModal = ({ isOpen, onClose, mobile, onImagesUpdated }) => {
+const MobileImageManagerModal = ({ isOpen, onClose, mobile, onImagesUpdated, onUpdated }) => {
+  const triggerUpdated = onUpdated || onImagesUpdated;
   const [images, setImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -182,7 +183,7 @@ const MobileImageManagerModal = ({ isOpen, onClose, mobile, onImagesUpdated }) =
       setSuccessMessage('Images uploaded successfully.');
 
       await fetchImages();
-      if (onImagesUpdated) onImagesUpdated();
+      if (triggerUpdated) triggerUpdated();
     } catch (err) {
       setError(err.message || 'Unable to upload images. Please try again.');
     } finally {
@@ -214,7 +215,7 @@ const MobileImageManagerModal = ({ isOpen, onClose, mobile, onImagesUpdated }) =
       setSuccessMessage('Image added successfully.');
 
       await fetchImages();
-      if (onImagesUpdated) onImagesUpdated();
+      if (triggerUpdated) triggerUpdated();
     } catch (err) {
       setError(err.message || 'Failed to add image');
     } finally {
@@ -228,7 +229,7 @@ const MobileImageManagerModal = ({ isOpen, onClose, mobile, onImagesUpdated }) =
     try {
       await catalogService.setPrimaryImage(mobile.id, imageId);
       await fetchImages();
-      if (onImagesUpdated) onImagesUpdated();
+      if (triggerUpdated) triggerUpdated();
     } catch (err) {
       setError(err.message || 'Failed to set primary image');
     }
@@ -240,7 +241,7 @@ const MobileImageManagerModal = ({ isOpen, onClose, mobile, onImagesUpdated }) =
     try {
       await catalogService.deleteMobileImage(mobile.id, imageId);
       await fetchImages();
-      if (onImagesUpdated) onImagesUpdated();
+      if (triggerUpdated) triggerUpdated();
     } catch (err) {
       setError(err.message || 'Failed to delete image');
     }

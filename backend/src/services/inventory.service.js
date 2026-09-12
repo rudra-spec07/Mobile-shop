@@ -4,6 +4,7 @@ const { HTTP_STATUS, ERROR_CODES } = require('../utils/constants');
 const { parsePagination } = require('../utils/pagination');
 const { formatPartForAdmin, calculateStockStatus } = require('./part.service');
 const notificationService = require('./notification.service');
+const socketService = require('./socket.service');
 
 const stockIn = async (partId, quantity, userId) => {
   if (!quantity || quantity <= 0) {
@@ -51,6 +52,11 @@ const stockIn = async (partId, quantity, userId) => {
     entityId: partId,
     oldValue: { quantity: previousQuantity },
     newValue: { quantity: newQuantity },
+  });
+
+  socketService.broadcastEvent('part:updated', {
+    partId,
+    timestamp: new Date().toISOString(),
   });
 
   return {
@@ -131,6 +137,11 @@ const stockOut = async (partId, quantity, userId) => {
     newValue: { quantity: newQuantity },
   });
 
+  socketService.broadcastEvent('part:updated', {
+    partId,
+    timestamp: new Date().toISOString(),
+  });
+
   return {
     part: formatPartForAdmin(result.part),
     transaction: result.transaction,
@@ -203,6 +214,11 @@ const stockAdjustment = async (partId, newQuantity, reason, userId) => {
     entityId: partId,
     oldValue: { quantity: previousQuantity },
     newValue: { quantity: newQuantity, reason },
+  });
+
+  socketService.broadcastEvent('part:updated', {
+    partId,
+    timestamp: new Date().toISOString(),
   });
 
   return {

@@ -16,7 +16,10 @@ import Pagination from '../../components/common/Pagination';
 import Input from '../../components/common/Input';
 import Select from '../../components/common/Select';
 import Button from '../../components/common/Button';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import useDebounce from '../../hooks/useDebounce';
 import partsService from '../../services/parts.service';
+import { useSocket } from '../../context/SocketContext';
 import {
   Wrench,
   Plus,
@@ -36,17 +39,15 @@ import {
 
 const AdminPartsList = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { socket } = useSocket();
 
-  const [parts, setParts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 350);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   const [selectedStockStatus, setSelectedStockStatus] = useState('');
-  const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, totalPages: 1 });
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Active Modals state
   const [selectedPart, setSelectedPart] = useState(null);
@@ -58,49 +59,61 @@ const AdminPartsList = () => {
   const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
 
+  // Realtime Socket listener for Admin Parts List synchronization
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (!socket) return;
 
-  useEffect(() => {
-    fetchParts(1);
-  }, [searchQuery, selectedCategory, selectedStatus, selectedStockStatus]);
+    const handlePartChange = () => {
+      queryClient.invalidateQueries({ queryKey: ['adminParts'] });
+      queryClient.invalidateQueries({ queryKey: ['partCategories'] });
+    };
 
-  const fetchCategories = async () => {
-    try {
-      const res = await partsService.getPartCategories({ status: 'ACTIVE', limit: 100 });
-      setCategories(res.data || []);
-    } catch (err) {
-      console.error('Failed to fetch categories', err);
-    }
+    socket.on('part:created', handlePartChange);
+    socket.on('part:updated', handlePartChange);
+    socket.on('part:deleted', handlePartChange);
+
+    return () => {
+      socket.off('part:created', handlePartChange);
+      socket.off('part:updated', handlePartChange);
+      socket.off('part:deleted', handlePartChange);
+    };
+  }, [socket, queryClient]);
+
+  // React Query: Part categories (Long-lived cache)
+  const { data: categoryRes } = useQuery({
+    queryKey: ['partCategories', { status: 'ACTIVE', limit: 100 }],
+    queryFn: ({ signal }) => partsService.getPartCategories({ status: 'ACTIVE', limit: 100 }, { signal }),
+    staleTime: 10 * 60 * 1000,
+  });
+  const categories = categoryRes?.data || [];
+
+  // React Query: Admin Parts list (Medium cache + signal cancellation)
+  const adminPartQueryParams = {
+    page: currentPage,
+    limit: 10,
+    search: debouncedSearchQuery.trim() || undefined,
+    categoryId: selectedCategory || undefined,
+    status: selectedStatus || undefined,
+    stockStatus: selectedStockStatus || undefined,
   };
 
-  const fetchParts = async (page = 1) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const params = {
-        page,
-        limit: 10,
-        search: searchQuery.trim() || undefined,
-        categoryId: selectedCategory || undefined,
-        status: selectedStatus || undefined,
-        stockStatus: selectedStockStatus || undefined,
-      };
-      const res = await partsService.getParts(params);
-      setParts(res.data || []);
-      if (res.pagination) {
-        setPagination(res.pagination);
-      }
-    } catch (err) {
-      setError(err.message || 'Failed to load spare parts list');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    data: partsRes,
+    isLoading: loading,
+    error: partsErr,
+    refetch: fetchParts,
+  } = useQuery({
+    queryKey: ['adminParts', adminPartQueryParams],
+    queryFn: ({ signal }) => partsService.getParts(adminPartQueryParams, { signal }),
+    staleTime: 1 * 60 * 1000,
+  });
+
+  const parts = partsRes?.data || [];
+  const pagination = partsRes?.pagination || { page: 1, limit: 10, total: parts.length, totalPages: 1 };
+  const error = partsErr ? (partsErr.message || 'Failed to load spare parts list') : null;
 
   const handlePageChange = (newPage) => {
-    fetchParts(newPage);
+    setCurrentPage(newPage);
   };
 
   const handleOpenAdd = () => {
@@ -145,10 +158,10 @@ const AdminPartsList = () => {
         isOpen={isFormModalOpen}
         onClose={() => setIsFormModalOpen(false)}
         part={selectedPart}
-        onCategoryCreated={() => fetchCategories()}
+        onCategoryCreated={() => queryClient.invalidateQueries({ queryKey: ['partCategories'] })}
         onSuccess={() => {
-          fetchParts(pagination.page);
-          fetchCategories();
+          queryClient.invalidateQueries({ queryKey: ['adminParts'] });
+          queryClient.invalidateQueries({ queryKey: ['partCategories'] });
         }}
       />
 
@@ -156,15 +169,15 @@ const AdminPartsList = () => {
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         part={selectedPart}
-        onSuccess={() => fetchParts(pagination.page)}
+        onSuccess={() => queryClient.invalidateQueries({ queryKey: ['adminParts'] })}
       />
 
       <CategoryManagerModal
         isOpen={isCategoryManagerOpen}
         onClose={() => setIsCategoryManagerOpen(false)}
         onCategoryChange={() => {
-          fetchCategories();
-          fetchParts(pagination.page);
+          queryClient.invalidateQueries({ queryKey: ['partCategories'] });
+          queryClient.invalidateQueries({ queryKey: ['adminParts'] });
         }}
       />
 
@@ -174,21 +187,21 @@ const AdminPartsList = () => {
             isOpen={isStockInOpen}
             onClose={() => setIsStockInOpen(false)}
             part={selectedPart}
-            onSuccess={() => fetchParts(pagination.page)}
+            onSuccess={() => queryClient.invalidateQueries({ queryKey: ['adminParts'] })}
           />
 
           <StockOutModal
             isOpen={isStockOutOpen}
             onClose={() => setIsStockOutOpen(false)}
             part={selectedPart}
-            onSuccess={() => fetchParts(pagination.page)}
+            onSuccess={() => queryClient.invalidateQueries({ queryKey: ['adminParts'] })}
           />
 
           <StockAdjustmentModal
             isOpen={isAdjustmentOpen}
             onClose={() => setIsAdjustmentOpen(false)}
             part={selectedPart}
-            onSuccess={() => fetchParts(pagination.page)}
+            onSuccess={() => queryClient.invalidateQueries({ queryKey: ['adminParts'] })}
           />
 
           <StockHistoryModal

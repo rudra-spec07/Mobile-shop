@@ -27,26 +27,48 @@ const MobileCard = ({ mobile }) => {
   const isInStock = mobile.status === 'ACTIVE';
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-4 hover:shadow-xl hover:border-blue-300 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between group overflow-hidden h-full">
-      <div className="space-y-2.5">
-        {/* Top Header: Badge Pill + Wishlist Heart */}
-        <div className="flex items-center justify-between gap-2">
-          {hasDiscount ? (
-            <span className="text-[10px] font-black text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-              -{discountPercent}%
+    <div className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col justify-between group overflow-hidden h-full">
+      <div className="space-y-3">
+        {/* Thumbnail / Image Container */}
+        <div className="relative w-full h-44 sm:h-48 bg-slate-50/80 rounded-xl flex items-center justify-center overflow-hidden border border-slate-100 group-hover:bg-blue-50/20 transition-colors p-2">
+          {primaryImage ? (
+            <img
+              src={primaryImage}
+              alt={mobile.name}
+              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.style.display = 'none';
+                if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div
+            className="flex flex-col items-center justify-center text-slate-300"
+            style={{ display: primaryImage ? 'none' : 'flex' }}
+          >
+            <Smartphone className="w-10 h-10 stroke-[1.5]" />
+            <span className="text-[10px] text-slate-400 mt-1 font-medium">No Image</span>
+          </div>
+
+          {/* Featured Badge */}
+          {mobile.featured && (
+            <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-xs">
+              <Star className="w-3 h-3 fill-current" />
+              Featured
             </span>
           ) : mobile.featured ? (
-            <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              New
-            </span>
+          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            New
+          </span>
           ) : mobile.brand?.name ? (
-            <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 truncate max-w-[100px]">
-              {mobile.brand.name}
-            </span>
+          <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 truncate max-w-[100px]">
+            {mobile.brand.name}
+          </span>
           ) : (
-            <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-              Hot
-            </span>
+          <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+            Hot
+          </span>
           )}
 
           <button
@@ -56,11 +78,10 @@ const MobileCard = ({ mobile }) => {
               setIsWishlisted(!isWishlisted);
             }}
             aria-label="Add to wishlist"
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${
-              isWishlisted
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${isWishlisted
                 ? 'text-red-500 bg-red-50 scale-110'
                 : 'text-slate-400 hover:text-red-500 hover:bg-slate-50'
-            }`}
+              }`}
           >
             <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`} />
           </button>

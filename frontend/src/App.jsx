@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClientProvider } from '@tanstack/react-query';
+import queryClient from './utils/queryClient';
 import { AuthProvider } from './context/AuthContext';
+import { SocketProvider } from './context/SocketContext';
 import { NotificationProvider } from './context/NotificationContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import AppRoutes from './routes/AppRoutes';
@@ -17,19 +20,23 @@ function App() {
 
   return (
     <ErrorBoundary>
-      {showSplash && (
-        <AppSplashScreen
-          isAppReady={isAppReady}
-          onFinish={() => setShowSplash(false)}
-        />
-      )}
-      <BrowserRouter>
-        <AuthProvider>
-          <NotificationProvider>
-            <AppRoutes />
-          </NotificationProvider>
-        </AuthProvider>
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        {showSplash && (
+          <AppSplashScreen
+            isAppReady={isAppReady}
+            onFinish={() => setShowSplash(false)}
+          />
+        )}
+        <BrowserRouter>
+          <AuthProvider>
+            <SocketProvider>
+              <NotificationProvider>
+                <AppRoutes />
+              </NotificationProvider>
+            </SocketProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }

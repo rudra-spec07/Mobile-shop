@@ -3,6 +3,7 @@ const { parsePagination } = require('../utils/pagination');
 const AppError = require('../middleware/error.middleware').AppError;
 const { HTTP_STATUS, ERROR_CODES, ROLES } = require('../utils/constants');
 const notificationService = require('./notification.service');
+const socketService = require('./socket.service');
 
 /**
  * Helper to format ServiceRequest response payload.
@@ -144,6 +145,13 @@ const createRequest = async (data, customerId) => {
     }
   }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
+  // Emit Realtime Event to Admin Room (Failure Isolated)
+  socketService.emitToAdmin('request:created', {
+    requestId: request.id,
+    customerId: request.customerId,
+    status: request.status,
+  });
+
   return formatRequest(request, false);
 };
 
@@ -268,6 +276,14 @@ const cancelCustomerRequest = async (requestId, customerId, reason = null) => {
       }
     }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
 
+    // Emit Realtime Event to Admin Room (Failure Isolated)
+    socketService.emitToAdmin('request:cancellation_requested', {
+      requestId: updated.id,
+      customerId: updated.customerId,
+      status: updated.status,
+      cancellationRequested: true,
+    });
+
     return formatRequest(updated, false);
   }
 
@@ -287,6 +303,14 @@ const cancelCustomerRequest = async (requestId, customerId, reason = null) => {
       mobile: { select: { id: true, name: true, modelNumber: true, price: true, sellingPrice: true, status: true } },
       part: { select: { id: true, name: true, partNumber: true, price: true, quantity: true, status: true } },
     },
+  });
+
+  // Emit Realtime Event to Admin Room (Failure Isolated)
+  socketService.emitToAdmin('request:cancellation_requested', {
+    requestId: updated.id,
+    customerId: updated.customerId,
+    status: updated.status,
+    cancellationRequested: false,
   });
 
   return formatRequest(updated, false);
@@ -429,6 +453,14 @@ const confirmRequest = async (requestId) => {
     newValue: { status: 'CONFIRMED' },
   });
 
+  // Emit Realtime Event to Customer Room (Failure Isolated)
+  socketService.emitToUser(updated.customerId, 'request:status_updated', {
+    requestId: updated.id,
+    customerId: updated.customerId,
+    status: updated.status,
+    cancellationRequested: Boolean(updated.cancellationRequested),
+  });
+
   return formatRequest(updated, true);
 };
 
@@ -480,6 +512,14 @@ const processRequest = async (requestId) => {
     entityId: updated.id,
     oldValue: { status: 'CONFIRMED' },
     newValue: { status: 'PROCESSING' },
+  });
+
+  // Emit Realtime Event to Customer Room (Failure Isolated)
+  socketService.emitToUser(updated.customerId, 'request:status_updated', {
+    requestId: updated.id,
+    customerId: updated.customerId,
+    status: updated.status,
+    cancellationRequested: Boolean(updated.cancellationRequested),
   });
 
   return formatRequest(updated, true);
@@ -540,6 +580,14 @@ const completeRequest = async (requestId, adminId) => {
     entityId: updated.id,
     oldValue: { status: 'PROCESSING' },
     newValue: { status: 'COMPLETED', processedBy: adminId },
+  });
+
+  // Emit Realtime Event to Customer Room (Failure Isolated)
+  socketService.emitToUser(updated.customerId, 'request:status_updated', {
+    requestId: updated.id,
+    customerId: updated.customerId,
+    status: updated.status,
+    cancellationRequested: Boolean(updated.cancellationRequested),
   });
 
   return formatRequest(updated, true);
@@ -603,6 +651,24 @@ const adminCancelRequest = async (requestId, reason = null) => {
     newValue: { status: 'CANCELLED', adminNotes: reason },
   });
 
+  // Emit Realtime Event to Customer Room (Failure Isolated)
+  socketService.emitToUser(updated.customerId, 'request:status_updated', {
+    requestId: updated.id,
+    customerId: updated.customerId,
+    status: updated.status,
+    cancellationRequested: false,
+  });
+
+  if (request.cancellationRequested) {
+    socketService.emitToUser(updated.customerId, 'cancellation:decision', {
+      requestId: updated.id,
+      customerId: updated.customerId,
+      status: updated.status,
+      cancellationRequested: false,
+      approved: true,
+    });
+  }
+
   return formatRequest(updated, true);
 };
 
@@ -654,6 +720,15 @@ const rejectCancellationRequest = async (requestId, adminNotes = null) => {
       adminNotes: trimmedNotes,
     },
   }).catch((err) => console.error('⚠️ [ASYNC BACKGROUND ERROR]:', err?.message || err));
+
+  // Emit Realtime Event to Customer Room (Failure Isolated)
+  socketService.emitToUser(updated.customerId, 'cancellation:decision', {
+    requestId: updated.id,
+    customerId: updated.customerId,
+    status: updated.status,
+    cancellationRequested: false,
+    approved: false,
+  });
 
   return formatRequest(updated, true);
 };
@@ -737,6 +812,14 @@ const updateRequestStatus = async (requestId, newStatus, adminNotes = null, admi
       mobile: { select: { id: true, name: true, modelNumber: true, price: true, sellingPrice: true, status: true } },
       part: { select: { id: true, name: true, partNumber: true, price: true, quantity: true, status: true } },
     },
+  });
+
+  // Emit Realtime Event to Customer Room (Failure Isolated)
+  socketService.emitToUser(updated.customerId, 'request:status_updated', {
+    requestId: updated.id,
+    customerId: updated.customerId,
+    status: updated.status,
+    cancellationRequested: Boolean(updated.cancellationRequested),
   });
 
   return formatRequest(updated, true);

@@ -1,21 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import CustomerLayout from '../../components/layout/CustomerLayout';
 import PartCard from '../../components/parts/PartCard';
-import Loader from '../../components/common/Loader';
 import Pagination from '../../components/common/Pagination';
 import SortDropdown from '../../components/common/SortDropdown';
 import FilterChips from '../../components/common/FilterChips';
 import SearchEmptyState from '../../components/search/SearchEmptyState';
 import SearchErrorState from '../../components/search/SearchErrorState';
+import { CardSkeleton } from '../../components/common/Skeleton';
 import partsService from '../../services/parts.service';
+import useDebounce from '../../hooks/useDebounce';
+import { useSocket } from '../../context/SocketContext';
 import { Wrench, Search, Filter, SlidersHorizontal, X } from 'lucide-react';
 
 const CustomerPartsCatalog = () => {
+  const queryClient = useQueryClient();
+  const { socket } = useSocket();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // State from URL query params
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+  const debouncedSearchTerm = useDebounce(searchTerm, 350);
+
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('categoryId') || '');
   const [stockStatus, setStockStatus] = useState(searchParams.get('stockStatus') || '');
   const [minPrice, setMinPrice] = useState(searchParams.get('minPrice') || '');
@@ -23,12 +30,6 @@ const CustomerPartsCatalog = () => {
   const [sort, setSort] = useState(searchParams.get('sort') || 'newest');
   const [currentPage, setCurrentPage] = useState(parseInt(searchParams.get('page') || '1', 10));
 
-  // Data & Control State
-  const [parts, setParts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({ page: 1, limit: 12, total: 0, totalPages: 1 });
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   // Sync state with URL params
@@ -42,47 +43,59 @@ const CustomerPartsCatalog = () => {
     setCurrentPage(parseInt(searchParams.get('page') || '1', 10));
   }, [searchParams]);
 
-  const fetchCategories = async () => {
-    try {
-      const res = await partsService.getPartCategories({ status: 'ACTIVE', limit: 100 });
-      setCategories(res.data || []);
-    } catch (err) {
-      console.error('Failed to load active part categories:', err);
-    }
+  // Realtime Socket listener for parts catalog synchronization
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlePartChange = () => {
+      queryClient.invalidateQueries({ queryKey: ['parts'] });
+    };
+
+    socket.on('part:created', handlePartChange);
+    socket.on('part:updated', handlePartChange);
+    socket.on('part:deleted', handlePartChange);
+
+    return () => {
+      socket.off('part:created', handlePartChange);
+      socket.off('part:updated', handlePartChange);
+      socket.off('part:deleted', handlePartChange);
+    };
+  }, [socket, queryClient]);
+
+  // React Query: Fetch active part categories (Long-lived cache)
+  const { data: categoryRes } = useQuery({
+    queryKey: ['partCategories', { status: 'ACTIVE', limit: 100 }],
+    queryFn: ({ signal }) => partsService.getPartCategories({ status: 'ACTIVE', limit: 100 }, { signal }),
+    staleTime: 10 * 60 * 1000,
+  });
+  const categories = categoryRes?.data || [];
+
+  // React Query: Fetch parts (Medium cache + AbortSignal cancellation)
+  const partQueryParams = {
+    page: currentPage,
+    limit: 12,
+    sort,
+    search: debouncedSearchTerm.trim() || undefined,
+    categoryId: selectedCategory || undefined,
+    stockStatus: stockStatus || undefined,
+    minPrice: minPrice || undefined,
+    maxPrice: maxPrice || undefined,
   };
 
-  const fetchParts = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const params = {
-        page: currentPage,
-        limit: 12,
-        sort,
-      };
-      if (searchTerm.trim()) params.search = searchTerm.trim();
-      if (selectedCategory) params.categoryId = selectedCategory;
-      if (stockStatus) params.stockStatus = stockStatus;
-      if (minPrice) params.minPrice = minPrice;
-      if (maxPrice) params.maxPrice = maxPrice;
+  const {
+    data: partsRes,
+    isLoading,
+    error: partErr,
+    refetch: fetchParts,
+  } = useQuery({
+    queryKey: ['parts', partQueryParams],
+    queryFn: ({ signal }) => partsService.getParts(partQueryParams, { signal }),
+    staleTime: 3 * 60 * 1000,
+  });
 
-      const res = await partsService.getParts(params);
-      setParts(res.data || []);
-      setPagination(res.pagination || { page: 1, limit: 12, total: res.data?.length || 0, totalPages: 1 });
-    } catch (err) {
-      setError(err.message || 'Failed to load spare parts catalog');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    fetchParts();
-  }, [searchTerm, selectedCategory, stockStatus, minPrice, maxPrice, sort, currentPage]);
+  const parts = partsRes?.data || [];
+  const pagination = partsRes?.pagination || { page: 1, limit: 12, total: parts.length, totalPages: 1 };
+  const error = partErr ? (partErr.message || 'Failed to load spare parts catalog') : null;
 
   const updateQueryParams = (newParams) => {
     const updated = new URLSearchParams(searchParams);
@@ -292,8 +305,10 @@ const CustomerPartsCatalog = () => {
           {/* Results Grid */}
           <main className="flex-1 min-w-0">
             {isLoading ? (
-              <div className="py-20">
-                <Loader text="Loading spare parts catalog..." />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <CardSkeleton key={i} />
+                ))}
               </div>
             ) : error ? (
               <SearchErrorState message={error} onRetry={() => fetchParts()} />

@@ -7,8 +7,9 @@ import Spinner from '../common/Spinner';
 import catalogService from '../../services/catalog.service';
 import { Plus, Tag, Upload, X, Star, Trash2, RefreshCw, Check } from 'lucide-react';
 
-const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
-  const isEditMode = Boolean(mobileToEdit?.id);
+const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, mobile = null, onSaved, onSuccess }) => {
+  const targetMobile = mobileToEdit || mobile;
+  const isEditMode = Boolean(targetMobile?.id);
 
   const [brands, setBrands] = useState([]);
   const [isLoadingBrands, setIsLoadingBrands] = useState(false);
@@ -61,7 +62,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
       const res = await catalogService.getBrands({ limit: 100 });
       const allBrands = res.data || [];
       const activeBrands = allBrands.filter(
-        (b) => b.status === 'ACTIVE' || b.id === mobileToEdit?.brandId || b.id === autoSelectBrandId
+        (b) => b.status === 'ACTIVE' || b.id === targetMobile?.brandId || b.id === autoSelectBrandId
       );
       setBrands(activeBrands);
 
@@ -91,29 +92,29 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
   useEffect(() => {
     if (isOpen) {
       fetchBrands();
-      if (mobileToEdit) {
+      if (targetMobile) {
         setFormData({
-          brandId: mobileToEdit.brandId || '',
-          name: mobileToEdit.name || '',
-          modelNumber: mobileToEdit.modelNumber || '',
-          description: mobileToEdit.description || '',
-          price: mobileToEdit.price !== undefined && mobileToEdit.price !== null ? String(mobileToEdit.price) : '',
-          sellingPrice: mobileToEdit.sellingPrice !== undefined && mobileToEdit.sellingPrice !== null ? String(mobileToEdit.sellingPrice) : '',
-          ram: mobileToEdit.ram || '',
-          storage: mobileToEdit.storage || '',
-          processor: mobileToEdit.processor || '',
-          display: mobileToEdit.display || '',
-          frontCamera: mobileToEdit.frontCamera || '',
-          rearCamera: mobileToEdit.rearCamera || '',
-          battery: mobileToEdit.battery || '',
-          operatingSystem: mobileToEdit.operatingSystem || '',
-          network: mobileToEdit.network || '',
-          simType: mobileToEdit.simType || '',
-          color: mobileToEdit.color || '',
-          featured: Boolean(mobileToEdit.featured),
-          status: mobileToEdit.status || 'ACTIVE',
+          brandId: targetMobile.brandId || '',
+          name: targetMobile.name || '',
+          modelNumber: targetMobile.modelNumber || '',
+          description: targetMobile.description || '',
+          price: targetMobile.price !== undefined && targetMobile.price !== null ? String(targetMobile.price) : '',
+          sellingPrice: targetMobile.sellingPrice !== undefined && targetMobile.sellingPrice !== null ? String(targetMobile.sellingPrice) : '',
+          ram: targetMobile.ram || '',
+          storage: targetMobile.storage || '',
+          processor: targetMobile.processor || '',
+          display: targetMobile.display || '',
+          frontCamera: targetMobile.frontCamera || '',
+          rearCamera: targetMobile.rearCamera || '',
+          battery: targetMobile.battery || '',
+          operatingSystem: targetMobile.operatingSystem || '',
+          network: targetMobile.network || '',
+          simType: targetMobile.simType || '',
+          color: targetMobile.color || '',
+          featured: Boolean(targetMobile.featured),
+          status: targetMobile.status || 'ACTIVE',
         });
-        fetchMobileImages(mobileToEdit.id);
+        fetchMobileImages(targetMobile.id);
       } else {
         setFormData({
           brandId: '',
@@ -143,7 +144,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
       setImagePreview('');
       setConfirmDeleteImage(null);
     }
-  }, [isOpen, mobileToEdit]);
+  }, [isOpen, targetMobile]);
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -167,8 +168,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
 
   const handleSetPrimary = async (imageId) => {
     try {
-      await catalogService.setPrimaryImage(mobileToEdit.id, imageId);
-      await fetchMobileImages(mobileToEdit.id);
+      await catalogService.setPrimaryImage(targetMobile.id, imageId);
+      await fetchMobileImages(targetMobile.id);
       if (onSaved) onSaved();
     } catch (err) {
       setError(err.message || 'Failed to update primary image');
@@ -194,8 +195,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
     try {
       const formDataPayload = new FormData();
       formDataPayload.append('image', file);
-      await catalogService.addMobileImage(mobileToEdit.id, formDataPayload);
-      await fetchMobileImages(mobileToEdit.id);
+      await catalogService.addMobileImage(targetMobile.id, formDataPayload);
+      await fetchMobileImages(targetMobile.id);
       if (onSaved) onSaved();
     } catch (err) {
       setError(err.message || 'Failed to upload image');
@@ -223,8 +224,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
     try {
       const formDataPayload = new FormData();
       formDataPayload.append('image', file);
-      await catalogService.replaceMobileImage(mobileToEdit.id, imageId, formDataPayload);
-      await fetchMobileImages(mobileToEdit.id);
+      await catalogService.replaceMobileImage(targetMobile.id, imageId, formDataPayload);
+      await fetchMobileImages(targetMobile.id);
       if (onSaved) onSaved();
     } catch (err) {
       setError(err.message || 'Failed to replace image');
@@ -238,8 +239,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
     setIsDeletingImage(true);
     setError('');
     try {
-      await catalogService.deleteMobileImage(mobileToEdit.id, confirmDeleteImage.id);
-      await fetchMobileImages(mobileToEdit.id);
+      await catalogService.deleteMobileImage(targetMobile.id, confirmDeleteImage.id);
+      await fetchMobileImages(targetMobile.id);
       setConfirmDeleteImage(null);
       if (onSaved) onSaved();
     } catch (err) {
@@ -347,7 +348,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
 
     try {
       if (isEditMode) {
-        await catalogService.updateMobile(mobileToEdit.id, payload);
+        await catalogService.updateMobile(targetMobile.id, payload);
       } else {
         if (imageFile) {
           const formDataPayload = new FormData();
@@ -363,7 +364,8 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
         }
       }
       onClose();
-      if (onSaved) onSaved();
+      const handleSuccess = onSuccess || onSaved;
+      if (handleSuccess) handleSuccess();
     } catch (err) {
       setError(err.message || 'Failed to save mobile model');
     } finally {
@@ -376,7 +378,7 @@ const MobileFormModal = ({ isOpen, onClose, mobileToEdit = null, onSaved }) => {
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        title={isEditMode ? `Edit Mobile: ${mobileToEdit?.name}` : 'Add New Mobile Model'}
+        title={isEditMode ? `Edit Mobile: ${targetMobile?.name}` : 'Add New Mobile Model'}
         size="2xl"
       >
         <form onSubmit={handleSubmit} className="space-y-6">

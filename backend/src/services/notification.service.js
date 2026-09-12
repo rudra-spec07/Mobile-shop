@@ -2,6 +2,7 @@ const { prisma } = require('../config/database');
 const emailService = require('./email.service');
 const { AppError } = require('../middleware/error.middleware');
 const { HTTP_STATUS, ERROR_CODES } = require('../utils/constants');
+const socketService = require('./socket.service');
 const env = require('../config/env');
 
 /**
@@ -59,6 +60,18 @@ const createNotification = async ({
         referenceType,
         status: 'PENDING',
       },
+    });
+
+    // 2b. Realtime Socket.IO emission to recipient (Failure-Isolated)
+    socketService.emitToUser(notification.userId, 'notification:new', {
+      notificationId: notification.id,
+      recipientId: notification.userId,
+      type: notification.type,
+      title: notification.title,
+      message: notification.message,
+      referenceId: notification.referenceId,
+      referenceType: notification.referenceType,
+      timestamp: new Date().toISOString(),
     });
 
     // 3. Attempt Email Delivery if channel is EMAIL or if user has email configured

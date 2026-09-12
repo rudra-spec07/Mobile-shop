@@ -38,10 +38,39 @@ const PartCard = ({ part }) => {
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-4 hover:shadow-xl hover:border-blue-200 transition-all duration-300 flex flex-col justify-between group overflow-hidden h-full">
       <div className="space-y-3">
+<<<<<<< HEAD
         {/* Top Header: Category Tag / Wishlist Heart */}
         <div className="flex items-center justify-between gap-2">
           {part.category?.name ? (
             <span className="text-[11px] font-bold text-slate-700 bg-slate-100 px-2.5 py-0.5 rounded-md truncate max-w-[140px]">
+=======
+        {/* Thumbnail Container */}
+        <div className="relative w-full h-44 sm:h-48 bg-slate-50/80 rounded-xl flex items-center justify-center p-3 overflow-hidden border border-slate-100 group-hover:bg-blue-50/20 transition-colors">
+          {part.imageUrl ? (
+            <img
+              src={part.imageUrl}
+              alt={part.name}
+              loading="lazy"
+              className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.style.display = 'none';
+                if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div
+            className="flex flex-col items-center justify-center text-slate-300 gap-1"
+            style={{ display: part.imageUrl ? 'none' : 'flex' }}
+          >
+            <Wrench className="w-10 h-10 stroke-[1.5]" />
+            <span className="text-[10px] font-medium uppercase text-slate-400">Spare Part</span>
+          </div>
+
+          {/* Category Pill */}
+          {part.category?.name && (
+            <span className="absolute top-2 left-2 bg-white/90 backdrop-blur-md text-slate-700 text-[10px] font-semibold px-2.5 py-0.5 rounded-full border border-slate-200 shadow-xs">
+>>>>>>> origin/main
               {part.category.name}
             </span>
           ) : (
