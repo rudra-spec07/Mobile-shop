@@ -7,19 +7,8 @@ import Loader from '../components/common/Loader';
 
 // Core Public Pages (Eager loaded for immediate landing experience)
 import Home from '../pages/public/Home';
-<<<<<<< HEAD
-import CustomerMobileCatalog from '../pages/public/CustomerMobileCatalog';
-import CustomerMobileDetails from '../pages/public/CustomerMobileDetails';
-import CustomerPartsCatalog from '../pages/public/CustomerPartsCatalog';
-import CustomerPartDetails from '../pages/public/CustomerPartDetails';
-import CatalogPlaceholder from '../pages/public/CatalogPlaceholder';
-import AuthPlaceholder from '../pages/public/AuthPlaceholder';
-import ForgotPassword from '../pages/public/ForgotPassword';
-import ResetPassword from '../pages/public/ResetPassword';
 import TermsAndConditions from '../pages/public/TermsAndConditions';
 import PrivacyPolicy from '../pages/public/PrivacyPolicy';
-=======
->>>>>>> origin/main
 
 // Lazy Loaded Public Pages
 const CustomerMobileCatalog = lazy(() => import('../pages/public/CustomerMobileCatalog'));
@@ -71,22 +60,6 @@ import ServicesPage from '../pages/public/ServicesPage';
 
 const AppRoutes = () => {
   return (
-<<<<<<< HEAD
-    <Routes>
-      {/* Public Routes */}
-      <Route path="/" element={<Home />} />
-      <Route path="/mobiles" element={<CustomerMobileCatalog />} />
-      <Route path="/mobiles/:id" element={<CustomerMobileDetails />} />
-      <Route path="/parts" element={<CustomerPartsCatalog />} />
-      <Route path="/parts/:id" element={<CustomerPartDetails />} />
-      <Route path="/services" element={<ServicesPage />} />
-      <Route path="/login" element={<AuthPlaceholder />} />
-      <Route path="/register" element={<AuthPlaceholder />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/terms" element={<TermsAndConditions />} />
-      <Route path="/privacy" element={<PrivacyPolicy />} />
-=======
     <Suspense fallback={<PageFallback />}>
       <Routes>
         {/* Public Routes */}
@@ -95,11 +68,13 @@ const AppRoutes = () => {
         <Route path="/mobiles/:id" element={<CustomerMobileDetails />} />
         <Route path="/parts" element={<CustomerPartsCatalog />} />
         <Route path="/parts/:id" element={<CustomerPartDetails />} />
+        <Route path="/services" element={<ServicesPage />} />
         <Route path="/login" element={<AuthPlaceholder />} />
         <Route path="/register" element={<AuthPlaceholder />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
->>>>>>> origin/main
+        <Route path="/terms" element={<TermsAndConditions />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
 
         {/* Customer Panel Protected Routes */}
         <Route

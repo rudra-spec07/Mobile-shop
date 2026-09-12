@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Star, ShoppingCart, ArrowRight } from 'lucide-react';
+import { Heart, Star, ShoppingCart, ArrowRight, Smartphone } from 'lucide-react';
 import ProductImage from '../common/ProductImage';
 
 const formatCurrency = (val) => {
@@ -16,6 +16,7 @@ const MobileCard = ({ mobile }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const rawPrimaryImage = mobile.images?.find((img) => img.isPrimary)?.imageUrl || mobile.images?.[0]?.imageUrl || mobile.imageUrl;
+  const primaryImage = rawPrimaryImage;
   const regularPrice = Number(mobile.price || 0);
   const sellingPrice = mobile.sellingPrice !== null && mobile.sellingPrice !== undefined ? Number(mobile.sellingPrice) : null;
   const hasDiscount = sellingPrice !== null && sellingPrice < regularPrice;
@@ -52,23 +53,19 @@ const MobileCard = ({ mobile }) => {
           </div>
 
           {/* Featured Badge */}
-          {mobile.featured && (
+          {mobile.featured ? (
             <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-xs">
               <Star className="w-3 h-3 fill-current" />
               Featured
             </span>
-          ) : mobile.featured ? (
-          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-            New
-          </span>
           ) : mobile.brand?.name ? (
-          <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 truncate max-w-[100px]">
-            {mobile.brand.name}
-          </span>
+            <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 truncate max-w-[100px]">
+              {mobile.brand.name}
+            </span>
           ) : (
-          <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-            Hot
-          </span>
+            <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+              Hot
+            </span>
           )}
 
           <button
