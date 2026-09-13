@@ -6,7 +6,7 @@ import Input from '../common/Input';
 import enquiryService from '../../services/enquiry.service';
 import { MessageSquare, Smartphone, Wrench, CheckCircle2, AlertCircle } from 'lucide-react';
 
-const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuccess }) => {
+const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, initialSubject = '', initialMessage = '', onSuccess }) => {
   const navigate = useNavigate();
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -26,11 +26,11 @@ const CreateEnquiryModal = ({ isOpen, onClose, mobile = null, part = null, onSuc
         setSubject(`Stock & Repair Inquiry for ${part.name}`);
         setMessage(`Hi, I need information regarding spare part availability for ${part.name} (Part #: ${part.partNumber}).`);
       } else {
-        setSubject('');
-        setMessage('');
+        setSubject(initialSubject || '');
+        setMessage(initialMessage || '');
       }
     }
-  }, [isOpen, mobile, part]);
+  }, [isOpen, mobile, part, initialSubject, initialMessage]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

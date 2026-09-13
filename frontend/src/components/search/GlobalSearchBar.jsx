@@ -71,34 +71,55 @@ const GlobalSearchBar = ({ className = '' }) => {
       results.brands?.length > 0 ||
       results.categories?.length > 0);
 
+  const inputRef = useRef(null);
+
+  // Focus input on Cmd+K or Ctrl+K shortcut
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
-      <form onSubmit={handleSearchSubmit} className="relative">
+      <form onSubmit={handleSearchSubmit} className="relative group">
         <input
+          ref={inputRef}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.trim() && setIsOpen(true)}
           placeholder="Search mobiles, parts, brands..."
-          className="w-full pl-9 pr-8 py-2 text-xs bg-slate-100/90 hover:bg-slate-100 border border-slate-200/80 rounded-full text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 focus:bg-white transition-all shadow-xs"
+          className="w-full pl-9 pr-14 py-2 text-xs bg-slate-100/80 hover:bg-slate-100/90 focus:bg-white border border-slate-200/70 focus:border-blue-500 rounded-full text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 shadow-2xs"
         />
-        <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-        {isLoading ? (
-          <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin absolute right-3 top-1/2 -translate-y-1/2" />
-        ) : (
-          query && (
+        <Search className="w-4 h-4 text-slate-400 group-hover:text-blue-500 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none transition-colors" />
+        
+        {/* Right action or shortcut badge */}
+        <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          {isLoading ? (
+            <Loader2 className="w-3.5 h-3.5 text-blue-600 animate-spin mr-1" />
+          ) : query ? (
             <button
               type="button"
               onClick={() => {
                 setQuery('');
                 setIsOpen(false);
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-200/60 transition-colors"
+              className="text-slate-400 hover:text-slate-600 p-0.5 rounded-full hover:bg-slate-200/60 transition-colors"
             >
               <X className="w-3.5 h-3.5" />
             </button>
-          )
-        )}
+          ) : (
+            <span className="hidden md:inline-flex items-center px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 bg-white border border-slate-200/80 rounded-md shadow-2xs pointer-events-none">
+              ⌘ K
+            </span>
+          )}
+        </div>
       </form>
 
       {/* Autocomplete Results Dropdown */}

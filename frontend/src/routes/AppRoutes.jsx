@@ -7,6 +7,8 @@ import Loader from '../components/common/Loader';
 
 // Core Public Pages (Eager loaded for immediate landing experience)
 import Home from '../pages/public/Home';
+import TermsAndConditions from '../pages/public/TermsAndConditions';
+import PrivacyPolicy from '../pages/public/PrivacyPolicy';
 
 // Lazy Loaded Public Pages
 const CustomerMobileCatalog = lazy(() => import('../pages/public/CustomerMobileCatalog'));
@@ -54,6 +56,8 @@ const PageFallback = () => (
   </div>
 );
 
+import ServicesPage from '../pages/public/ServicesPage';
+
 const AppRoutes = () => {
   return (
     <Suspense fallback={<PageFallback />}>
@@ -64,10 +68,13 @@ const AppRoutes = () => {
         <Route path="/mobiles/:id" element={<CustomerMobileDetails />} />
         <Route path="/parts" element={<CustomerPartsCatalog />} />
         <Route path="/parts/:id" element={<CustomerPartDetails />} />
+        <Route path="/services" element={<ServicesPage />} />
         <Route path="/login" element={<AuthPlaceholder />} />
         <Route path="/register" element={<AuthPlaceholder />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/terms" element={<TermsAndConditions />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
 
         {/* Customer Panel Protected Routes */}
         <Route

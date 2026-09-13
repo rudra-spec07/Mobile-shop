@@ -1,7 +1,12 @@
 @import "tailwindcss";
 
 body {
-  background-color: #f8fafc;
+  background-color: #F4F9FF;
+  background-image: url('./assets/images/customer_bg.png');
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: #0f172a;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   min-height: 100vh;
@@ -23,4 +28,210 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* ═══════════════════════════════════════════════
+   PREMIUM ANIMATION SYSTEM
+   Pure CSS keyframes + utility classes.
+   GPU-friendly: uses only transform & opacity.
+   ═══════════════════════════════════════════════ */
+
+/* ── Keyframes ── */
+
+@keyframes anim-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes anim-fade-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes anim-fade-up-sm {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes anim-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes anim-slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes anim-float {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-8px); }
+}
+
+@keyframes anim-float-sm {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-5px); }
+}
+
+@keyframes anim-float-lg {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-12px); }
+}
+
+@keyframes anim-glow-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50%      { opacity: 0.7; transform: scale(1.08); }
+}
+
+@keyframes anim-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes anim-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes anim-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Entry Animation Classes (one-shot) ── */
+
+.anim-fade-in {
+  animation: anim-fade-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-fade-up {
+  animation: anim-fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-fade-up-sm {
+  animation: anim-fade-up-sm 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-scale-in {
+  animation: anim-scale-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-slide-down {
+  animation: anim-slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-modal-in {
+  animation: anim-modal-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.anim-backdrop-in {
+  animation: anim-backdrop-in 0.25s ease-out both;
+}
+
+/* ── Continuous Floating (infinite) ── */
+
+.anim-float {
+  animation: anim-float 5s ease-in-out infinite;
+}
+.anim-float-sm {
+  animation: anim-float-sm 4s ease-in-out infinite;
+}
+.anim-float-lg {
+  animation: anim-float-lg 6s ease-in-out infinite;
+}
+.anim-glow-pulse {
+  animation: anim-glow-pulse 4s ease-in-out infinite;
+}
+
+/* ── Stagger Delay Utilities ── */
+
+.anim-delay-0   { animation-delay: 0ms; }
+.anim-delay-75  { animation-delay: 75ms; }
+.anim-delay-100 { animation-delay: 100ms; }
+.anim-delay-150 { animation-delay: 150ms; }
+.anim-delay-200 { animation-delay: 200ms; }
+.anim-delay-250 { animation-delay: 250ms; }
+.anim-delay-300 { animation-delay: 300ms; }
+.anim-delay-400 { animation-delay: 400ms; }
+.anim-delay-500 { animation-delay: 500ms; }
+.anim-delay-600 { animation-delay: 600ms; }
+.anim-delay-700 { animation-delay: 700ms; }
+.anim-delay-800 { animation-delay: 800ms; }
+.anim-delay-1000 { animation-delay: 1000ms; }
+.anim-delay-1500 { animation-delay: 1500ms; }
+.anim-delay-2000 { animation-delay: 2000ms; }
+
+/* ── Scroll Reveal (hidden until observed) ── */
+
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.scroll-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Scale variant */
+.scroll-reveal-scale {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.scroll-reveal-scale.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Skeleton Shimmer ── */
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #e2e8f0 40%,
+    #f1f5f9 80%
+  );
+  background-size: 200% 100%;
+  animation: anim-shimmer 1.5s ease-in-out infinite;
+}
+
+/* ── Premium Header Scroll State ── */
+
+.header-scrolled {
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  border-bottom-color: rgba(226, 232, 240, 0.9);
+}
+
+/* ── Reduced Motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-in,
+  .anim-fade-up,
+  .anim-fade-up-sm,
+  .anim-scale-in,
+  .anim-slide-down,
+  .anim-modal-in,
+  .anim-backdrop-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .anim-float,
+  .anim-float-sm,
+  .anim-float-lg,
+  .anim-glow-pulse {
+    animation: none !important;
+  }
+
+  .scroll-reveal,
+  .scroll-reveal-scale {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .skeleton-shimmer {
+    animation: none !important;
+  }
 }

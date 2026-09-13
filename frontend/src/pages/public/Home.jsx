@@ -1,182 +1,189 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Smartphone, Wrench, ShieldCheck, ArrowRight, Layers, Cable, BatteryCharging } from 'lucide-react';
+import { ArrowRight, Smartphone, Wrench, Package, RefreshCw, AlertCircle } from 'lucide-react';
 import CustomerLayout from '../../components/layout/CustomerLayout';
-import Button from '../../components/common/Button';
+import HeroSection from '../../components/home/HeroSection';
+import CategorySection from '../../components/home/CategorySection';
+import ServiceSection from '../../components/home/ServiceSection';
+import StatsStrip from '../../components/home/StatsStrip';
 import MobileCard from '../../components/catalog/MobileCard';
-import PartCard from '../../components/parts/PartCard';
+import { ProductSkeleton } from '../../components/common/Skeletons';
+import { ScrollReveal } from '../../hooks/useScrollReveal';
 import catalogService from '../../services/catalog.service';
+import partsService from '../../services/parts.service';
 
 const Home = () => {
-  const [featuredMobiles, setFeaturedMobiles] = useState([]);
-  const [isLoadingFeatured, setIsLoadingFeatured] = useState(true);
+  // Dynamic State: Mobiles
+  const [mobiles, setMobiles] = useState([]);
+  const [isLoadingMobiles, setIsLoadingMobiles] = useState(true);
+  const [mobilesError, setMobilesError] = useState(null);
+
+  // Dynamic State: Categories / Brands
+  const [categories, setCategories] = useState([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [categoriesError, setCategoriesError] = useState(null);
+
+  // Fetch Mobiles (Featured first, fallback to active catalog)
+  const fetchMobiles = async () => {
+    setIsLoadingMobiles(true);
+    setMobilesError(null);
+    try {
+      const featuredRes = await catalogService.getFeaturedMobiles({ limit: 4 });
+      const featuredList = featuredRes.data?.data || [];
+
+      if (featuredList.length > 0) {
+        setMobiles(featuredList);
+      } else {
+        const generalRes = await catalogService.getMobiles({ limit: 4, sort: 'newest' });
+        setMobiles(generalRes.data?.data || []);
+      }
+    } catch (err) {
+      console.error('Failed to fetch mobiles for homepage:', err);
+      setMobilesError('Unable to load products. Please try again.');
+    } finally {
+      setIsLoadingMobiles(false);
+    }
+  };
+
+  // Fetch Categories & Brands dynamically from backend
+  const fetchCategories = async () => {
+    setIsLoadingCategories(true);
+    setCategoriesError(null);
+    try {
+      const [catRes, brandRes] = await Promise.allSettled([
+        partsService.getPartCategories({ limit: 5 }),
+        catalogService.getBrands({ limit: 5 }),
+      ]);
+
+      const fetchedCategories = catRes.status === 'fulfilled' ? catRes.value.data?.data || [] : [];
+      const fetchedBrands = brandRes.status === 'fulfilled' ? brandRes.value.data?.data || [] : [];
+
+      const combined = [
+        ...fetchedCategories.map((c) => ({
+          id: c.id,
+          name: c.name,
+          description: c.description || 'Genuine replacement components',
+          imageUrl: c.imageUrl,
+          isBrand: false,
+        })),
+        ...fetchedBrands.map((b) => ({
+          id: b.id,
+          name: b.name,
+          description: `Latest devices from ${b.name}`,
+          logoUrl: b.logoUrl,
+          isBrand: true,
+        })),
+      ];
+
+      setCategories(combined.slice(0, 5));
+    } catch (err) {
+      console.error('Failed to fetch categories:', err);
+      setCategoriesError('Unable to load categories');
+    } finally {
+      setIsLoadingCategories(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchFeatured = async () => {
-      setIsLoadingFeatured(true);
-      try {
-        const res = await catalogService.getFeaturedMobiles({ limit: 6 });
-        setFeaturedMobiles(res.data || []);
-      } catch (err) {
-        console.error('Failed to fetch featured mobiles:', err);
-      } finally {
-        setIsLoadingFeatured(false);
-      }
-    };
-    fetchFeatured();
+    fetchMobiles();
+    fetchCategories();
   }, []);
-
-  const fallbackFeaturedMobiles = [
-    {
-      id: 'm1',
-      brand: { name: 'Samsung' },
-      name: 'Galaxy A54 5G',
-      ram: '8GB',
-      storage: '128GB',
-      price: 38999,
-      sellingPrice: 34999,
-      status: 'ACTIVE',
-    },
-    {
-      id: 'm2',
-      brand: { name: 'Apple' },
-      name: 'iPhone 13',
-      ram: '4GB',
-      storage: '128GB',
-      price: 59900,
-      sellingPrice: 52999,
-      status: 'ACTIVE',
-    },
-    {
-      id: 'm3',
-      brand: { name: 'OnePlus' },
-      name: 'Nord CE 3 5G',
-      ram: '8GB',
-      storage: '128GB',
-      price: 26999,
-      sellingPrice: 24999,
-      status: 'ACTIVE',
-    },
-  ];
-
-  const popularParts = [
-    { id: 'p1', name: 'Samsung Galaxy A54 Original Display', category: { name: 'Display' }, price: 3499, stockStatus: 'AVAILABLE', partNumber: 'DSP-SAM-A54' },
-    { id: 'p2', name: 'iPhone 13 High Capacity Battery', category: { name: 'Battery' }, price: 2299, stockStatus: 'AVAILABLE', partNumber: 'BAT-IPH-13' },
-    { id: 'p3', name: 'Type-C Fast Charging Board', category: { name: 'Charging' }, price: 499, stockStatus: 'LOW_STOCK', partNumber: 'CHG-TYPC-01' },
-  ];
-
-  const categories = [
-    { label: 'Smartphones', path: '/mobiles', icon: Smartphone, bg: 'bg-blue-50 text-blue-600' },
-    { label: 'Accessories', path: '/parts', icon: Layers, bg: 'bg-indigo-50 text-indigo-600' },
-    { label: 'Parts', path: '/parts', icon: Wrench, bg: 'bg-emerald-50 text-emerald-600' },
-    { label: 'Chargers', path: '/parts', icon: BatteryCharging, bg: 'bg-amber-50 text-amber-600' },
-    { label: 'Cables', path: '/parts', icon: Cable, bg: 'bg-purple-50 text-purple-600' },
-  ];
-
-  const displayMobiles = featuredMobiles.length > 0 ? featuredMobiles : fallbackFeaturedMobiles;
 
   return (
     <CustomerLayout>
-      <div className="space-y-8 sm:space-y-10">
-        {/* iOS Hero Section */}
-        <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xl relative overflow-hidden">
-          <div className="max-w-2xl relative z-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/20 border border-blue-400/30 rounded-full text-blue-300 text-xs font-semibold">
-              <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span>Armaan Mobile Service Centre Certified Shop</span>
-            </div>
-            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-              Upgrade to the latest technology
-            </h1>
-            <p className="text-slate-300 text-xs sm:text-sm lg:text-base leading-relaxed">
-              Explore the newest mobiles from top brands at the best prices, order genuine spare parts, or request expert device services.
-            </p>
-            <div className="flex flex-wrap items-center gap-3 pt-2">
-              <Link to="/mobiles">
-                <Button variant="primary" size="lg" className="rounded-full bg-blue-600 hover:bg-blue-700 px-6 font-bold text-xs sm:text-sm shadow-md">
-                  Shop Now
-                  <ArrowRight className="w-4 h-4 ml-1.5" />
-                </Button>
-              </Link>
-              <Link to="/parts">
-                <Button variant="outline" size="lg" className="rounded-full bg-white/10 text-white border-white/20 hover:bg-white/20 px-6 font-semibold text-xs sm:text-sm">
-                  Browse Parts
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
+      <div className="space-y-8 sm:space-y-12">
+        {/* 1. Hero Section */}
+        <HeroSection />
 
-        {/* Categories Strip */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base sm:text-lg font-extrabold text-slate-900">Shop by Category</h2>
-            <Link to="/parts" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center">
-              View All <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </Link>
-          </div>
+        {/* 2. Shop by Category (Dynamic from Backend) */}
+        <CategorySection
+          categories={categories}
+          isLoading={isLoadingCategories}
+          error={categoriesError}
+          onRetry={fetchCategories}
+        />
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4">
-            {categories.map((cat, idx) => {
-              const Icon = cat.icon;
-              return (
-                <Link
-                  key={idx}
-                  to={cat.path}
-                  className="bg-white rounded-2xl border border-slate-200/80 p-4 flex flex-col items-center justify-center text-center group hover:shadow-md hover:border-slate-300 transition-all duration-200"
-                >
-                  <div className={`p-3 rounded-2xl ${cat.bg} mb-2.5 group-hover:scale-110 transition-transform duration-200`}>
-                    <Icon className="w-6 h-6 stroke-[1.8]" />
+        {/* 3. Side-by-Side Dual Section: Featured Mobiles + Repair & Service Card */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+          {/* Left: Featured Mobiles (7 cols) */}
+          <div className="lg:col-span-7 flex flex-col justify-between space-y-4">
+            <ScrollReveal>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-1.5 h-6 bg-blue-600 rounded-full" />
+                  <div>
+                    <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                      Featured Mobiles
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                      Latest smartphones at the best prices
+                    </p>
                   </div>
-                  <span className="text-xs font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                    {cat.label}
-                  </span>
-                  <span className="text-[10px] text-blue-600 font-semibold mt-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                    Explore <ArrowRight className="w-2.5 h-2.5" />
-                  </span>
+                </div>
+
+                <Link
+                  to="/mobiles"
+                  className="text-xs sm:text-sm font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 group transition-colors"
+                >
+                  <span>View All</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
-              );
-            })}
-          </div>
-        </section>
+              </div>
+            </ScrollReveal>
 
-        {/* Popular Mobiles */}
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-base sm:text-lg font-extrabold text-slate-900">Popular Mobiles</h2>
-              <p className="text-xs text-slate-500">Top smartphones available at our store</p>
-            </div>
-            <Link to="/mobiles" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center">
-              View All <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </Link>
+            {/* Mobiles Grid */}
+            {isLoadingMobiles ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                <ProductSkeleton count={4} isPart={false} />
+              </div>
+            ) : mobilesError ? (
+              <div className="bg-white rounded-2xl border border-rose-200/80 p-6 text-center shadow-xs">
+                <AlertCircle className="w-8 h-8 text-rose-500 mx-auto mb-2" />
+                <p className="text-xs font-semibold text-slate-800">{mobilesError}</p>
+                <button
+                  onClick={fetchMobiles}
+                  className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs font-bold transition-colors"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Try Again</span>
+                </button>
+              </div>
+            ) : mobiles.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-8 text-center shadow-xs">
+                <div className="w-12 h-12 bg-slate-50 text-slate-400 rounded-2xl flex items-center justify-center mx-auto mb-2">
+                  <Smartphone className="w-6 h-6 stroke-[1.5]" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-800">No products available</h4>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  Smartphones created in the admin panel will automatically appear here.
+                </p>
+                <Link
+                  to="/mobiles"
+                  className="mt-4 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold transition-colors"
+                >
+                  <span>Browse Mobile Catalog</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+                {mobiles.slice(0, 4).map((mobile, idx) => (
+                  <ScrollReveal key={mobile.id} delay={idx * 75}>
+                    <MobileCard mobile={mobile} />
+                  </ScrollReveal>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {displayMobiles.map((mobile) => (
-              <MobileCard key={mobile.id} mobile={mobile} />
-            ))}
+          {/* Right: Need a Repair or Service? (5 cols) */}
+          <div className="lg:col-span-5">
+            <ServiceSection />
           </div>
-        </section>
+        </div>
 
-        {/* Available Spare Parts */}
-        <section className="pb-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h2 className="text-base sm:text-lg font-extrabold text-slate-900">Spare Parts & Components</h2>
-              <p className="text-xs text-slate-500">Genuine replacement displays, batteries & fast chargers</p>
-            </div>
-            <Link to="/parts" className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center">
-              View All Parts <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {popularParts.map((part) => (
-              <PartCard key={part.id} part={part} />
-            ))}
-          </div>
-        </section>
+        {/* 4. Bottom Customer Trust & Stats Strip */}
+        <StatsStrip />
       </div>
     </CustomerLayout>
   );
