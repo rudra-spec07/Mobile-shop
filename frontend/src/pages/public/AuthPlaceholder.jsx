@@ -64,8 +64,10 @@ const AuthPlaceholder = () => {
     try {
       if (isLogin) {
         // Issue HTTP POST to Backend /auth/login
+        const trimmedIdentifier = emailOrMobile.trim();
         const res = await apiClient.post('/auth/login', {
-          emailOrMobile: emailOrMobile.trim(),
+          emailOrMobile: trimmedIdentifier,
+          email: trimmedIdentifier,
           password,
         });
 

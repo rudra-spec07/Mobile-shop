@@ -77,14 +77,16 @@ const registerCustomer = async (data) => {
 /**
  * Login Service for Customers and Super Admins
  */
-const loginUser = async ({ emailOrMobile, password }) => {
-  const queryTerm = emailOrMobile.trim().toLowerCase();
+const loginUser = async (data) => {
+  const { password } = data;
+  const rawQuery = (data.emailOrMobile || data.email || data.identifier || data.mobileNumber || '').trim();
+  const queryTerm = rawQuery.toLowerCase();
 
   const user = await prisma.user.findFirst({
     where: {
       OR: [
         { email: queryTerm },
-        { mobileNumber: emailOrMobile.trim() },
+        { mobileNumber: rawQuery },
       ],
     },
   });

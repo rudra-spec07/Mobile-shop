@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Smartphone, Bell, User, LogOut, Menu, X, Shield, KeyRound, MessageSquare, ShoppingBag, FileText } from 'lucide-react';
 import Navbar from '../navigation/Navbar';
@@ -16,7 +16,7 @@ const Header = () => {
   const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-
+  const userDropdownRef = useRef(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,9 +27,19 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userDropdownRef.current && !userDropdownRef.current.contains(event.target)) {
+        setIsUserDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <header
-      className="sticky top-0 z-30 overflow-hidden"
+      className="sticky top-0 z-30"
       style={{
         background: isScrolled
           ? 'linear-gradient(135deg, rgba(239,245,255,0.97) 0%, rgba(237,233,254,0.95) 40%, rgba(243,244,255,0.97) 70%, rgba(255,255,255,0.98) 100%)'
@@ -43,56 +53,58 @@ const Header = () => {
         transition: 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
       }}
     >
-      {/* ─── Decorative Ambient Orbs (header-only) ─── */}
-      <div
-        className="absolute pointer-events-none anim-float-sm"
-        style={{
-          top: '-18px',
-          left: '-30px',
-          width: '90px',
-          height: '90px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(147,130,255,0.18) 0%, rgba(147,130,255,0.04) 70%, transparent 100%)',
-          filter: 'blur(8px)',
-        }}
-      />
-      <div
-        className="absolute pointer-events-none anim-float"
-        style={{
-          top: '-24px',
-          right: '60px',
-          width: '110px',
-          height: '110px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(96,165,250,0.16) 0%, rgba(96,165,250,0.03) 70%, transparent 100%)',
-          filter: 'blur(10px)',
-        }}
-      />
-      <div
-        className="absolute pointer-events-none anim-float-lg"
-        style={{
-          bottom: '-20px',
-          right: '25%',
-          width: '70px',
-          height: '70px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(167,139,250,0.14) 0%, rgba(167,139,250,0.02) 70%, transparent 100%)',
-          filter: 'blur(6px)',
-        }}
-      />
-      <div
-        className="absolute pointer-events-none"
-        style={{
-          bottom: '-10px',
-          left: '20%',
-          width: '50px',
-          height: '50px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(96,165,250,0.12) 0%, transparent 70%)',
-          filter: 'blur(5px)',
-          animation: 'anim-glow-pulse 5s ease-in-out infinite',
-        }}
-      />
+      {/* ─── Decorative Ambient Orbs (header-only overflow bounded) ─── */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute pointer-events-none anim-float-sm"
+          style={{
+            top: '-18px',
+            left: '-30px',
+            width: '90px',
+            height: '90px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(147,130,255,0.18) 0%, rgba(147,130,255,0.04) 70%, transparent 100%)',
+            filter: 'blur(8px)',
+          }}
+        />
+        <div
+          className="absolute pointer-events-none anim-float"
+          style={{
+            top: '-24px',
+            right: '60px',
+            width: '110px',
+            height: '110px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(96,165,250,0.16) 0%, rgba(96,165,250,0.03) 70%, transparent 100%)',
+            filter: 'blur(10px)',
+          }}
+        />
+        <div
+          className="absolute pointer-events-none anim-float-lg"
+          style={{
+            bottom: '-20px',
+            right: '25%',
+            width: '70px',
+            height: '70px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(167,139,250,0.14) 0%, rgba(167,139,250,0.02) 70%, transparent 100%)',
+            filter: 'blur(6px)',
+          }}
+        />
+        <div
+          className="absolute pointer-events-none"
+          style={{
+            bottom: '-10px',
+            left: '20%',
+            width: '50px',
+            height: '50px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(96,165,250,0.12) 0%, transparent 70%)',
+            filter: 'blur(5px)',
+            animation: 'anim-glow-pulse 5s ease-in-out infinite',
+          }}
+        />
+      </div>
 
       {/* Reusable Logout Confirmation Modal */}
       <LogoutModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} />
@@ -138,7 +150,7 @@ const Header = () => {
                 <NotificationDropdown />
 
                 {/* User Dropdown */}
-                <div className="relative">
+                <div className="relative" ref={userDropdownRef}>
                   <button
                     onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
                     className="flex items-center gap-2 p-1 rounded-full sm:rounded-2xl transition-all duration-250 hover:scale-[1.03]"
@@ -191,11 +203,19 @@ const Header = () => {
                       {role === ROLES.SUPER_ADMIN ? (
                         <>
                           <Link
+                            to="/admin/profile"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-indigo-50/60 hover:text-indigo-600 transition-colors rounded-lg mx-1"
+                          >
+                            <User className="w-4 h-4 text-indigo-500" />
+                            My Profile
+                          </Link>
+                          <Link
                             to="/admin"
                             onClick={() => setIsUserDropdownOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-indigo-50/60 hover:text-indigo-600 transition-colors rounded-lg mx-1"
                           >
-                            <Shield className="w-4 h-4 text-indigo-500" />
+                            <Shield className="w-4 h-4 text-blue-500" />
                             Admin Dashboard
                           </Link>
                           <Link
@@ -218,11 +238,19 @@ const Header = () => {
                       ) : (
                         <>
                           <Link
-                            to="/customer"
+                            to="/customer/profile"
                             onClick={() => setIsUserDropdownOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-indigo-50/60 hover:text-indigo-600 transition-colors rounded-lg mx-1"
                           >
                             <User className="w-4 h-4 text-indigo-500" />
+                            My Profile & Privacy
+                          </Link>
+                          <Link
+                            to="/customer"
+                            onClick={() => setIsUserDropdownOpen(false)}
+                            className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-indigo-50/60 hover:text-indigo-600 transition-colors rounded-lg mx-1"
+                          >
+                            <Shield className="w-4 h-4 text-blue-500" />
                             Customer Dashboard
                           </Link>
                           <Link
@@ -238,7 +266,7 @@ const Header = () => {
                             onClick={() => setIsUserDropdownOpen(false)}
                             className="flex items-center gap-2.5 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-indigo-50/60 hover:text-indigo-600 transition-colors rounded-lg mx-1"
                           >
-                            <MessageSquare className="w-4 h-4 text-indigo-500" />
+                            <MessageSquare className="w-4 h-4 text-violet-500" />
                             My Inquiries
                           </Link>
                         </>

@@ -406,6 +406,190 @@ const adminUpdateUserStatus = async (id, data) => {
   return updatedUser;
 };
 
+/**
+ * DPDP Act Compliance: Export full user personal data (Data Principal Right)
+ */
+const exportUserData = async (userId) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      mobileNumber: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+      enquiries: {
+        select: {
+          id: true,
+          subject: true,
+          message: true,
+          status: true,
+          adminResponse: true,
+          createdAt: true,
+        },
+      },
+      requests: {
+        select: {
+          id: true,
+          subject: true,
+          status: true,
+          notes: true,
+          price: true,
+          createdAt: true,
+        },
+      },
+      notifications: {
+        select: {
+          id: true,
+          type: true,
+          title: true,
+          message: true,
+          status: true,
+          createdAt: true,
+        },
+      },
+    },
+  });
+
+  if (!user) {
+    throw new AppError('User profile not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.NOT_FOUND);
+  }
+
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    userId,
+    action: 'DATA_EXPORT_REQUESTED',
+    entityType: 'User',
+    entityId: userId,
+  });
+
+  return {
+    exportDate: new Date().toISOString(),
+    dpdpNotice: 'Export generated pursuant to Section 11 of the Digital Personal Data Protection (DPDP) Act, 2023.',
+    dataPrincipal: user,
+  };
+};
+
+/**
+ * DPDP Act Compliance: Withdraw optional consent (e.g. MARKETING_COMMUNICATION)
+ * CRITICAL FIX: Does NOT deactivate or suspend user account login (isActive remains untouched)
+ */
+const withdrawConsent = async (userId, data = {}) => {
+  const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+  if (!targetUser) {
+    throw new AppError('User not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.NOT_FOUND);
+  }
+
+  const purpose = data.purpose || 'MARKETING_COMMUNICATION';
+  const reason = data.reason || 'Consent withdrawn via privacy preferences';
+
+  // Audit consent withdrawal event
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    userId,
+    action: 'CONSENT_WITHDRAWN',
+    entityType: 'User',
+    entityId: userId,
+    oldValue: { purpose, status: 'GRANTED' },
+    newValue: { purpose, status: 'WITHDRAWN', reason },
+  });
+
+  // Record structured ConsentRecord if Prisma model is active
+  if (prisma.consentRecord) {
+    try {
+      const targetPurpose = purpose === 'ESSENTIAL_SERVICE' ? 'ESSENTIAL_SERVICE' : 'MARKETING_COMMUNICATION';
+      const existingRecord = await prisma.consentRecord.findFirst({
+        where: { userId, purpose: targetPurpose },
+      });
+
+      if (existingRecord) {
+        await prisma.consentRecord.update({
+          where: { id: existingRecord.id },
+          data: {
+            status: 'WITHDRAWN',
+            withdrawnAt: new Date(),
+          },
+        });
+      } else {
+        await prisma.consentRecord.create({
+          data: {
+            userId,
+            purpose: targetPurpose,
+            status: 'WITHDRAWN',
+            withdrawnAt: new Date(),
+            source: 'WEB',
+          },
+        });
+      }
+    } catch (e) {
+      console.warn('ConsentRecord insertion note:', e.message);
+    }
+  }
+
+  return {
+    message: `Consent for ${purpose} withdrawn successfully. Your account remains active for essential service requests.`,
+    purpose,
+    status: 'WITHDRAWN',
+  };
+};
+
+/**
+ * DPDP Act Compliance: Request Account / Data Erasure
+ * CRITICAL FIX: Creates a PENDING auditable PrivacyRequest without immediate hard deletion or immediate account lockout.
+ */
+const requestDataErasure = async (userId, data = {}) => {
+  const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+  if (!targetUser) {
+    throw new AppError('User not found', HTTP_STATUS.NOT_FOUND, ERROR_CODES.NOT_FOUND);
+  }
+
+  if (targetUser.role === ROLES.SUPER_ADMIN) {
+    throw new AppError('Super Admin account erasure cannot be requested', HTTP_STATUS.FORBIDDEN, ERROR_CODES.AUTHORIZATION_ERROR);
+  }
+
+  const reason = data.reason || 'Data erasure requested by customer';
+
+  // Audit data erasure request
+  const { createAuditLog } = require('./audit.service');
+  createAuditLog({
+    userId,
+    action: 'DATA_ERASURE_REQUESTED',
+    entityType: 'User',
+    entityId: userId,
+    newValue: { status: 'PENDING', reason },
+  });
+
+  // Record PrivacyRequest if model is active
+  if (prisma.privacyRequest) {
+    try {
+      const existingRequest = await prisma.privacyRequest.findFirst({
+        where: { userId, type: 'DATA_ERASURE', status: 'PENDING' },
+      });
+
+      if (!existingRequest) {
+        await prisma.privacyRequest.create({
+          data: {
+            userId,
+            type: 'DATA_ERASURE',
+            status: 'PENDING',
+            reason,
+          },
+        });
+      }
+    } catch (e) {
+      console.warn('PrivacyRequest insertion note:', e.message);
+    }
+  }
+
+  return {
+    message: 'Data erasure request submitted successfully. Our Privacy Officer will review and process your request pursuant to DPDP Act 2023 regulations. Completed service and order records will be retained as required by tax and legal regulations.',
+    status: 'PENDING',
+  };
+};
+
 module.exports = {
   forgotPassword,
   resetPassword,
@@ -416,4 +600,7 @@ module.exports = {
   getAdminUserById,
   adminUpdateUser,
   adminUpdateUserStatus,
+  exportUserData,
+  withdrawConsent,
+  requestDataErasure,
 };

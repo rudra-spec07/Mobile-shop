@@ -42,6 +42,8 @@ model User {
   enquiries           Enquiry[]
   requests            ServiceRequest[]
   notifications       Notification[]
+  consentRecords      ConsentRecord[]
+  privacyRequests     PrivacyRequest[]
 
   @@index([role, isActive])
   @@map("users")
@@ -355,4 +357,68 @@ model AuditLog {
   @@index([entityType])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ==========================================
+// Module 11: DPDP Act Privacy & Consent Schema
+// ==========================================
+
+enum ConsentPurpose {
+  ESSENTIAL_SERVICE
+  MARKETING_COMMUNICATION
+}
+
+enum ConsentStatus {
+  GRANTED
+  WITHDRAWN
+}
+
+model ConsentRecord {
+  id            String         @id @default(uuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose       ConsentPurpose @default(ESSENTIAL_SERVICE)
+  status        ConsentStatus  @default(GRANTED)
+  noticeVersion String         @default("1.0")
+  grantedAt     DateTime       @default(now())
+  withdrawnAt   DateTime?
+  source        String?        @default("WEB")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([purpose, status])
+  @@map("consent_records")
+}
+
+enum PrivacyRequestType {
+  DATA_EXPORT
+  DATA_ERASURE
+  CONSENT_WITHDRAWAL
+}
+
+enum PrivacyRequestStatus {
+  PENDING
+  IN_REVIEW
+  COMPLETED
+  REJECTED
+}
+
+model PrivacyRequest {
+  id          String               @id @default(uuid())
+  userId      String
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        PrivacyRequestType
+  status      PrivacyRequestStatus @default(PENDING)
+  reason      String?
+  adminNotes  String?
+  processedBy String?
+  processedAt DateTime?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@map("privacy_requests")
 }

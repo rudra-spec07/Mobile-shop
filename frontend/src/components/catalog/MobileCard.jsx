@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Star, ShoppingCart, ArrowRight, Smartphone } from 'lucide-react';
+import { Heart, Star, ShoppingCart } from 'lucide-react';
 import ProductImage from '../common/ProductImage';
 
 const formatCurrency = (val) => {
@@ -16,7 +16,6 @@ const MobileCard = ({ mobile }) => {
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   const rawPrimaryImage = mobile.images?.find((img) => img.isPrimary)?.imageUrl || mobile.images?.[0]?.imageUrl || mobile.imageUrl;
-  const primaryImage = rawPrimaryImage;
   const regularPrice = Number(mobile.price || 0);
   const sellingPrice = mobile.sellingPrice !== null && mobile.sellingPrice !== undefined ? Number(mobile.sellingPrice) : null;
   const hasDiscount = sellingPrice !== null && sellingPrice < regularPrice;
@@ -30,69 +29,51 @@ const MobileCard = ({ mobile }) => {
   return (
     <div className="bg-white rounded-2xl border border-slate-200/80 p-3.5 sm:p-4 hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col justify-between group overflow-hidden h-full">
       <div className="space-y-3">
-        {/* Thumbnail / Image Container */}
+        {/* Product Image & Badges Container */}
         <div className="relative w-full h-44 sm:h-48 bg-slate-50/80 rounded-xl flex items-center justify-center overflow-hidden border border-slate-100 group-hover:bg-blue-50/20 transition-colors p-2">
-          {primaryImage ? (
-            <img
-              src={primaryImage}
+          <Link to={`/mobiles/${mobile.id}`} className="w-full h-full block">
+            <ProductImage
+              src={rawPrimaryImage}
               alt={mobile.name}
-              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.style.display = 'none';
-                if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
-              }}
+              type="mobile"
+              imgClassName="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
             />
-          ) : null}
-          <div
-            className="flex flex-col items-center justify-center text-slate-300"
-            style={{ display: primaryImage ? 'none' : 'flex' }}
-          >
-            <Smartphone className="w-10 h-10 stroke-[1.5]" />
-            <span className="text-[10px] text-slate-400 mt-1 font-medium">No Image</span>
-          </div>
+          </Link>
 
-          {/* Featured Badge */}
+          {/* Featured / Brand Badge */}
           {mobile.featured ? (
-            <span className="absolute top-2 left-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-xs">
+            <span className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-xs pointer-events-none">
               <Star className="w-3 h-3 fill-current" />
               Featured
             </span>
           ) : mobile.brand?.name ? (
-            <span className="text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 truncate max-w-[100px]">
+            <span className="absolute top-2 left-2 z-10 text-[10px] font-black text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 truncate max-w-[100px] pointer-events-none">
               {mobile.brand.name}
             </span>
           ) : (
-            <span className="text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+            <span className="absolute top-2 left-2 z-10 text-[10px] font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200 pointer-events-none">
               Hot
             </span>
           )}
 
+          {/* Wishlist Button */}
           <button
             type="button"
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               setIsWishlisted(!isWishlisted);
             }}
             aria-label="Add to wishlist"
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${isWishlisted
+            className={`absolute top-2 right-2 z-10 w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${
+              isWishlisted
                 ? 'text-red-500 bg-red-50 scale-110'
-                : 'text-slate-400 hover:text-red-500 hover:bg-slate-50'
-              }`}
+                : 'text-slate-400 hover:text-red-500 hover:bg-slate-50 bg-white/80 backdrop-blur-xs'
+            }`}
           >
             <Heart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-current' : ''}`} />
           </button>
         </div>
-
-        {/* Product Image */}
-        <Link to={`/mobiles/${mobile.id}`} className="block relative w-full h-36 sm:h-40 bg-slate-50/60 rounded-xl overflow-hidden p-2 group-hover:bg-blue-50/30 transition-colors">
-          <ProductImage
-            src={rawPrimaryImage}
-            alt={mobile.name}
-            type="mobile"
-            imgClassName="w-full h-full object-contain group-hover:scale-108 transition-transform duration-300"
-          />
-        </Link>
 
         {/* Brand & Title */}
         <div className="space-y-0.5">

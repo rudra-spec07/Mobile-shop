@@ -14,10 +14,21 @@ const registerSchema = z.object({
   path: ['email'],
 });
 
-const loginSchema = z.object({
-  emailOrMobile: z.string().min(1, { message: 'Email or mobile number is required' }),
-  password: z.string().min(1, { message: 'Password is required' }),
-});
+const loginSchema = z
+  .object({
+    emailOrMobile: z.string().optional(),
+    email: z.string().optional(),
+    identifier: z.string().optional(),
+    mobileNumber: z.string().optional(),
+    password: z.string().min(1, { message: 'Password is required' }),
+  })
+  .refine(
+    (data) => Boolean((data.emailOrMobile || data.email || data.identifier || data.mobileNumber || '').trim()),
+    {
+      message: 'Email or mobile number is required',
+      path: ['emailOrMobile'],
+    }
+  );
 
 module.exports = {
   registerSchema,

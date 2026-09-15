@@ -132,6 +132,45 @@ const adminUpdateUserStatus = async (req, res, next) => {
   }
 };
 
+/**
+ * DPDP Act Compliance: Export User Personal Data
+ * Endpoint: GET /api/v1/users/export-data
+ */
+const exportUserData = async (req, res, next) => {
+  try {
+    const data = await userService.exportUserData(req.user.userId);
+    return sendSuccess(res, 'Personal data exported successfully under DPDP Act 2023', data, HTTP_STATUS.OK);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * DPDP Act Compliance: Withdraw Consent
+ * Endpoint: POST /api/v1/users/withdraw-consent
+ */
+const withdrawConsent = async (req, res, next) => {
+  try {
+    const result = await userService.withdrawConsent(req.user.userId, req.body || {});
+    return sendSuccess(res, result.message, result, HTTP_STATUS.OK);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * DPDP Act Compliance: Request Data Erasure
+ * Endpoint: POST /api/v1/users/request-erasure
+ */
+const requestDataErasure = async (req, res, next) => {
+  try {
+    const result = await userService.requestDataErasure(req.user.userId, req.body || {});
+    return sendSuccess(res, result.message, result, HTTP_STATUS.OK);
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   logout,
   forgotPassword,
@@ -143,4 +182,7 @@ module.exports = {
   getAdminUserById,
   adminUpdateUser,
   adminUpdateUserStatus,
+  exportUserData,
+  withdrawConsent,
+  requestDataErasure,
 };
